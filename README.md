@@ -1,4 +1,5 @@
 [![Go](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml/badge.svg)](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml)
+![coverage](https://raw.githubusercontent.com/manuelarte/pagorminator/badges/.badges/main/coverage.svg)
 # 📃 pagorminator
 
 Gorm plugin to add pagination to your select queries
