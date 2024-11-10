@@ -13,8 +13,11 @@ Gorm plugin to add pagination to your select queries
 ```go
 var products []*Products
 // give me the first 10 products
-db.Scopes(pagorminator.WithPagination(pagorminator.PageRequestOf(0, 10))).Find(&products)
+pageRequest := pagorminator.PageRequestOf(0, 10)
+db.Scopes(pagorminator.WithPagination(&pageRequest)).Find(&products)
 ```
+
+The plugin will populate the page request variable will the `total amounts` and `total pages` fields.
 
 ## 🎓 Examples
 
