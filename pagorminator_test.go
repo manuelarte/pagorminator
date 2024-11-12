@@ -2,7 +2,6 @@ package pagorminator
 
 import (
 	"fmt"
-	"github.com/manuelarte/pagorminator/internal"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"testing"
@@ -15,21 +14,21 @@ type TestStruct struct {
 }
 
 func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
-		pageRequest  PageRequest
-		expectedPage PageRequest
+		pageRequest  *Pagination
+		expectedPage *Pagination
 	}{
 		"UnPaged one item": {
 			toMigrate: []*TestStruct{
 				{Code: "1"},
 			},
 			pageRequest: UnPaged(),
-			expectedPage: &internal.PageRequestImpl{
-				Page:          0,
-				Size:          0,
-				TotalElements: 1,
-				TotalPages:    1,
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
 			},
 		},
 		"UnPaged several items": {
@@ -37,11 +36,10 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: UnPaged(),
-			expectedPage: &internal.PageRequestImpl{
-				Page:          0,
-				Size:          0,
-				TotalElements: 2,
-				TotalPages:    1,
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 2,
 			},
 		},
 		"Paged 1/2 items": {
@@ -49,11 +47,10 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: mustPageRequestOf(1, 1),
-			expectedPage: &internal.PageRequestImpl{
-				Page:          1,
-				Size:          1,
-				TotalElements: 2,
-				TotalPages:    2,
+			expectedPage: &Pagination{
+				page:          1,
+				size:          1,
+				totalElements: 2,
 			},
 		},
 	}
@@ -66,7 +63,7 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 			// Read
 			var products []*TestStruct
 
-			db.Scopes(WithPagination(test.pageRequest)).Find(&products) // find product with integer primary key
+			db.Clauses(test.pageRequest).Find(&products) // find product with integer primary key
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
 			}
@@ -75,11 +72,12 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 }
 
 func TestPaginationScopeMetadata_Where(t *testing.T) {
+	t.Parallel()
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
-		pageRequest  PageRequest
+		pageRequest  *Pagination
 		where        string
-		expectedPage PageRequest
+		expectedPage *Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
@@ -87,11 +85,10 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: UnPaged(),
 			where:       "price < 100",
-			expectedPage: &internal.PageRequestImpl{
-				Page:          0,
-				Size:          0,
-				TotalElements: 1,
-				TotalPages:    1,
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
 			},
 		},
 		"UnPaged one item, filtered out": {
@@ -100,11 +97,10 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: UnPaged(),
 			where:       "price > 100",
-			expectedPage: &internal.PageRequestImpl{
-				Page:          0,
-				Size:          0,
-				TotalElements: 0,
-				TotalPages:    1,
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 0,
 			},
 		},
 		"UnPaged two items, one filtered out": {
@@ -113,11 +109,10 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: UnPaged(),
 			where:       "price > 50",
-			expectedPage: &internal.PageRequestImpl{
-				Page:          0,
-				Size:          0,
-				TotalElements: 1,
-				TotalPages:    1,
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
 			},
 		},
 		"Paged four items, two filtered out": {
@@ -127,11 +122,10 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: mustPageRequestOf(0, 1),
 			where:       "price > 50",
-			expectedPage: &internal.PageRequestImpl{
-				Page:          0,
-				Size:          1,
-				TotalElements: 2,
-				TotalPages:    2,
+			expectedPage: &Pagination{
+				page:          0,
+				size:          1,
+				totalElements: 2,
 			},
 		},
 	}
@@ -144,7 +138,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			// Read
 			var products []*TestStruct
 
-			db.Debug().Scopes(WithPagination(test.pageRequest)).Where(test.where).Find(&products) // find product with integer primary key
+			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
 			}
@@ -171,16 +165,14 @@ func setupDb(t *testing.T, name string) *gorm.DB {
 	return db
 }
 
-func mustPageRequestOf(page, size int) PageRequest {
-	toReturn, _ := PageRequestOf(page, size)
+func mustPageRequestOf(page, size int) *Pagination {
+	toReturn, _ := PageRequest(page, size)
 	return toReturn
 }
 
-func equalPageRequests(p1, p2 PageRequest) bool {
-	casted1 := p1.(*internal.PageRequestImpl)
-	casted2 := p2.(*internal.PageRequestImpl)
-	return casted1.Page == casted2.Page &&
-		casted1.Size == casted2.Size &&
-		casted1.TotalElements == casted2.TotalElements &&
-		casted1.TotalPages == casted2.TotalPages
+func equalPageRequests(p1, p2 *Pagination) bool {
+	return p1.page == p2.page &&
+		p1.size == p2.size &&
+		p1.totalElements == p2.totalElements &&
+		p1.GetTotalPages() == p2.GetTotalPages()
 }

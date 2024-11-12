@@ -25,11 +25,14 @@ func main() {
 
 	_ = db.Use(pagorminator.PaGormMinator{})
 	_ = db.AutoMigrate(&Product{})
-	db.Create(&Product{Code: "D42", Price: 100})
+
+	migrateProducts := []*Product{{Code: "1", Price: 1}, {Code: "10", Price: 10},
+		{Code: "20", Price: 20}, {Code: "21", Price: 21}}
+	db.CreateInBatches(&migrateProducts, len(migrateProducts))
 
 	var products []*Product
 	pageRequest, _ := pagorminator.PageRequest(0, 1)
-	db.Clauses(pageRequest).Find(&products)
+	db.Clauses(pageRequest).Where("price > 10").Find(&products)
 
 	fmt.Printf("PageRequest: {Page: %d, Size: %d, TotalElements: %d, TotalPages: %d\n",
 		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())

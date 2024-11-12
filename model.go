@@ -2,8 +2,12 @@ package pagorminator
 
 import (
 	"errors"
-	"github.com/manuelarte/pagorminator/internal"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	"math"
 )
+
+const pagorminatorClause = "pagorminator:clause"
 
 var (
 	ErrPageCantBeNegative = errors.New("page number can't be negative")
@@ -11,20 +15,11 @@ var (
 	ErrSizeNotAllowed     = errors.New("size is not allowed")
 )
 
-var _ PageRequest = internal.PageRequestImpl{}
+var _ clause.Expression = new(Pagination)
+var _ gorm.StatementModifier = new(Pagination)
 
-// PageRequest Struct that contains the pagination information
-type PageRequest interface {
-	GetPage() int
-	GetSize() int
-	GetOffset() int
-	GetTotalPages() int
-	GetTotalElements() int
-	IsUnPaged() bool
-}
-
-// PageRequestOf Creates a PageRequest with the page and size values
-func PageRequestOf(page, size int) (PageRequest, error) {
+// PageRequest Create page to query the database
+func PageRequest(page, size int) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -34,10 +29,59 @@ func PageRequestOf(page, size int) (PageRequest, error) {
 	if page > 0 && size == 0 {
 		return nil, ErrSizeNotAllowed
 	}
-	return &internal.PageRequestImpl{Page: page, Size: size}, nil
+	return &Pagination{page: page, size: size}, nil
 }
 
 // UnPaged Create an unpaged request (no pagination is applied)
-func UnPaged() PageRequest {
-	return &internal.PageRequestImpl{Page: 0, Size: 0}
+func UnPaged() *Pagination {
+	return &Pagination{page: 0, size: 0}
+}
+
+// Pagination Clause to apply pagination
+type Pagination struct {
+	page          int
+	size          int
+	totalElements int64
+}
+
+func (p *Pagination) GetPage() int {
+	return p.page
+}
+func (p *Pagination) GetSize() int {
+	return p.size
+}
+
+func (p *Pagination) GetOffset() int {
+	return (p.page - 1) * p.size
+}
+
+func (p *Pagination) GetTotalPages() int {
+	if p.size > 0 {
+		return calculateTotalPages(p.totalElements, p.size)
+	} else {
+		return 1
+	}
+}
+
+func (p *Pagination) GetTotalElements() int64 {
+	return p.totalElements
+}
+
+func (p *Pagination) IsUnPaged() bool {
+	return p.page == 0 && p.size == 0
+}
+
+func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
+	db := stm.DB
+	db.Set(pagorminatorClause, p)
+	if !p.IsUnPaged() {
+		stm.DB.Limit(p.size).Offset((p.page - 1) * p.size)
+	}
+}
+
+func (p *Pagination) Build(_ clause.Builder) {
+}
+
+func calculateTotalPages(totalElements int64, size int) int {
+	return int(math.Ceil(float64(totalElements) / float64(size)))
 }

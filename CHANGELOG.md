@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TODO
 
-- Add code coverage badge
+- Test if it's possible page in the 'model'
 - Check for fmt
 - Add more examples
 
@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added pagorminator plugin for gorm
 - Added examples
+- Added badges
