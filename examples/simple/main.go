@@ -32,8 +32,8 @@ func main() {
 
 	// Read
 	var products []*Product
-	pageRequest, _ := pagorminator.PageRequestOf(0, 1)
-	db.Scopes(pagorminator.WithPagination(pageRequest)).First(&products)
+	pageRequest, _ := pagorminator.PageRequest(0, 1)
+	db.Clauses(&pageRequest).First(&products)
 	for _, product := range products {
 		fmt.Printf("PageRequest: {Page: %d, Size: %d, TotalElements: %d, TotalPages: %d\n",
 			pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())

@@ -6,18 +6,19 @@ Gorm plugin to add pagination to your select queries
 
 ## 😍 How to install it
 
-> go get github.com/manuelarte/pagorminator
+> go get -u -v github.com/manuelarte/pagorminator
 
 ## 🎯 How to use it
 
 ```go
+DB.Use(pagorminator.PaGormMinator{})
 var products []*Products
 // give me the first 10 products
-pageRequest := pagorminator.PageRequestOf(0, 10)
-db.Scopes(pagorminator.WithPagination(&pageRequest)).Find(&products)
+pageRequest, err := pagorminator.PageRequest(0, 1)
+DB.Clauses(&pageRequest).First(&products)
 ```
 
-The plugin will populate the page request variable will the `total amounts` and `total pages` fields.
+The plugin will calculate the total amount of elements so then the fields `total amounts` and `total pages` can be used too.
 
 ## 🎓 Examples
 
