@@ -17,15 +17,15 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
-		pageRequest  Pagination
-		expectedPage Pagination
+		pageRequest  *Pagination
+		expectedPage *Pagination
 	}{
 		"UnPaged one item": {
 			toMigrate: []*TestStruct{
 				{Code: "1"},
 			},
 			pageRequest: UnPaged(),
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          0,
 				size:          0,
 				totalElements: 1,
@@ -36,7 +36,7 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: UnPaged(),
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          0,
 				size:          0,
 				totalElements: 2,
@@ -47,7 +47,7 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: mustPageRequestOf(1, 1),
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
 				totalElements: 2,
@@ -63,7 +63,7 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 			// Read
 			var products []*TestStruct
 
-			db.Clauses(&test.pageRequest).Find(&products) // find product with integer primary key
+			db.Clauses(test.pageRequest).Find(&products) // find product with integer primary key
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
 			}
@@ -75,9 +75,9 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
-		pageRequest  Pagination
+		pageRequest  *Pagination
 		where        string
-		expectedPage Pagination
+		expectedPage *Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
@@ -85,7 +85,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: UnPaged(),
 			where:       "price < 100",
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          0,
 				size:          0,
 				totalElements: 1,
@@ -97,7 +97,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: UnPaged(),
 			where:       "price > 100",
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          0,
 				size:          0,
 				totalElements: 0,
@@ -109,7 +109,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: UnPaged(),
 			where:       "price > 50",
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          0,
 				size:          0,
 				totalElements: 1,
@@ -122,7 +122,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			},
 			pageRequest: mustPageRequestOf(0, 1),
 			where:       "price > 50",
-			expectedPage: Pagination{
+			expectedPage: &Pagination{
 				page:          0,
 				size:          1,
 				totalElements: 2,
@@ -138,7 +138,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			// Read
 			var products []*TestStruct
 
-			db.Clauses(&test.pageRequest).Where(test.where).Find(&products)
+			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
 			}
@@ -165,12 +165,12 @@ func setupDb(t *testing.T, name string) *gorm.DB {
 	return db
 }
 
-func mustPageRequestOf(page, size int) Pagination {
+func mustPageRequestOf(page, size int) *Pagination {
 	toReturn, _ := PageRequest(page, size)
 	return toReturn
 }
 
-func equalPageRequests(p1, p2 Pagination) bool {
+func equalPageRequests(p1, p2 *Pagination) bool {
 	return p1.page == p2.page &&
 		p1.size == p2.size &&
 		p1.totalElements == p2.totalElements &&

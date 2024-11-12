@@ -19,22 +19,22 @@ var _ clause.Expression = new(Pagination)
 var _ gorm.StatementModifier = new(Pagination)
 
 // PageRequest Create page to query the database
-func PageRequest(page, size int) (Pagination, error) {
+func PageRequest(page, size int) (*Pagination, error) {
 	if page < 0 {
-		return Pagination{}, ErrPageCantBeNegative
+		return nil, ErrPageCantBeNegative
 	}
 	if size < 0 {
-		return Pagination{}, ErrSizeCantBeNegative
+		return nil, ErrSizeCantBeNegative
 	}
 	if page > 0 && size == 0 {
-		return Pagination{}, ErrSizeNotAllowed
+		return nil, ErrSizeNotAllowed
 	}
-	return Pagination{page: page, size: size}, nil
+	return &Pagination{page: page, size: size}, nil
 }
 
 // UnPaged Create an unpaged request (no pagination is applied)
-func UnPaged() Pagination {
-	return Pagination{page: 0, size: 0}
+func UnPaged() *Pagination {
+	return &Pagination{page: 0, size: 0}
 }
 
 // Pagination Clause to apply pagination
