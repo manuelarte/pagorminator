@@ -44,17 +44,22 @@ type Pagination struct {
 	totalElements int64
 }
 
+// GetPage Get the page number
 func (p *Pagination) GetPage() int {
 	return p.page
 }
+
+// GetSize Get the page size
 func (p *Pagination) GetSize() int {
 	return p.size
 }
 
+// GetOffset Get the offset
 func (p *Pagination) GetOffset() int {
 	return (p.page - 1) * p.size
 }
 
+// GetTotalPages Get the total number of pages
 func (p *Pagination) GetTotalPages() int {
 	if p.size > 0 {
 		return calculateTotalPages(p.totalElements, p.size)
@@ -71,14 +76,16 @@ func (p *Pagination) IsUnPaged() bool {
 	return p.page == 0 && p.size == 0
 }
 
+// ModifyStatement Modify the query clause to apply pagination
 func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	db := stm.DB
 	db.Set(pagorminatorClause, p)
 	if !p.IsUnPaged() {
-		stm.DB.Limit(p.size).Offset((p.page - 1) * p.size)
+		stm.DB.Limit(p.size).Offset(p.GetOffset())
 	}
 }
 
+// Build N/A for pagination
 func (p *Pagination) Build(_ clause.Builder) {
 }
 

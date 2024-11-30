@@ -1,4 +1,4 @@
-module simple
+module filter
 
 go 1.18
 
@@ -10,7 +10,7 @@ require (
 require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/manuelarte/pagorminator v0.0.0-20241112002222-7b6cda225c98 // indirect
+	github.com/manuelarte/pagorminator v0.0.0-20241112184441-94e89258c801 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	golang.org/x/text v0.20.0 // indirect
 )

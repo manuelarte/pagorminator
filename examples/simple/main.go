@@ -26,11 +26,12 @@ func main() {
 	_ = db.Use(pagorminator.PaGormMinator{})
 	_ = db.AutoMigrate(&Product{})
 	db.Create(&Product{Code: "D42", Price: 100})
+	fmt.Printf("1 product created\n")
 
 	var products []*Product
 	pageRequest, _ := pagorminator.PageRequest(0, 1)
 	db.Clauses(pageRequest).Find(&products)
 
-	fmt.Printf("PageRequest: {Page: %d, Size: %d, TotalElements: %d, TotalPages: %d\n",
+	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
 		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
 }
