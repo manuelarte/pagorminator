@@ -29,6 +29,10 @@ Simple query with no filters (where clause)
 
 Using where to filter
 
+- [Unpaged](./examples/unpaged/main.go)
+
+Unpaged query
+
 ## 🔗 Contact
 
 - 📧 manueldoncelmartos@gmail.com
