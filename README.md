@@ -19,7 +19,7 @@ DB.Clauses(pageRequest).First(&products)
 ```
 
 The plugin will calculate the total amount of elements so then the fields `total amounts` and `total pages` can be used too.
-The pagination starts with the index 0.
+The pagination starts at index 0. So if the total pages is 6, then the pagination index goes from 0 to 5.
 
 ## 🎓 Examples
 
