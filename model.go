@@ -56,7 +56,7 @@ func (p *Pagination) GetSize() int {
 
 // GetOffset Get the offset
 func (p *Pagination) GetOffset() int {
-	return (p.page - 1) * p.size
+	return p.page * p.size
 }
 
 // GetTotalPages Get the total number of pages

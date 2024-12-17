@@ -8,11 +8,17 @@ github.com/manuelarte/pagorminator v0.0.0-20241112002222-7b6cda225c98 h1:2TbBVYW
 github.com/manuelarte/pagorminator v0.0.0-20241112002222-7b6cda225c98/go.mod h1:e7ZYAl1XwI3uc0rOXmfF4FToPSS+C65DM4sPXwRNkKs=
 github.com/manuelarte/pagorminator v0.0.0-20241112184441-94e89258c801 h1:C9Dm0kyXn4SmtUFredKb902rdSBWgW/J/Q8l6i/WtCM=
 github.com/manuelarte/pagorminator v0.0.0-20241112184441-94e89258c801/go.mod h1:e7ZYAl1XwI3uc0rOXmfF4FToPSS+C65DM4sPXwRNkKs=
+github.com/manuelarte/pagorminator v0.0.1-rc2 h1:yXShWu5v1VK7MXZTyiXXDOlb/CU7jhC0FBSNL6eX4qQ=
+github.com/manuelarte/pagorminator v0.0.1-rc2/go.mod h1:0fRra9ZJL6SF7i7jVd5oFfMkgsWrTg2dXAD5xVVCkko=
 github.com/mattn/go-sqlite3 v1.14.24 h1:tpSp2G2KyMnnQu99ngJ47EIkWVmliIizyZBfPrBWDRM=
 github.com/mattn/go-sqlite3 v1.14.24/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 golang.org/x/text v0.20.0 h1:gK/Kv2otX8gz+wn7Rmb3vT96ZwuoxnQlY+HlJVj7Qug=
 golang.org/x/text v0.20.0/go.mod h1:D4IsuqiFMhST5bX19pQ9ikHC2GsaKyk/oF+pn3ducp4=
+golang.org/x/text v0.21.0 h1:zyQAAkrwaneQ066sspRyJaG9VNi/YJ1NfzcGB3hZ/qo=
+golang.org/x/text v0.21.0/go.mod h1:4IBbMaMmOPCJ8SecivzSH54+73PCFmPWxNTLm+vZkEQ=
 gorm.io/driver/sqlite v1.5.6 h1:fO/X46qn5NUEEOZtnjJRWRzZMe8nqJiQ9E+0hi+hKQE=
 gorm.io/driver/sqlite v1.5.6/go.mod h1:U+J8craQU6Fzkcvu8oLeAQmi50TkwPEhHDEjQZXDah4=
+gorm.io/driver/sqlite v1.5.7 h1:8NvsrhP0ifM7LX9G4zPB97NwovUakUxc+2V2uuf3Z1I=
+gorm.io/driver/sqlite v1.5.7/go.mod h1:U+J8craQU6Fzkcvu8oLeAQmi50TkwPEhHDEjQZXDah4=
 gorm.io/gorm v1.25.12 h1:I0u8i2hWQItBq1WfE0o2+WuL9+8L21K9e2HHSTE/0f8=
 gorm.io/gorm v1.25.12/go.mod h1:xh7N7RHfYlNc5EmcI/El95gXusucDrQnHXe0+CgWcLQ=

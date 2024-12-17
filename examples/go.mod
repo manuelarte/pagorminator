@@ -2,15 +2,17 @@ module filter
 
 go 1.18
 
+replace github.com/manuelarte/pagorminator v0.0.1-rc2 => ../
+
 require (
-	gorm.io/driver/sqlite v1.5.6
+	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.25.12
 )
 
 require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/manuelarte/pagorminator v0.0.0-20241112184441-94e89258c801 // indirect
+	github.com/manuelarte/pagorminator v0.0.1-rc2 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
-	golang.org/x/text v0.20.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )
