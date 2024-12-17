@@ -27,6 +27,10 @@ The pagination starts at index 0. So if the total pages is 6, then the paginatio
 
 Simple query with no filters (where clause)
 
+- [Many Pages](./examples/many-pages/main.go)
+
+Simple query with no filters (where clause)
+
 - [Filter](./examples/filter/main.go) 
 
 Using where to filter
