@@ -39,6 +39,10 @@ Using where to filter
 
 Unpaged query
 
+- [Many Pages With Preload](./examples/many-pages-preload/main.go)
+
+Example using Preload
+
 ## 🔗 Contact
 
 - 📧 manueldoncelmartos@gmail.com
