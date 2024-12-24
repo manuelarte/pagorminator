@@ -30,19 +30,21 @@ func (p PaGormMinator) count(db *gorm.DB) {
 	if db.Statement.Schema != nil {
 		if pageable, ok := p.getPageRequest(db); ok {
 			if value, ok := db.Get(countKey); !ok || !value.(bool) {
-				newDb := db.Session(&gorm.Session{NewDB: true})
-				newDb.Statement = db.Statement.Statement
+				if pageable.totalElements == 0 {
+					newDb := db.Session(&gorm.Session{NewDB: true})
+					newDb.Statement = db.Statement.Statement
 
-				var totalElements int64
-				tx := newDb.Set(countKey, true).Model(newDb.Statement.Model)
-				if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
-					tx.Where(whereClause.Expression)
-				}
-				tx.Count(&totalElements)
-				if tx.Error != nil {
-					_ = db.AddError(tx.Error)
-				} else {
-					pageable.totalElements = totalElements
+					var totalElements int64
+					tx := newDb.Set(countKey, true).Model(newDb.Statement.Model)
+					if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
+						tx.Where(whereClause.Expression)
+					}
+					tx.Count(&totalElements)
+					if tx.Error != nil {
+						_ = db.AddError(tx.Error)
+					} else {
+						pageable.totalElements = totalElements
+					}
 				}
 			}
 		}

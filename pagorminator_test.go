@@ -13,6 +13,18 @@ type TestStruct struct {
 	Price uint
 }
 
+type TestProduct struct {
+	gorm.Model
+	Code  string
+	Price TestPrice
+}
+type TestPrice struct {
+	gorm.Model
+	Amount        uint
+	Currency      string
+	TestProductID uint
+}
+
 func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
@@ -146,6 +158,54 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 	}
 }
 
+func TestPaginationWithPreload(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		toMigrate    []*TestProduct
+		pageRequest  *Pagination
+		expectedPage *Pagination
+	}{
+		"UnPaged one item, not filtered": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+			},
+			pageRequest: UnPaged(),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
+			},
+		},
+		"Paged 1/2 items": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
+			},
+			pageRequest: &Pagination{page: 0, size: 1},
+			expectedPage: &Pagination{
+				page:          0,
+				size:          1,
+				totalElements: 2,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			db := setupDb(t, name)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			// Read
+			var products []*TestProduct
+
+			db.Clauses(test.pageRequest).Preload("Price").Find(&products)
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+			}
+		})
+	}
+}
+
 func setupDb(t *testing.T, name string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", name)), &gorm.Config{})
 	if err != nil {
@@ -153,7 +213,7 @@ func setupDb(t *testing.T, name string) *gorm.DB {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&TestStruct{})
+	err = db.AutoMigrate(&TestStruct{}, &TestProduct{}, &TestPrice{})
 	if err != nil {
 		t.Fatal(err)
 	}
