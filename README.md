@@ -29,7 +29,7 @@ Simple query with no filters (where clause)
 
 - [Many Pages](./examples/many-pages/main.go)
 
-Simple query with no filters (where clause)
+Simple query with no filters (where clause), many pages
 
 - [Filter](./examples/filter/main.go) 
 
