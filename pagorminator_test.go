@@ -69,14 +69,14 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t, name)
+			db := setupDb(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestStruct
 
 			db.Clauses(test.pageRequest).Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
 		})
 	}
@@ -143,14 +143,14 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t, name)
+			db := setupDb(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestStruct
 
 			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
 		})
 	}
@@ -202,14 +202,14 @@ func TestPaginationWithPreload(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t, name)
+			db := setupDb(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Preload("Price").Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
 		})
 	}
@@ -256,14 +256,14 @@ func TestPaginationWithPreloadAndWhere(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t, name)
+			db := setupDb(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
 		})
 	}
@@ -303,21 +303,21 @@ func TestPaginationWithJoins(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t, name)
+			db := setupDb(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Joins("Price").Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
 		})
 	}
 }
 
-func setupDb(t *testing.T, name string) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", name)), &gorm.Config{})
+func setupDb(t *testing.T) *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
 	if err != nil {
 		t.Fatal("failed to connect database")
 	}
