@@ -72,10 +72,9 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 			db := setupDb(t, name)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
-			// Read
 			var products []*TestStruct
 
-			db.Clauses(test.pageRequest).Find(&products) // find product with integer primary key
+			db.Clauses(test.pageRequest).Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
 			}
@@ -147,7 +146,6 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			db := setupDb(t, name)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
-			// Read
 			var products []*TestStruct
 
 			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
@@ -188,6 +186,18 @@ func TestPaginationWithPreload(t *testing.T) {
 				totalElements: 2,
 			},
 		},
+		"Paged 2/2 items": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
+			},
+			pageRequest: &Pagination{page: 1, size: 1},
+			expectedPage: &Pagination{
+				page:          1,
+				size:          1,
+				totalElements: 2,
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -195,10 +205,110 @@ func TestPaginationWithPreload(t *testing.T) {
 			db := setupDb(t, name)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
-			// Read
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Preload("Price").Find(&products)
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+			}
+		})
+	}
+}
+
+func TestPaginationWithPreloadAndWhere(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		toMigrate    []*TestProduct
+		pageRequest  *Pagination
+		expectedPage *Pagination
+	}{
+		"UnPaged one item, not filtered": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
+				{Code: "3", Price: TestPrice{Amount: 3, Currency: "EUR"}},
+				{Code: "4", Price: TestPrice{Amount: 4, Currency: "EUR"}},
+				{Code: "5", Price: TestPrice{Amount: 5, Currency: "EUR"}},
+			},
+			pageRequest: UnPaged(),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 4,
+			},
+		},
+		"Paged 1/2 items": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
+				{Code: "3", Price: TestPrice{Amount: 3, Currency: "EUR"}},
+				{Code: "4", Price: TestPrice{Amount: 4, Currency: "EUR"}},
+				{Code: "5", Price: TestPrice{Amount: 5, Currency: "EUR"}},
+			},
+			pageRequest: &Pagination{page: 0, size: 2},
+			expectedPage: &Pagination{
+				page:          0,
+				size:          2,
+				totalElements: 4,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			db := setupDb(t, name)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			var products []*TestProduct
+
+			db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&products)
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
+			}
+		})
+	}
+}
+
+func TestPaginationWithJoins(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		toMigrate    []*TestProduct
+		pageRequest  *Pagination
+		expectedPage *Pagination
+	}{
+		"UnPaged one item, not filtered": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+			},
+			pageRequest: UnPaged(),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
+			},
+		},
+		"Paged 1/2 items": {
+			toMigrate: []*TestProduct{
+				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
+				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
+			},
+			pageRequest: &Pagination{page: 0, size: 1},
+			expectedPage: &Pagination{
+				page:          0,
+				size:          1,
+				totalElements: 2,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			db := setupDb(t, name)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			var products []*TestProduct
+
+			db.Clauses(test.pageRequest).Joins("Price").Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %d, got %d", test.expectedPage, test.pageRequest)
 			}
