@@ -5,6 +5,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"math"
+	"sync"
 )
 
 const pagorminatorClause = "pagorminator:clause"
@@ -39,9 +40,11 @@ func UnPaged() *Pagination {
 
 // Pagination Clause to apply pagination
 type Pagination struct {
-	page          int
-	size          int
-	totalElements int64
+	page             int
+	size             int
+	teMutex          sync.RWMutex
+	totalElementsSet bool
+	totalElements    int64
 }
 
 // GetPage Get the page number
@@ -66,6 +69,17 @@ func (p *Pagination) GetTotalPages() int {
 	} else {
 		return 1
 	}
+}
+
+func (p *Pagination) setTotalElements(totalElements int64) {
+	p.teMutex.Lock()
+	defer p.teMutex.Unlock()
+	p.totalElementsSet = true
+	p.totalElements = totalElements
+}
+
+func (p *Pagination) isTotalElementsSet() bool {
+	return p.totalElementsSet
 }
 
 func (p *Pagination) GetTotalElements() int64 {

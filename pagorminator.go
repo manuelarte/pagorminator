@@ -30,7 +30,7 @@ func (p PaGormMinator) count(db *gorm.DB) {
 	if db.Statement.Schema != nil {
 		if pageable, ok := p.getPageRequest(db); ok {
 			if value, ok := db.Get(countKey); !ok || !value.(bool) {
-				if pageable.totalElements == 0 {
+				if !pageable.isTotalElementsSet() {
 					newDb := db.Session(&gorm.Session{NewDB: true})
 					newDb.Statement = db.Statement.Statement
 
@@ -43,7 +43,7 @@ func (p PaGormMinator) count(db *gorm.DB) {
 					if tx.Error != nil {
 						_ = db.AddError(tx.Error)
 					} else {
-						pageable.totalElements = totalElements
+						pageable.setTotalElements(totalElements)
 					}
 				}
 			}
