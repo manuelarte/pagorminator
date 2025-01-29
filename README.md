@@ -5,7 +5,7 @@
 
 Gorm plugin to add pagination to your select queries
 
-## 😍 How to install it
+## ⬇️ How to install it
 
 > go get -u -v github.com/manuelarte/pagorminator
 
