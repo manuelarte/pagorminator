@@ -92,7 +92,7 @@ func TestOrder_String(t *testing.T) {
 		"order without direction": {
 			order: Order{
 				property:  "name",
-				direction: DESC,
+				direction: "",
 			},
 			expected: "name",
 		},
