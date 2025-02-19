@@ -27,7 +27,7 @@ type Direction string
 
 const (
 	ASC  Direction = "asc"
-	DESC           = "desc"
+	DESC Direction = "desc"
 )
 
 func NewOrder(property string, direction Direction) (Order, error) {
