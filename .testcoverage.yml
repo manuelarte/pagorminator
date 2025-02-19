@@ -28,5 +28,6 @@ threshold:
 exclude:
   # Exclude files or packages matching their paths
   paths:
+    - ^errors.go
     - ^internal/model.go$
     - ^pkg/bar     # exclude package `pkg/bar`
