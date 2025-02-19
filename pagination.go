@@ -79,7 +79,7 @@ func (p *Pagination) IsUnPaged() bool {
 }
 
 func (p *Pagination) IsSort() bool {
-	return p.sort != nil && len(p.sort) > 0
+	return len(p.sort) > 0
 }
 
 func calculateTotalPages(totalElements int64, size int) int {
