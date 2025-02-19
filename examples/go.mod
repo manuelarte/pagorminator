@@ -1,6 +1,6 @@
 module examples
 
-go 1.18
+go 1.20
 
 replace github.com/manuelarte/pagorminator v0.0.1-rc5 => ../
 
