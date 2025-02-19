@@ -1,26 +1,12 @@
 package pagorminator
 
 import (
-	"errors"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"math"
 	"sync"
 )
 
-const pagorminatorClause = "pagorminator:clause"
-
-var (
-	ErrPageCantBeNegative = errors.New("page number can't be negative")
-	ErrSizeCantBeNegative = errors.New("size can't be negative")
-	ErrSizeNotAllowed     = errors.New("size is not allowed")
-)
-
-var _ clause.Expression = new(Pagination)
-var _ gorm.StatementModifier = new(Pagination)
-
 // PageRequest Create page to query the database
-func PageRequest(page, size int) (*Pagination, error) {
+func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -30,7 +16,8 @@ func PageRequest(page, size int) (*Pagination, error) {
 	if page > 0 && size == 0 {
 		return nil, ErrSizeNotAllowed
 	}
-	return &Pagination{page: page, size: size}, nil
+	sort := NewSort(orders...)
+	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
 // UnPaged Create an unpaged request (no pagination is applied)
@@ -42,6 +29,7 @@ func UnPaged() *Pagination {
 type Pagination struct {
 	page             int
 	size             int
+	sort             Sort
 	teMutex          sync.RWMutex
 	totalElementsSet bool
 	totalElements    int64
@@ -90,17 +78,8 @@ func (p *Pagination) IsUnPaged() bool {
 	return p.page == 0 && p.size == 0
 }
 
-// ModifyStatement Modify the query clause to apply pagination
-func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
-	db := stm.DB
-	db.Set(pagorminatorClause, p)
-	if !p.IsUnPaged() {
-		stm.DB.Limit(p.size).Offset(p.GetOffset())
-	}
-}
-
-// Build N/A for pagination
-func (p *Pagination) Build(_ clause.Builder) {
+func (p *Pagination) IsSort() bool {
+	return p.sort != nil && len(p.sort) > 0
 }
 
 func calculateTotalPages(totalElements int64, size int) int {
