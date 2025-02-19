@@ -82,6 +82,62 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 	}
 }
 
+func TestPaginationScopeMetadata_SortNoWhere(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		toMigrate      []*TestStruct
+		pageRequest    *Pagination
+		expectedPage   *Pagination
+		expectedResult []*TestStruct
+	}{
+		"Paged 1/2 items, sort by id asc": {
+			toMigrate: []*TestStruct{
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+			},
+			pageRequest: mustPageRequestOf(1, 1, mustNewOrder("id", ASC)),
+			expectedPage: &Pagination{
+				page:          1,
+				size:          1,
+				totalElements: 2,
+			},
+			expectedResult: []*TestStruct{
+				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+			},
+		},
+		"Paged 1/2 items, sort by id desc": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1}, {Code: "2", Price: 2},
+			},
+			pageRequest: mustPageRequestOf(1, 1, mustNewOrder("id", DESC)),
+			expectedPage: &Pagination{
+				page:          1,
+				size:          1,
+				totalElements: 2,
+			},
+			expectedResult: []*TestStruct{
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			db := setupDb(t)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			var products []*TestStruct
+
+			db.Debug().Clauses(test.pageRequest).Find(&products)
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			}
+			if !equalsArrays(products, test.expectedResult) {
+				t.Fatalf("expected result to be %+v, got %+v", test.expectedResult, products)
+			}
+		})
+	}
+}
+
 func TestPaginationScopeMetadata_Where(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
@@ -129,7 +185,7 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 		"Paged four items, two filtered out": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
-				{Code: "1", Price: 100}, {Code: "2", Price: 200},
+				{Code: "3", Price: 100}, {Code: "4", Price: 200},
 			},
 			pageRequest: mustPageRequestOf(0, 1),
 			where:       "price > 50",
@@ -151,6 +207,67 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
+			}
+		})
+	}
+}
+
+func TestPaginationScopeMetadata_SortWhere(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		toMigrate      []*TestStruct
+		pageRequest    *Pagination
+		where          string
+		expectedPage   *Pagination
+		expectedResult []*TestStruct
+	}{
+		"Paged 0 1/2 items, two items filtered out, sort by price asc": {
+			toMigrate: []*TestStruct{
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100}, {Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+			},
+			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", ASC)),
+			where:       "price > 50",
+			expectedPage: &Pagination{
+				page:          0,
+				size:          1,
+				totalElements: 2,
+			},
+			expectedResult: []*TestStruct{
+				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
+			},
+		},
+		"Paged 0 1/2 items, two items filtered out, sort by price desc": {
+			toMigrate: []*TestStruct{
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100}, {Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+			},
+			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", DESC)),
+			where:       "price > 50",
+			expectedPage: &Pagination{
+				page:          0,
+				size:          1,
+				totalElements: 2,
+			},
+			expectedResult: []*TestStruct{
+				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			db := setupDb(t)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			var products []*TestStruct
+
+			db.Debug().Clauses(test.pageRequest).Where(test.where).Find(&products)
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
+			}
+			if !equalsArrays(products, test.expectedResult) {
+				t.Fatalf("expected result to be %+v, got %+v", test.expectedResult, products)
 			}
 		})
 	}
@@ -335,8 +452,13 @@ func setupDb(t *testing.T) *gorm.DB {
 	return db
 }
 
-func mustPageRequestOf(page, size int) *Pagination {
-	toReturn, _ := PageRequest(page, size)
+func mustPageRequestOf(page, size int, orders ...Order) *Pagination {
+	toReturn, _ := PageRequest(page, size, orders...)
+	return toReturn
+}
+
+func mustNewOrder(property string, direction Direction) Order {
+	toReturn, _ := NewOrder(property, direction)
 	return toReturn
 }
 
@@ -345,4 +467,23 @@ func equalPageRequests(p1, p2 *Pagination) bool {
 		p1.size == p2.size &&
 		p1.totalElements == p2.totalElements &&
 		p1.GetTotalPages() == p2.GetTotalPages()
+}
+
+func equalsTestStruct(t1, t2 *TestStruct) bool {
+	sameId := t1.Model.ID == t2.Model.ID
+	sameCode := t1.Code == t2.Code
+	samePrice := t1.Price == t2.Price
+	return sameId && sameCode && samePrice
+}
+
+func equalsArrays(a1, a2 []*TestStruct) bool {
+	if len(a1) != len(a2) {
+		return false
+	}
+	for i, item := range a1 {
+		if !equalsTestStruct(item, a2[i]) {
+			return false
+		}
+	}
+	return true
 }
