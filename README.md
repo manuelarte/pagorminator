@@ -21,9 +21,9 @@ DB.Clauses(pageRequest).First(&products)
 
 The pagination struct contains the following data:
 
-+ `page`: page number, e.g. 0
-+ `size`: page size, e.g. 10
-+ `sort`: to apply sorting, e.g. id,asc
++ `page`: page number, e.g. `0`
++ `size`: page size, e.g. `10`
++ `sort`: to apply sorting, e.g. `id,asc`
 
 **The plugin will calculate the total amount of elements**, and then the pagination instance  provides a `GetTotalElements()` and `GetTotalPages()` methods to be used.
 The pagination starts at index 0. So if the total pages is 6, then the pagination index goes from 0 to 5.
