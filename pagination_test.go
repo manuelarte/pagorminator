@@ -1,6 +1,11 @@
-package pagorminator
+package pagorminator_test
 
-import "testing"
+import (
+	"math"
+	"testing"
+
+	"github.com/manuelarte/pagorminator"
+)
 
 func TestPagination_UnPaged(t *testing.T) {
 	t.Parallel()
@@ -22,9 +27,10 @@ func TestPagination_UnPaged(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			page, err := PageRequest(test.page, test.size)
+			page, err := pagorminator.PageRequest(test.page, test.size)
 			if err != nil {
 				t.Errorf("Unexpected error: %s", err)
 			}
@@ -60,6 +66,7 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			actual := calculateTotalPages(test.totalElements, test.size)
@@ -68,4 +75,8 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 			}
 		})
 	}
+}
+
+func calculateTotalPages(totalElements int64, size int) int {
+	return int(math.Ceil(float64(totalElements) / float64(size)))
 }

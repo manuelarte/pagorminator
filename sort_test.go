@@ -1,62 +1,57 @@
-package pagorminator
+package pagorminator_test
 
 import (
 	"errors"
 	"testing"
+
+	"github.com/manuelarte/pagorminator"
 )
 
 func TestOrder_NewOrder(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
 		property      string
-		direction     Direction
-		expectedOrder Order
+		direction     pagorminator.Direction
+		expectedOrder pagorminator.Order
 		expectedErr   error
 	}{
 		"order with valid property and asc direction": {
-			property:  "name",
-			direction: "asc",
-			expectedOrder: Order{
-				property:  "name",
-				direction: ASC,
-			},
+			property:      "name",
+			direction:     "asc",
+			expectedOrder: pagorminator.MustNewOrder("name", pagorminator.ASC),
 		},
 		"order with valid property and desc direction": {
-			property:  "name",
-			direction: "desc",
-			expectedOrder: Order{
-				property:  "name",
-				direction: DESC,
-			},
+			property:      "name",
+			direction:     "desc",
+			expectedOrder: pagorminator.MustNewOrder("name", pagorminator.DESC),
 		},
 		"order with valid property and empty direction": {
-			property:  "name",
-			direction: "",
-			expectedOrder: Order{
-				property:  "name",
-				direction: "",
-			},
+			property:      "name",
+			direction:     "",
+			expectedOrder: pagorminator.MustNewOrder("name", ""),
 		},
 		"order with valid property and invalid direction (uppercase)": {
 			property:    "name",
 			direction:   "DESC",
-			expectedErr: ErrOrderDirectionNotValid{Direction: "DESC"},
+			expectedErr: pagorminator.OrderDirectionNotValidError{Direction: "DESC"},
 		},
 		"order with valid property and invalid direction (not related)": {
 			property:    "name",
 			direction:   "hello",
-			expectedErr: ErrOrderDirectionNotValid{Direction: "hello"},
+			expectedErr: pagorminator.OrderDirectionNotValidError{Direction: "hello"},
 		},
 		"order with invalid property": {
 			property:    "",
 			direction:   "asc",
-			expectedErr: ErrOrderPropertyIsEmpty,
+			expectedErr: pagorminator.ErrOrderPropertyIsEmpty,
 		},
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			order, err := NewOrder(test.property, test.direction)
+			t.Parallel()
+			order, err := pagorminator.NewOrder(test.property, test.direction)
 			if err != nil {
 				if !errors.Is(err, test.expectedErr) {
 					t.Errorf("got err %v, expected %v", err, test.expectedErr)
@@ -72,34 +67,27 @@ func TestOrder_NewOrder(t *testing.T) {
 func TestOrder_String(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
-		order    Order
+		order    pagorminator.Order
 		expected string
 	}{
 		"order with asc direction": {
-			order: Order{
-				property:  "name",
-				direction: ASC,
-			},
+			order:    pagorminator.MustNewOrder("name", pagorminator.ASC),
 			expected: "name asc",
 		},
 		"order with desc direction": {
-			order: Order{
-				property:  "name",
-				direction: DESC,
-			},
+			order:    pagorminator.MustNewOrder("name", pagorminator.DESC),
 			expected: "name desc",
 		},
 		"order without direction": {
-			order: Order{
-				property:  "name",
-				direction: "",
-			},
+			order:    pagorminator.MustNewOrder("name", ""),
 			expected: "name",
 		},
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if got := test.order.String(); got != test.expected {
 				t.Errorf("got %q, want %q", got, test.expected)
 			}
@@ -110,26 +98,22 @@ func TestOrder_String(t *testing.T) {
 func TestSort_String(t *testing.T) {
 	t.Parallel()
 	tests := map[string]struct {
-		sort     Sort
+		sort     pagorminator.Sort
 		expected string
 	}{
 		"order with asc direction": {
-			sort: Sort([]Order{
-				{
-					property:  "name",
-					direction: ASC,
-				},
-				{
-					property:  "surname",
-					direction: DESC,
-				},
+			sort: pagorminator.Sort([]pagorminator.Order{
+				pagorminator.MustNewOrder("name", pagorminator.ASC),
+				pagorminator.MustNewOrder("surname", pagorminator.DESC),
 			}),
 			expected: "name asc, surname desc",
 		},
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if got := test.sort.String(); got != test.expected {
 				t.Errorf("got %q, want %q", got, test.expected)
 			}

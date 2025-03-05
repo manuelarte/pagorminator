@@ -35,13 +35,12 @@ func NewOrder(property string, direction Direction) (Order, error) {
 		return Order{}, ErrOrderPropertyIsEmpty
 	}
 	if direction != "" && direction != ASC && direction != DESC {
-		return Order{}, ErrOrderDirectionNotValid{Direction: direction}
+		return Order{}, OrderDirectionNotValidError{Direction: direction}
 	}
 	return Order{
 		property:  property,
 		direction: direction,
 	}, nil
-
 }
 
 func MustNewOrder(property string, direction Direction) Order {

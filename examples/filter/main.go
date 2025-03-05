@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/manuelarte/pagorminator"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -26,8 +27,12 @@ func main() {
 	_ = db.Use(pagorminator.PaGormMinator{})
 	_ = db.AutoMigrate(&Product{})
 
-	migrateProducts := []*Product{{Code: "1", Price: 1}, {Code: "10", Price: 10},
-		{Code: "20", Price: 20}, {Code: "21", Price: 21}}
+	migrateProducts := []*Product{
+		{Code: "1", Price: 1},
+		{Code: "10", Price: 10},
+		{Code: "20", Price: 20},
+		{Code: "21", Price: 21},
+	}
 	db.CreateInBatches(&migrateProducts, len(migrateProducts))
 	fmt.Printf("%d products created\n", len(migrateProducts))
 
