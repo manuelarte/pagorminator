@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-// PageRequest Create page to query the database
+// PageRequest Create page to query the database.
 func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
@@ -20,12 +20,12 @@ func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
-// UnPaged Create an unpaged request (no pagination is applied)
+// UnPaged Create an unpaged request (no pagination is applied).
 func UnPaged() *Pagination {
 	return &Pagination{page: 0, size: 0}
 }
 
-// Pagination Clause to apply pagination
+// Pagination Clause to apply pagination.
 type Pagination struct {
 	page             int
 	size             int
@@ -35,28 +35,27 @@ type Pagination struct {
 	totalElements    int64
 }
 
-// GetPage Get the page number
+// GetPage Get the page number.
 func (p *Pagination) GetPage() int {
 	return p.page
 }
 
-// GetSize Get the page size
+// GetSize Get the page size.
 func (p *Pagination) GetSize() int {
 	return p.size
 }
 
-// GetOffset Get the offset
+// GetOffset Get the offset.
 func (p *Pagination) GetOffset() int {
 	return p.page * p.size
 }
 
-// GetTotalPages Get the total number of pages
+// GetTotalPages Get the total number of pages.
 func (p *Pagination) GetTotalPages() int {
 	if p.size > 0 {
 		return calculateTotalPages(p.totalElements, p.size)
-	} else {
-		return 1
 	}
+	return 1
 }
 
 func (p *Pagination) setTotalElements(totalElements int64) {

@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/manuelarte/pagorminator"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"strconv"
 )
 
 type Product struct {

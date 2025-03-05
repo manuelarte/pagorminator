@@ -1,10 +1,11 @@
-package pagorminator
+package pagorminator //nolint:testpackage // testing expected page
 
 import (
 	"fmt"
+	"testing"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"testing"
 )
 
 type TestStruct struct {
@@ -65,11 +66,24 @@ func TestPaginationScopeMetadata_NoWhere(t *testing.T) {
 				totalElements: 2,
 			},
 		},
+		"Paged 0/2 items, size 2": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1}, {Code: "2", Price: 2},
+			},
+			pageRequest: mustPageRequestOf(0, 2),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          2,
+				totalElements: 2,
+			},
+		},
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestStruct
@@ -121,8 +135,10 @@ func TestPaginationScopeMetadata_SortNoWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestStruct
@@ -184,8 +200,10 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 		},
 		"Paged four items, two filtered out": {
 			toMigrate: []*TestStruct{
-				{Code: "1", Price: 1}, {Code: "2", Price: 2},
-				{Code: "3", Price: 100}, {Code: "4", Price: 200},
+				{Code: "1", Price: 1},
+				{Code: "2", Price: 2},
+				{Code: "3", Price: 100},
+				{Code: "4", Price: 200},
 			},
 			pageRequest: mustPageRequestOf(0, 1),
 			where:       "price > 50",
@@ -198,8 +216,10 @@ func TestPaginationScopeMetadata_Where(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestStruct
@@ -223,8 +243,10 @@ func TestPaginationScopeMetadata_SortWhere(t *testing.T) {
 	}{
 		"Paged 0 1/2 items, two items filtered out, sort by price asc": {
 			toMigrate: []*TestStruct{
-				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
-				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100}, {Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
+				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
+				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
 			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", ASC)),
 			where:       "price > 50",
@@ -239,8 +261,10 @@ func TestPaginationScopeMetadata_SortWhere(t *testing.T) {
 		},
 		"Paged 0 1/2 items, two items filtered out, sort by price desc": {
 			toMigrate: []*TestStruct{
-				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
-				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100}, {Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
+				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
+				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
 			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", DESC)),
 			where:       "price > 50",
@@ -256,8 +280,10 @@ func TestPaginationScopeMetadata_SortWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestStruct
@@ -318,8 +344,10 @@ func TestPaginationWithPreload(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestProduct
@@ -372,8 +400,10 @@ func TestPaginationWithPreloadAndWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestProduct
@@ -419,8 +449,10 @@ func TestPaginationWithJoins(t *testing.T) {
 	}
 
 	for name, test := range tests {
+		test := test
 		t.Run(name, func(t *testing.T) {
-			db := setupDb(t)
+			t.Parallel()
+			db := setupDB(t)
 			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 
 			var products []*TestProduct
@@ -433,7 +465,7 @@ func TestPaginationWithJoins(t *testing.T) {
 	}
 }
 
-func setupDb(t *testing.T) *gorm.DB {
+func setupDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
 	if err != nil {
 		t.Fatal("failed to connect database")
@@ -470,10 +502,10 @@ func equalPageRequests(p1, p2 *Pagination) bool {
 }
 
 func equalsTestStruct(t1, t2 *TestStruct) bool {
-	sameId := t1.Model.ID == t2.Model.ID
+	sameID := t1.Model.ID == t2.Model.ID
 	sameCode := t1.Code == t2.Code
 	samePrice := t1.Price == t2.Price
-	return sameId && sameCode && samePrice
+	return sameID && sameCode && samePrice
 }
 
 func equalsArrays(a1, a2 []*TestStruct) bool {

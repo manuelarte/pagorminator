@@ -7,10 +7,12 @@ import (
 
 const pagorminatorClause = "pagorminator:clause"
 
-var _ clause.Expression = new(Pagination)
-var _ gorm.StatementModifier = new(Pagination)
+var (
+	_ clause.Expression      = new(Pagination)
+	_ gorm.StatementModifier = new(Pagination)
+)
 
-// ModifyStatement Modify the query clause to apply pagination
+// ModifyStatement Modify the query clause to apply pagination.
 func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	db := stm.DB
 	db.Set(pagorminatorClause, p)
@@ -23,6 +25,6 @@ func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	}
 }
 
-// Build N/A for pagination
+// Build N/A for pagination.
 func (p *Pagination) Build(_ clause.Builder) {
 }
