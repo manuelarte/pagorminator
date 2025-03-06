@@ -54,7 +54,6 @@ func (p PaGormMinator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
 				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {
 					return paginationClause, true
 				}
-
 			}
 		}
 	}
