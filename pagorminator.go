@@ -48,7 +48,7 @@ func (p PaGormMinator) count(db *gorm.DB) {
 }
 
 func (p PaGormMinator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
-	if value, ok := db.Get(pagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
+	if value, ok := db.Get(_pagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
 		if paginationClause, okP := value.(*Pagination); okP {
 			if countValue, okCount := db.Get(countKey); !okCount {
 				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {
