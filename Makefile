@@ -19,3 +19,8 @@ format-code: tidy ## Format go code and run the fixer, alias: fmt
 	gofumpt -l -w .
 	golangci-lint run --fix ./...
 .PHONY: fmt format-code
+
+tools:
+	go install mvdan.cc/gofumpt@latest
+	go install github.com/manuelarte/gofuncor@latest
+.PHONY: tools

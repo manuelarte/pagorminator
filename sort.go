@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+type Sort []Order
+
 func NewSort(orders ...Order) Sort {
 	return orders
 }
@@ -12,8 +14,6 @@ func NewSort(orders ...Order) Sort {
 func Unsorted() Sort {
 	return Sort{}
 }
-
-type Sort []Order
 
 func (s Sort) String() string {
 	orderStrings := make([]string, len(s))
@@ -29,6 +29,11 @@ const (
 	ASC  Direction = "asc"
 	DESC Direction = "desc"
 )
+
+type Order struct {
+	property  string
+	direction Direction
+}
 
 func NewOrder(property string, direction Direction) (Order, error) {
 	if property == "" {
@@ -49,11 +54,6 @@ func MustNewOrder(property string, direction Direction) Order {
 		panic(err)
 	}
 	return order
-}
-
-type Order struct {
-	property  string
-	direction Direction
 }
 
 func (o Order) String() string {
