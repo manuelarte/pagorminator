@@ -502,7 +502,7 @@ func equalPageRequests(p1, p2 *Pagination) bool {
 }
 
 func equalsTestStruct(t1, t2 *TestStruct) bool {
-	sameID := t1.Model.ID == t2.Model.ID
+	sameID := t1.ID == t2.ID
 	sameCode := t1.Code == t2.Code
 	samePrice := t1.Price == t2.Price
 	return sameID && sameCode && samePrice
