@@ -16,12 +16,11 @@ test: ## Run unit tests, alias: t
 
 fmt: format-code
 format-code: tidy ## Format go code and run the fixer, alias: fmt
-	gofumpt -l -w .
-	gofuncor ./...
+	golangci-lint fmt
 	golangci-lint run --fix ./...
+	funcorder ./...
 .PHONY: fmt format-code
 
 tools:
-	go install mvdan.cc/gofumpt@latest
-	go install github.com/manuelarte/gofuncor@latest
+	go install github.com/manuelarte/funcorder@latest
 .PHONY: tools

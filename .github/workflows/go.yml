@@ -12,14 +12,18 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        go: [ "1.20", "1.21", "1.22", oldstable, stable ]
+        os: [ ubuntu-latest, macos-latest ]
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Go
+    - name: Set up Go ${{ matrix.go }}
       uses: actions/setup-go@v4
       with:
-        go-version: '1.20'
+        go-version: ${{ matrix.go }}
 
     - name: Build
       run: go build -v ./...
@@ -30,7 +34,7 @@ jobs:
     - name: check test coverage
       uses: vladopajic/go-test-coverage@v2
       with:
-        config: ./.testcoverage.yml
+        config: ./.github/.testcoverage.yml
         ## when token is not specified (value '') this feature is turned off
         ## in this example badge is created and committed only for main branch
         git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
