@@ -13,13 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.0.1-rc4] 2024-12-24
 
-## BugFix
+### BugFix
 
 - Fixing bug of using Pagination with preload
 
 ## [v0.0.1-rc3] 2024-12-17
 
-## BugFix
+### BugFix
 
 - Fixing bug for page 0 and page 1 returning same result
 
