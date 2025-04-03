@@ -47,6 +47,14 @@ jobs:
 
       - name: Check spelling of entire workspace
         uses: crate-ci/typos@v1
+  markdown:
+    name: typos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: DavidAnson/markdownlint-cli2-action@v19
+        continue-on-error: true
+        with:
+          globs: '**/*.md'
   golangci:
     strategy:
       matrix:
