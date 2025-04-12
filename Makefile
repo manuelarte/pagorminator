@@ -18,9 +18,4 @@ fmt: format-code
 format-code: tidy ## Format go code and run the fixer, alias: fmt
 	golangci-lint fmt
 	golangci-lint run --fix ./...
-	funcorder ./...
 .PHONY: fmt format-code
-
-tools:
-	go install github.com/manuelarte/funcorder@latest
-.PHONY: tools
