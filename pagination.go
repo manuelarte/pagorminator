@@ -58,6 +58,21 @@ func (p *Pagination) GetTotalPages() int {
 	return 1
 }
 
+// GetTotalElements returns the total elements.
+func (p *Pagination) GetTotalElements() int64 {
+	return p.totalElements
+}
+
+// IsUnPaged Check whether the pagination is applicable.
+func (p *Pagination) IsUnPaged() bool {
+	return p.page == 0 && p.size == 0
+}
+
+// IsSort Checks if sorting is also requested.
+func (p *Pagination) IsSort() bool {
+	return len(p.sort) > 0
+}
+
 func (p *Pagination) setTotalElements(totalElements int64) {
 	p.teMutex.Lock()
 	defer p.teMutex.Unlock()
@@ -67,18 +82,6 @@ func (p *Pagination) setTotalElements(totalElements int64) {
 
 func (p *Pagination) isTotalElementsSet() bool {
 	return p.totalElementsSet
-}
-
-func (p *Pagination) GetTotalElements() int64 {
-	return p.totalElements
-}
-
-func (p *Pagination) IsUnPaged() bool {
-	return p.page == 0 && p.size == 0
-}
-
-func (p *Pagination) IsSort() bool {
-	return len(p.sort) > 0
 }
 
 func calculateTotalPages(totalElements int64, size int) int {
