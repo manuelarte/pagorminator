@@ -21,6 +21,7 @@ linters:
     - exptostd
     - fatcontext
     - forbidigo
+    - funcorder
     - funlen
     - gocheckcompilerdirectives
     - gochecknoglobals
