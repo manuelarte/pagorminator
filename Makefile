@@ -14,8 +14,13 @@ test: ## Run unit tests, alias: t
 	go test --cover -timeout=300s -parallel=16 ${TEST_DIRECTORIES}
 .PHONY: t test
 
+tools:
+	go install golang.org/x/vuln/cmd/govulncheck@latest
+.PHONY: tools
+
 fmt: format-code
 format-code: tidy ## Format go code and run the fixer, alias: fmt
 	golangci-lint fmt
 	golangci-lint run --fix ./...
+	govulncheck ./...
 .PHONY: fmt format-code

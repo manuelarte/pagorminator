@@ -23,6 +23,15 @@ jobs:
           go mod tidy
           git diff --exit-code go.mod
           git diff --exit-code go.sum
+  govulncheck:
+    runs-on: ubuntu-latest
+    name: Run govulncheck
+    steps:
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-input: 1.23.0
+          go-package: ./...
   spell:
     name: "Spell check"
     runs-on: ubuntu-latest
