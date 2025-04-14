@@ -3,6 +3,7 @@
 [![Go](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml/badge.svg)](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml)
 ![coverage](https://raw.githubusercontent.com/manuelarte/pagorminator/badges/.badges/main/coverage.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/manuelarte/pagorminator)](https://goreportcard.com/report/github.com/manuelarte/pagorminator)
+![version](https://img.shields.io/github/v/release/manuelarte/pagorminator)
 
 Gorm plugin to add **Pagination** to your select queries
 
