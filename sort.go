@@ -49,12 +49,12 @@ func (o Order) String() string {
 
 type Sort []Order
 
-// NewSort Creates sort (slices of [Order])
+// NewSort Creates sort (slices of [Order]).
 func NewSort(orders ...Order) Sort {
 	return orders
 }
 
-// Unsorted no sorting
+// Unsorted no sorting.
 func Unsorted() Sort {
 	return Sort{}
 }
