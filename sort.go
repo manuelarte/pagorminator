@@ -5,24 +5,6 @@ import (
 	"strings"
 )
 
-type Sort []Order
-
-func NewSort(orders ...Order) Sort {
-	return orders
-}
-
-func Unsorted() Sort {
-	return Sort{}
-}
-
-func (s Sort) String() string {
-	orderStrings := make([]string, len(s))
-	for i, order := range s {
-		orderStrings[i] = order.String()
-	}
-	return strings.Join(orderStrings, ", ")
-}
-
 type Direction string
 
 const (
@@ -35,6 +17,7 @@ type Order struct {
 	direction Direction
 }
 
+// NewOrder Creates new order based on a property and a direction.
 func NewOrder(property string, direction Direction) (Order, error) {
 	if property == "" {
 		return Order{}, ErrOrderPropertyIsEmpty
@@ -48,7 +31,8 @@ func NewOrder(property string, direction Direction) (Order, error) {
 	}, nil
 }
 
-func MustNewOrder(property string, direction Direction) Order {
+// MustOrder Creates a new order based on a property and a direction, or panic.
+func MustOrder(property string, direction Direction) Order {
 	order, err := NewOrder(property, direction)
 	if err != nil {
 		panic(err)
@@ -61,4 +45,24 @@ func (o Order) String() string {
 		return o.property
 	}
 	return fmt.Sprintf("%s %s", o.property, o.direction)
+}
+
+type Sort []Order
+
+// NewSort Creates sort (slices of [Order])
+func NewSort(orders ...Order) Sort {
+	return orders
+}
+
+// Unsorted no sorting
+func Unsorted() Sort {
+	return Sort{}
+}
+
+func (s Sort) String() string {
+	orderStrings := make([]string, len(s))
+	for i, order := range s {
+		orderStrings[i] = order.String()
+	}
+	return strings.Join(orderStrings, ", ")
 }

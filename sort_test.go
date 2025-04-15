@@ -18,17 +18,17 @@ func TestOrder_NewOrder(t *testing.T) {
 		"order with valid property and asc direction": {
 			property:      "name",
 			direction:     "asc",
-			expectedOrder: pagorminator.MustNewOrder("name", pagorminator.ASC),
+			expectedOrder: pagorminator.MustOrder("name", pagorminator.ASC),
 		},
 		"order with valid property and desc direction": {
 			property:      "name",
 			direction:     "desc",
-			expectedOrder: pagorminator.MustNewOrder("name", pagorminator.DESC),
+			expectedOrder: pagorminator.MustOrder("name", pagorminator.DESC),
 		},
 		"order with valid property and empty direction": {
 			property:      "name",
 			direction:     "",
-			expectedOrder: pagorminator.MustNewOrder("name", ""),
+			expectedOrder: pagorminator.MustOrder("name", ""),
 		},
 		"order with valid property and invalid direction (uppercase)": {
 			property:    "name",
@@ -71,15 +71,15 @@ func TestOrder_String(t *testing.T) {
 		expected string
 	}{
 		"order with asc direction": {
-			order:    pagorminator.MustNewOrder("name", pagorminator.ASC),
+			order:    pagorminator.MustOrder("name", pagorminator.ASC),
 			expected: "name asc",
 		},
 		"order with desc direction": {
-			order:    pagorminator.MustNewOrder("name", pagorminator.DESC),
+			order:    pagorminator.MustOrder("name", pagorminator.DESC),
 			expected: "name desc",
 		},
 		"order without direction": {
-			order:    pagorminator.MustNewOrder("name", ""),
+			order:    pagorminator.MustOrder("name", ""),
 			expected: "name",
 		},
 	}
@@ -103,8 +103,8 @@ func TestSort_String(t *testing.T) {
 	}{
 		"order with asc direction": {
 			sort: pagorminator.Sort([]pagorminator.Order{
-				pagorminator.MustNewOrder("name", pagorminator.ASC),
-				pagorminator.MustNewOrder("surname", pagorminator.DESC),
+				pagorminator.MustOrder("name", pagorminator.ASC),
+				pagorminator.MustOrder("surname", pagorminator.DESC),
 			}),
 			expected: "name asc, surname desc",
 		},
