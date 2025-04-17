@@ -7,6 +7,8 @@
 
 Gorm plugin to add **Pagination** to your select queries
 
+<img src="pagorminator_logo.png" alt="logo" width="256" height="256"/>
+
 ## ⬇️ How to install it
 
 > go get -u -v github.com/manuelarte/pagorminator
