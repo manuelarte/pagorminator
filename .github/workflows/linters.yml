@@ -66,7 +66,7 @@ jobs:
   golangci:
     strategy:
       matrix:
-        go: ["1.20", "1.21", oldstable, stable]
+        go: [oldstable, stable]
         os: [ubuntu-latest, macos-latest]
     name: lint
     runs-on: ${{ matrix.os }}
