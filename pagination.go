@@ -5,6 +5,16 @@ import (
 	"sync"
 )
 
+// Pagination Clause to apply pagination.
+type Pagination struct {
+	page             int
+	size             int
+	sort             Sort
+	teMutex          sync.RWMutex
+	totalElementsSet bool
+	totalElements    int64
+}
+
 // PageRequest Create page to query the database.
 func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	if page < 0 {
@@ -23,16 +33,6 @@ func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 // UnPaged Create an unpaged request (no pagination is applied).
 func UnPaged() *Pagination {
 	return &Pagination{page: 0, size: 0}
-}
-
-// Pagination Clause to apply pagination.
-type Pagination struct {
-	page             int
-	size             int
-	sort             Sort
-	teMutex          sync.RWMutex
-	totalElementsSet bool
-	totalElements    int64
 }
 
 // GetPage Get the page number.

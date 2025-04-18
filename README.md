@@ -17,7 +17,10 @@ Gorm plugin to add **Pagination** to your select queries
 var DB *gorm.DB
 DB.Use(pagorminator.PaGormMinator{})
 var products []*Products
+// Without sorting
 pageRequest, err := pagorminator.PageRequest(0, 10)
+// With sorting
+pageRequest2, err := pagorminator.PageRequest(0, 10, pagorminator.MustOrder("id", pagorminator.DESC))
 DB.Clauses(pageRequest).First(&products)
 ```
 
