@@ -39,26 +39,14 @@ The pagination starts at index `0`. So if the total pages is `6`, then the pagin
 
 ## 🎓 Examples
 
-+ [Simple](./examples/simple/main.go)
++ [Simple](./examples/simple/main.go): Simple query with no filters (no WHERE clause)
 
-Simple query with no filters (no WHERE clause)
++ [Simple Sort](./examples/simple-sort/main.go): Simple query with sorting and no filters (no WHERE clause)
 
-+ [Simple Sort](./examples/simple-sort/main.go)
++ [Many Pages](./examples/many-pages/main.go): Simple query with no filters (no WHERE clause), many pages
 
-Simple query with sorting and no filters (no WHERE clause)
++ [Filter](./examples/filter/main.go): Using WHERE to filter
 
-+ [Many Pages](./examples/many-pages/main.go)
++ [Unpaged](./examples/unpaged/main.go): Unpaged query (pagination with no pagination)
 
-Simple query with no filters (no WHERE clause), many pages
-
-+ [Filter](./examples/filter/main.go)
-
-Using WHERE to filter
-
-+ [Unpaged](./examples/unpaged/main.go)
-
-Unpaged query (pagination with no pagination)
-
-+ [Many Pages With Preload](./examples/many-pages-preload/main.go)
-
-Example using Preload
++ [Many Pages With Preload](./examples/many-pages-preload/main.go): Example using Preload
