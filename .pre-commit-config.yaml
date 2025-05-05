@@ -1,10 +1,27 @@
 ---
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v2.1.5
+    hooks:
+      - id: golangci-lint
   - repo: https://github.com/crate-ci/typos
     rev: v1.31.1
     hooks:
       - id: typos
-
+  - repo: https://github.com/TekWizely/pre-commit-golang
+    rev: v1.0.0-rc.1
+    hooks:
+      - id: go-mod-tidy
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
