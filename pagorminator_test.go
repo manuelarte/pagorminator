@@ -538,6 +538,84 @@ func TestPagorminator_Table(t *testing.T) {
 	}
 }
 
+func TestPagorminator_TableWithWhere(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		toMigrate    []*TestStruct
+		pageRequest  *Pagination
+		where        string
+		expectedPage *Pagination
+	}{
+		"UnPaged one item, not filtered": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1},
+			},
+			pageRequest: UnPaged(),
+			where:       "price < 100",
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
+			},
+		},
+		"UnPaged one item, filtered out": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1},
+			},
+			pageRequest: UnPaged(),
+			where:       "price > 100",
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 0,
+			},
+		},
+		"UnPaged two items, one filtered out": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1}, {Code: "100", Price: 100},
+			},
+			pageRequest: UnPaged(),
+			where:       "price > 50",
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
+			},
+		},
+		"Paged four items, two filtered out": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1},
+				{Code: "2", Price: 2},
+				{Code: "3", Price: 100},
+				{Code: "4", Price: 200},
+			},
+			pageRequest: mustPageRequestOf(0, 1),
+			where:       "price > 50",
+			expectedPage: &Pagination{
+				page:          0,
+				size:          1,
+				totalElements: 2,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		test := test
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			db := setupDB(t)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			var products map[string]any
+
+			db.Clauses(test.pageRequest).Where(test.where).Table("test_structs").Find(&products)
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
+			}
+		})
+	}
+}
+
 func setupDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
 	if err != nil {
