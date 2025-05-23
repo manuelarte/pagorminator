@@ -1,10 +1,8 @@
-package pagorminator_test
+package pagorminator
 
 import (
-	"math"
+	"errors"
 	"testing"
-
-	"github.com/manuelarte/pagorminator"
 )
 
 func TestPagination_UnPaged(t *testing.T) {
@@ -30,7 +28,7 @@ func TestPagination_UnPaged(t *testing.T) {
 		test := test
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			page, err := pagorminator.PageRequest(test.page, test.size)
+			page, err := PageRequest(test.page, test.size)
 			if err != nil {
 				t.Errorf("Unexpected error: %s", err)
 			}
@@ -77,6 +75,34 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 	}
 }
 
-func calculateTotalPages(totalElements int64, size int) int {
-	return int(math.Ceil(float64(totalElements) / float64(size)))
+func TestPagination_SetTotalElements(t *testing.T) {
+	t.Parallel()
+	tests := map[string]struct {
+		totalElements int64
+		expectedErr   error
+	}{
+		"positive totalElements": {
+			totalElements: 2,
+		},
+		"0 totalElements": {
+			totalElements: 0,
+		},
+		"negative totalElements": {
+			totalElements: -1,
+			expectedErr:   TotalElementsNotValidError{totalElements: -1},
+		},
+	}
+
+	for name, test := range tests {
+		test := test
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			p := &Pagination{}
+			actualErr := p.SetTotalElements(test.totalElements)
+			if !errors.Is(actualErr, test.expectedErr) {
+				t.Errorf("expected: %v, got: %v", test.expectedErr, actualErr)
+				t.Fail()
+			}
+		})
+	}
 }

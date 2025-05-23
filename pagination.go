@@ -63,6 +63,15 @@ func (p *Pagination) GetTotalElements() int64 {
 	return p.totalElements
 }
 
+// SetTotalElements manually sets the total elements.
+func (p *Pagination) SetTotalElements(totalElements int64) error {
+	if totalElements < 0 {
+		return TotalElementsNotValidError{totalElements: totalElements}
+	}
+	p.setTotalElements(totalElements)
+	return nil
+}
+
 // IsUnPaged Check whether the pagination is applicable.
 func (p *Pagination) IsUnPaged() bool {
 	return p.page == 0 && p.size == 0

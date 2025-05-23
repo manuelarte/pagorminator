@@ -9,7 +9,6 @@ linters:
     - bidichk
     - bodyclose
     - canonicalheader
-    - copyloopvar
     - cyclop
     - depguard
     - dupl
@@ -68,7 +67,6 @@ linters:
     - staticcheck
     - testableexamples
     - testifylint
-    - testpackage
     - tparallel
     - unconvert
     - unparam
