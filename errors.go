@@ -19,3 +19,11 @@ type OrderDirectionNotValidError struct {
 func (e OrderDirectionNotValidError) Error() string {
 	return fmt.Sprintf("order direction is not valid: %s", e.Direction)
 }
+
+type TotalElementsNotValidError struct {
+	totalElements int64
+}
+
+func (e TotalElementsNotValidError) Error() string {
+	return fmt.Sprintf("total elements is not valid: %d", e.totalElements)
+}
