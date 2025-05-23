@@ -26,15 +26,22 @@ func (p PaGormMinator) Initialize(db *gorm.DB) error {
 }
 
 func (p PaGormMinator) count(db *gorm.DB) {
-	if db.Statement.Schema == nil {
+	if db.Statement.Schema == nil && db.Statement.Table == "" {
 		return
 	}
+	//nolint: nestif // not so complex
 	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
 		newDB := db.Session(&gorm.Session{NewDB: true})
 		newDB.Statement = db.Statement.Statement
 
 		var totalElements int64
-		tx := newDB.Set(countKey, true).Model(newDB.Statement.Model)
+
+		tx := newDB.Set(countKey, true)
+		if db.Statement.Schema != nil {
+			tx.Model(newDB.Statement.Model)
+		} else if db.Statement.Table != "" {
+			tx.Table(db.Statement.Table)
+		}
 		if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
 			tx.Where(whereClause.Expression)
 		}

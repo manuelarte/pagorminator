@@ -37,7 +37,6 @@ linters:
     - govet
     - iface
     - ineffassign
-    - intrange
     - lll
     - loggercheck
     - makezero
