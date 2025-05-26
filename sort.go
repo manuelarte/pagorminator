@@ -22,9 +22,11 @@ func NewOrder(property string, direction Direction) (Order, error) {
 	if property == "" {
 		return Order{}, ErrOrderPropertyIsEmpty
 	}
+
 	if direction != "" && direction != ASC && direction != DESC {
 		return Order{}, OrderDirectionNotValidError{Direction: direction}
 	}
+
 	return Order{
 		property:  property,
 		direction: direction,
@@ -37,6 +39,7 @@ func MustOrder(property string, direction Direction) Order {
 	if err != nil {
 		panic(err)
 	}
+
 	return order
 }
 
@@ -44,6 +47,7 @@ func (o Order) String() string {
 	if o.direction == "" {
 		return o.property
 	}
+
 	return fmt.Sprintf("%s %s", o.property, o.direction)
 }
 
@@ -64,5 +68,6 @@ func (s Sort) String() string {
 	for i, order := range s {
 		orderStrings[i] = order.String()
 	}
+
 	return strings.Join(orderStrings, ", ")
 }

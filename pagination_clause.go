@@ -16,10 +16,12 @@ var (
 func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	db := stm.DB
 	db.Set(_pagorminatorClause, p)
+
 	tx := stm.DB
 	if !p.IsUnPaged() {
 		tx = tx.Limit(p.size).Offset(p.GetOffset())
 	}
+
 	if p.IsSort() {
 		tx.Order(p.sort.String())
 	}

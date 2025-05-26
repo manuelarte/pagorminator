@@ -1,79 +1,57 @@
+---
 version: "2"
-run:
-  relative-path-mode: gomod
-linters:
-  default: none
+
+formatters:
   enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - canonicalheader
-    - cyclop
-    - depguard
+    - gofmt
+    - gofumpt
+    - gci
+  settings:
+    gofmt:
+      simplify: true
+      rewrite-rules:
+        - pattern: 'interface{}'
+          replacement: 'any'
+    gofumpt:
+      extra-rules: true
+    gci:
+      sections:
+        - standard
+        - default
+        - localmodule
+
+linters:
+  default: all
+  disable:
+    - decoder
+    - copyloopvar
     - dupl
-    - durationcheck
-    - errcheck
-    - errname
-    - errorlint
-    - exhaustive
-    - exptostd
-    - fatcontext
-    - forbidigo
-    - funcorder
-    - funlen
-    - gocheckcompilerdirectives
-    - gochecknoglobals
-    - gochecknoinits
-    - gochecksumtype
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - gomoddirectives
-    - goprintffuncname
-    - gosec
-    - govet
-    - iface
-    - ineffassign
-    - lll
-    - loggercheck
-    - makezero
-    - mirror
-    - mnd
-    - musttag
-    - nakedret
-    - nestif
-    - nilerr
-    - nilnesserr
-    - nilnil
-    - noctx
-    - nolintlint
-    - nonamedreturns
-    - nosprintfhostport
-    - perfsprint
-    - predeclared
-    - promlinter
-    - protogetter
-    - reassign
-    - recvcheck
-    - revive
-    - rowserrcheck
-    - sloglint
-    - spancheck
-    - sqlclosecheck
-    - staticcheck
-    - testableexamples
-    - testifylint
-    - tparallel
-    - unconvert
-    - unparam
-    - unused
-    - usestdlibvars
-    - usetesting
-    - wastedassign
-    - whitespace
+    - err113
+    - errchkjson
+    - exhaustruct
+    - forcetypeassert
+    - ginkgolinter # Related to Ginkgo.
+    - goheader
+    - gomodguard
+    - gosmopolitan
+    - grouper
+    - inamedparam
+    - intrange
+    - ireturn
+    - maintidx
+    - nlreturn
+    - prealloc
+    - promlinter # Related to prometheus.
+    - protogetter # Related to protocol buffer.
+    - spancheck # Related to OpenTelemetry
+    - sqlclosecheck # Related to SQL.
+    - tagliatelle
+    - testpackage
+    - thelper
+    - varnamelen
+    - wrapcheck
+    - zerologlint
+
   settings:
     cyclop:
       max-complexity: 30
@@ -110,29 +88,10 @@ linters:
         - map
     exhaustruct:
       exclude:
-        - ^net/http.Client$
-        - ^net/http.Cookie$
-        - ^net/http.Request$
-        - ^net/http.Response$
-        - ^net/http.Server$
-        - ^net/http.Transport$
-        - ^net/url.URL$
         - ^os/exec.Cmd$
         - ^reflect.StructField$
-        - ^github.com/Shopify/sarama.Config$
-        - ^github.com/Shopify/sarama.ProducerMessage$
-        - ^github.com/mitchellh/mapstructure.DecoderConfig$
-        - ^github.com/prometheus/client_golang/.+Opts$
-        - ^github.com/spf13/cobra.Command$
-        - ^github.com/spf13/cobra.CompletionOptions$
-        - ^github.com/stretchr/testify/mock.Mock$
-        - ^github.com/testcontainers/testcontainers-go.+Request$
-        - ^github.com/testcontainers/testcontainers-go.FromDockerfile$
-        - ^golang.org/x/tools/go/analysis.Analyzer$
-        - ^google.golang.org/protobuf/.+Options$
-        - ^gopkg.in/yaml.v3.Node$
     funlen:
-      lines: 100
+      lines: -1
       statements: 50
       ignore-comments: true
     gocognit:
@@ -145,6 +104,9 @@ linters:
           paramsOnly: false
         underef:
           skipRecvDeref: false
+    godox:
+      keywords:
+        - FIXME
     govet:
       disable:
         - fieldalignment
@@ -166,8 +128,6 @@ linters:
         - os.Mkdir.*
         - os.OpenFile
         - os.WriteFile
-        - prometheus.ExponentialBuckets.*
-        - prometheus.LinearBuckets
     nolintlint:
       require-explanation: true
       require-specific: true
@@ -180,50 +140,27 @@ linters:
     reassign:
       patterns:
         - .*
-    rowserrcheck:
-      packages:
-        - github.com/jmoiron/sqlx
     sloglint:
       no-global: all
       context: scope
+    tagalign:
+      align: false
     usetesting:
       os-temp-dir: true
+
   exclusions:
-    generated: lax
     presets:
       - comments
       - common-false-positives
-      - legacy
       - std-error-handling
     rules:
       - linters:
-          - godot
-        source: (noinspection|TODO)
-      - linters:
-          - gocritic
-        source: //noinspection
-      - linters:
-          - bodyclose
-          - dupl
           - errcheck
           - funlen
           - goconst
           - gosec
-          - noctx
-          - wrapcheck
         path: _test\.go
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+
 issues:
-  max-same-issues: 50
-formatters:
-  enable:
-    - goimports
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+  max-same-issues: 0
+  max-issues-per-linter: 0

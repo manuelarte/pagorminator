@@ -7,6 +7,7 @@ import (
 
 func TestPagination_UnPaged(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		page     int
 		size     int
@@ -26,12 +27,15 @@ func TestPagination_UnPaged(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			page, err := PageRequest(test.page, test.size)
 			if err != nil {
 				t.Errorf("Unexpected error: %s", err)
 			}
+
 			if page.IsUnPaged() != test.expected {
 				t.Errorf("IsUnPaged() expected %v, got %v", test.expected, page.IsUnPaged())
 			}
@@ -41,6 +45,7 @@ func TestPagination_UnPaged(t *testing.T) {
 
 func TestPagination_CalculateTotalPages(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		totalElements int64
 		size          int
@@ -65,8 +70,10 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			actual := calculateTotalPages(test.totalElements, test.size)
 			if actual != test.expected {
 				t.Errorf("totalPages expected %v, got %v", test.expected, actual)
@@ -77,6 +84,7 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 
 func TestPagination_SetTotalElements(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		totalElements int64
 		expectedErr   error
@@ -95,9 +103,12 @@ func TestPagination_SetTotalElements(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			p := &Pagination{}
+
 			actualErr := p.SetTotalElements(test.totalElements)
 			if !errors.Is(actualErr, test.expectedErr) {
 				t.Errorf("expected: %v, got: %v", test.expectedErr, actualErr)

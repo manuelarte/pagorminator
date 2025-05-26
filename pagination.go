@@ -10,7 +10,7 @@ type Pagination struct {
 	page             int
 	size             int
 	sort             Sort
-	teMutex          sync.RWMutex
+	mu               sync.RWMutex
 	totalElementsSet bool
 	totalElements    int64
 }
@@ -20,13 +20,17 @@ func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
+
 	if size < 0 {
 		return nil, ErrSizeCantBeNegative
 	}
+
 	if page > 0 && size == 0 {
 		return nil, ErrSizeNotAllowed
 	}
+
 	sort := NewSort(orders...)
+
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
@@ -55,6 +59,7 @@ func (p *Pagination) GetTotalPages() int {
 	if p.size > 0 {
 		return calculateTotalPages(p.totalElements, p.size)
 	}
+
 	return 1
 }
 
@@ -68,7 +73,9 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
 		return TotalElementsNotValidError{totalElements: totalElements}
 	}
+
 	p.setTotalElements(totalElements)
+
 	return nil
 }
 
@@ -83,8 +90,8 @@ func (p *Pagination) IsSort() bool {
 }
 
 func (p *Pagination) setTotalElements(totalElements int64) {
-	p.teMutex.Lock()
-	defer p.teMutex.Unlock()
+	p.mu.Lock()
+	defer p.mu.Unlock()
 	p.totalElementsSet = true
 	p.totalElements = totalElements
 }

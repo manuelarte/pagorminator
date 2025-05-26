@@ -28,6 +28,7 @@ type TestPrice struct {
 
 func TestPagorminator_NoWhere(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
 		pageRequest  *Pagination
@@ -81,6 +82,7 @@ func TestPagorminator_NoWhere(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -89,6 +91,7 @@ func TestPagorminator_NoWhere(t *testing.T) {
 			var products []*TestStruct
 
 			db.Clauses(test.pageRequest).Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -98,6 +101,7 @@ func TestPagorminator_NoWhere(t *testing.T) {
 
 func TestPagorminator_SortNoWhere(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate      []*TestStruct
 		pageRequest    *Pagination
@@ -136,6 +140,7 @@ func TestPagorminator_SortNoWhere(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -144,9 +149,11 @@ func TestPagorminator_SortNoWhere(t *testing.T) {
 			var products []*TestStruct
 
 			db.Debug().Clauses(test.pageRequest).Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
 			}
+
 			if !equalsArrays(products, test.expectedResult) {
 				t.Fatalf("expected result to be %+v, got %+v", test.expectedResult, products)
 			}
@@ -156,6 +163,7 @@ func TestPagorminator_SortNoWhere(t *testing.T) {
 
 func TestPagorminator_Where(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
 		pageRequest  *Pagination
@@ -217,6 +225,7 @@ func TestPagorminator_Where(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -225,6 +234,7 @@ func TestPagorminator_Where(t *testing.T) {
 			var products []*TestStruct
 
 			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -234,6 +244,7 @@ func TestPagorminator_Where(t *testing.T) {
 
 func TestPagorminator_SortWhere(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate      []*TestStruct
 		pageRequest    *Pagination
@@ -281,6 +292,7 @@ func TestPagorminator_SortWhere(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -289,9 +301,11 @@ func TestPagorminator_SortWhere(t *testing.T) {
 			var products []*TestStruct
 
 			db.Debug().Clauses(test.pageRequest).Where(test.where).Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
+
 			if !equalsArrays(products, test.expectedResult) {
 				t.Fatalf("expected result to be %+v, got %+v", test.expectedResult, products)
 			}
@@ -301,6 +315,7 @@ func TestPagorminator_SortWhere(t *testing.T) {
 
 func TestPagorminatorWithPreload(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestProduct
 		pageRequest  *Pagination
@@ -345,6 +360,7 @@ func TestPagorminatorWithPreload(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -353,6 +369,7 @@ func TestPagorminatorWithPreload(t *testing.T) {
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Preload("Price").Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -362,6 +379,7 @@ func TestPagorminatorWithPreload(t *testing.T) {
 
 func TestPagorminatorWithPreloadAndWhere(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestProduct
 		pageRequest  *Pagination
@@ -401,6 +419,7 @@ func TestPagorminatorWithPreloadAndWhere(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -409,6 +428,7 @@ func TestPagorminatorWithPreloadAndWhere(t *testing.T) {
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -418,6 +438,7 @@ func TestPagorminatorWithPreloadAndWhere(t *testing.T) {
 
 func TestPagorminatorWithJoins(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestProduct
 		pageRequest  *Pagination
@@ -450,6 +471,7 @@ func TestPagorminatorWithJoins(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -458,6 +480,7 @@ func TestPagorminatorWithJoins(t *testing.T) {
 			var products []*TestProduct
 
 			db.Clauses(test.pageRequest).Joins("Price").Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -467,6 +490,7 @@ func TestPagorminatorWithJoins(t *testing.T) {
 
 func TestPagorminator_Table(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
 		pageRequest  *Pagination
@@ -520,6 +544,7 @@ func TestPagorminator_Table(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -531,6 +556,7 @@ func TestPagorminator_Table(t *testing.T) {
 			if tx.Error != nil {
 				t.Fatal(tx.Error)
 			}
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -540,6 +566,7 @@ func TestPagorminator_Table(t *testing.T) {
 
 func TestPagorminator_TableWithWhere(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		toMigrate    []*TestStruct
 		pageRequest  *Pagination
@@ -601,6 +628,7 @@ func TestPagorminator_TableWithWhere(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -609,6 +637,76 @@ func TestPagorminator_TableWithWhere(t *testing.T) {
 			var products map[string]any
 
 			db.Clauses(test.pageRequest).Where(test.where).Table("test_structs").Find(&products)
+
+			if !equalPageRequests(test.pageRequest, test.expectedPage) {
+				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
+			}
+		})
+	}
+}
+
+func TestPagorminator_Distinct(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		toMigrate    []*TestStruct
+		pageRequest  *Pagination
+		expectedPage *Pagination
+	}{
+		"UnPaged two items, same price": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1},
+				{Code: "2", Price: 1},
+			},
+			pageRequest: UnPaged(),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 1,
+			},
+		},
+		"UnPaged four items, two different prices": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1},
+				{Code: "2", Price: 2},
+				{Code: "3", Price: 1},
+				{Code: "4", Price: 2},
+			},
+			pageRequest: UnPaged(),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 2,
+			},
+		},
+		"UnPaged four items, four different prices": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1},
+				{Code: "2", Price: 2},
+				{Code: "3", Price: 3},
+				{Code: "4", Price: 4},
+			},
+			pageRequest: UnPaged(),
+			expectedPage: &Pagination{
+				page:          0,
+				size:          0,
+				totalElements: 4,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		test := test
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			db := setupDB(t)
+			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			var products map[string]any
+
+			db.Clauses(test.pageRequest).Distinct("price").Model(&TestStruct{}).Find(&products)
+
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %v, got %v", test.expectedPage, test.pageRequest)
 			}
@@ -627,6 +725,7 @@ func setupDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	err = db.Use(PaGormMinator{})
 	if err != nil {
 		t.Fatal(err)
@@ -656,6 +755,7 @@ func equalsTestStruct(t1, t2 *TestStruct) bool {
 	sameID := t1.ID == t2.ID
 	sameCode := t1.Code == t2.Code
 	samePrice := t1.Price == t2.Price
+
 	return sameID && sameCode && samePrice
 }
 
@@ -663,10 +763,12 @@ func equalsArrays(a1, a2 []*TestStruct) bool {
 	if len(a1) != len(a2) {
 		return false
 	}
+
 	for i, item := range a1 {
 		if !equalsTestStruct(item, a2[i]) {
 			return false
 		}
 	}
+
 	return true
 }

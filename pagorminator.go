@@ -22,6 +22,7 @@ func (p PaGormMinator) Initialize(db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -31,6 +32,7 @@ func (p PaGormMinator) count(db *gorm.DB) {
 	}
 	//nolint: nestif // not so complex
 	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
+		db.Debug()
 		newDB := db.Session(&gorm.Session{NewDB: true})
 		newDB.Statement = db.Statement.Statement
 
@@ -42,10 +44,17 @@ func (p PaGormMinator) count(db *gorm.DB) {
 		} else if db.Statement.Table != "" {
 			tx.Table(db.Statement.Table)
 		}
+
+		if db.Statement.Distinct {
+			tx.Distinct(db.Statement.Selects)
+		}
+
 		if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
 			tx.Where(whereClause.Expression)
 		}
+
 		tx.Count(&totalElements)
+
 		if tx.Error != nil {
 			_ = db.AddError(tx.Error)
 		} else {
@@ -64,5 +73,6 @@ func (p PaGormMinator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
 			}
 		}
 	}
+
 	return nil, false
 }
