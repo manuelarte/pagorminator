@@ -14,3 +14,6 @@ updates:
         applies-to: version-updates
         patterns:
           - "*"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
