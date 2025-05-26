@@ -23,7 +23,7 @@ formatters:
 linters:
   default: all
   disable:
-    - decoder # codespell:ignore decoder
+    - decorder # codespell:ignore decoder
     - copyloopvar
     - dupl
     - err113
