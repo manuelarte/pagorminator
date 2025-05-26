@@ -9,6 +9,7 @@ import (
 
 func TestOrder_NewOrder(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		property      string
 		direction     pagorminator.Direction
@@ -49,14 +50,17 @@ func TestOrder_NewOrder(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			order, err := pagorminator.NewOrder(test.property, test.direction)
 			if err != nil {
 				if !errors.Is(err, test.expectedErr) {
 					t.Errorf("got err %v, expected %v", err, test.expectedErr)
 				}
 			}
+
 			if order != test.expectedOrder {
 				t.Errorf("got order %v, expected %v", order, test.expectedOrder)
 			}
@@ -66,6 +70,7 @@ func TestOrder_NewOrder(t *testing.T) {
 
 func TestOrder_String(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		order    pagorminator.Order
 		expected string
@@ -86,8 +91,10 @@ func TestOrder_String(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := test.order.String(); got != test.expected {
 				t.Errorf("got %q, want %q", got, test.expected)
 			}
@@ -97,6 +104,7 @@ func TestOrder_String(t *testing.T) {
 
 func TestSort_String(t *testing.T) {
 	t.Parallel()
+
 	tests := map[string]struct {
 		sort     pagorminator.Sort
 		expected string
@@ -112,8 +120,10 @@ func TestSort_String(t *testing.T) {
 
 	for name, test := range tests {
 		test := test
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			if got := test.sort.String(); got != test.expected {
 				t.Errorf("got %q, want %q", got, test.expected)
 			}
