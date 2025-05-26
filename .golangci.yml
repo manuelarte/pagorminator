@@ -23,7 +23,7 @@ formatters:
 linters:
   default: all
   disable:
-    - decoder
+    - decorder
     - copyloopvar
     - dupl
     - err113
