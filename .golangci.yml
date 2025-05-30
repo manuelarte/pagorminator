@@ -3,15 +3,15 @@ version: "2"
 
 formatters:
   enable:
+    - gci
     - gofmt
     - gofumpt
-    - gci
   settings:
     gofmt:
       simplify: true
       rewrite-rules:
-        - pattern: 'interface{}'
-          replacement: 'any'
+        - pattern: "interface{}"
+          replacement: "any"
     gofumpt:
       extra-rules: true
     gci:
@@ -23,8 +23,8 @@ formatters:
 linters:
   default: all
   disable:
-    - decorder # codespell:ignore decorder
     - copyloopvar
+    - decorder # codespell:ignore decorder
     - dupl
     - err113
     - errchkjson
@@ -70,13 +70,13 @@ linters:
               desc: Use github.com/gofrs/uuid/v5 or later, it was not a go module before v5
         non-main files:
           files:
-            - '!**/main.go'
+            - "!**/main.go"
           deny:
             - pkg: log$
               desc: Use log/slog instead, see https://go.dev/blog/slog
         non-test files:
           files:
-            - '!$test'
+            - "!$test"
           deny:
             - pkg: math/rand$
               desc: Use math/rand/v2 instead, see https://go.dev/blog/randv2
