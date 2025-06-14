@@ -11,10 +11,6 @@ permissions:
   # pull-requests: read
 
 jobs:
-  commitlint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ahmadnassri/action-commit-lint@v2
   go-mod:
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +60,8 @@ jobs:
     name: markdown
     runs-on: ubuntu-latest
     steps:
-      - uses: DavidAnson/markdownlint-cli2-action@v19
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: '**/*.md'
   golangci:
