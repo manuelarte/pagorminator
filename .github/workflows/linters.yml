@@ -68,6 +68,7 @@ jobs:
       - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: '**/*.md'
+          config: ".markdownlintignore"
   golangci:
     strategy:
       matrix:
