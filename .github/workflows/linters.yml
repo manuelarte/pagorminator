@@ -11,10 +11,6 @@ permissions:
   # pull-requests: read
 
 jobs:
-  commitlint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ahmadnassri/action-commit-lint@v2
   go-mod:
     runs-on: ubuntu-latest
     steps:
