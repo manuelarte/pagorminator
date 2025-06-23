@@ -34,8 +34,8 @@ The pagination struct contains the following data:
 + `sort`: to apply sorting, e.g. `id,asc`
 
 **The plugin will calculate the total amount of elements**.
-Then the pagination instance  provides a `GetTotalElements()` and `GetTotalPages()` methods to be used.
-The pagination starts at index `0`. So if the total pages is `6`, then the pagination index goes from `0` to `5`.
+The pagination instance provides a `GetTotalElements()` and `GetTotalPages()` methods to retrieve the total amount of elements.
+The pagination starts at index `0`, e.g., if the total pages is `6`, then the pagination index goes from `0` to `5`.
 
 ## 🎓 Examples
 
