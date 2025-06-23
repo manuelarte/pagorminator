@@ -1,3 +1,5 @@
+---
+
 # (mandatory)
 # Path to coverprofile file (output of `go test -coverprofile` command).
 #
@@ -30,4 +32,3 @@ exclude:
   paths:
     - ^errors.go
     - ^internal/model.go$
-    - ^pkg/bar     # exclude package `pkg/bar`
