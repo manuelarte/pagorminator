@@ -57,8 +57,8 @@ jobs:
 
       - name: Check spelling of entire workspace
         uses: crate-ci/typos@v1
-  markdown:
-    name: markdown
+  markdownlint:
+    name: markdownlint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
