@@ -4,6 +4,7 @@
 ![coverage](https://raw.githubusercontent.com/manuelarte/pagorminator/badges/.badges/main/coverage.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/manuelarte/pagorminator)](https://goreportcard.com/report/github.com/manuelarte/pagorminator)
 [![Go Reference](https://pkg.go.dev/badge/github.com/manuelarte/pagorminator.svg)](https://pkg.go.dev/github.com/manuelarte/pagorminator)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10813/badge)](https://www.bestpractices.dev/projects/10813)
 ![version](https://img.shields.io/github/v/release/manuelarte/pagorminator)
 
 Gorm plugin to add **Pagination** to your select queries
