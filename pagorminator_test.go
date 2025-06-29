@@ -10,17 +10,20 @@ import (
 
 type TestStruct struct {
 	gorm.Model
+
 	Code  string
 	Price uint
 }
 
 type TestProduct struct {
 	gorm.Model
+
 	Code  string
 	Price TestPrice
 }
 type TestPrice struct {
 	gorm.Model
+
 	Amount        uint
 	Currency      string
 	TestProductID uint

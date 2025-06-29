@@ -92,6 +92,7 @@ func (p *Pagination) IsSort() bool {
 func (p *Pagination) setTotalElements(totalElements int64) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+
 	p.totalElementsSet = true
 	p.totalElements = totalElements
 }

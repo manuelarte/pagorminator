@@ -42,6 +42,8 @@ go.work
 .idea/**/contentModel.xml
 
 # Sensitive or high-churn files
+.idea/golinter.xml
+.idea/**/Project_Default.xml
 .idea/**/dataSources/
 .idea/**/dataSources.ids
 .idea/**/dataSources.local.xml
