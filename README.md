@@ -38,18 +38,6 @@ The pagination struct contains the following data:
 The pagination instance provides a `GetTotalElements()` and `GetTotalPages()` methods to retrieve the total amount of elements.
 The pagination starts at index `0`, e.g., if the total pages is `6`, then the pagination index goes from `0` to `5`.
 
-## 🎓 Examples
+## Examples
 
-+ [Simple](./examples/simple/main.go): Simple query with no filters (no WHERE clause).
-
-+ [Simple Sort](./examples/simple-sort/main.go): Simple query with sorting and no filters (no WHERE clause).
-
-+ [Simple Table](./examples/simple-table/main.go): Simple query in which there is no model, but using `Table()`.
-
-+ [Many Pages](./examples/many-pages/main.go): Simple query with no filters (no WHERE clause), many pages.
-
-+ [Filter](./examples/filter/main.go): Using WHERE to filter.
-
-+ [Unpaged](./examples/unpaged/main.go): Unpaged query (pagination with no pagination).
-
-+ [Many Pages With Preload](./examples/many-pages-preload/main.go): Example using Preload.
+Check the examples in the [./examples](./examples) folder
