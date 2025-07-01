@@ -29,6 +29,7 @@ func (p PaGormMinator) Initialize(db *gorm.DB) error {
 	return nil
 }
 
+//nolint:gocognit // many ifs to check conditions
 func (p PaGormMinator) count(db *gorm.DB) {
 	if db.Statement.Schema == nil && db.Statement.Table == "" {
 		return
@@ -38,6 +39,7 @@ func (p PaGormMinator) count(db *gorm.DB) {
 		if p.Debug {
 			db.Debug()
 		}
+
 		newDB := db.Session(&gorm.Session{NewDB: true})
 		newDB.Statement = db.Statement.Statement
 
@@ -54,16 +56,18 @@ func (p PaGormMinator) count(db *gorm.DB) {
 			tx.Distinct(db.Statement.Selects)
 		}
 
+		//nolint:asasalint // it is working
 		for _, join := range db.Statement.Joins {
+			args := join.Conds
+			//nolint:exhaustive // other cases not supported
 			switch join.JoinType {
 			case clause.InnerJoin:
-				tx.InnerJoins(join.Name, join.Conds)
+				tx.InnerJoins(join.Name, args)
 			case clause.LeftJoin:
-				tx.Joins(join.Name, join.Conds)
+				tx.Joins(join.Name, args)
 			default:
 				continue
 			}
-
 		}
 
 		if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
