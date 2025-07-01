@@ -2,6 +2,7 @@ package pagorminator
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -11,7 +12,9 @@ const (
 var _ gorm.Plugin = new(PaGormMinator)
 
 // PaGormMinator Gorm plugin to add total elements and total pages to your pagination query.
-type PaGormMinator struct{}
+type PaGormMinator struct {
+	Debug bool
+}
 
 func (p PaGormMinator) Name() string {
 	return "pagorminator"
@@ -32,7 +35,9 @@ func (p PaGormMinator) count(db *gorm.DB) {
 	}
 	//nolint: nestif // not so complex
 	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
-		db.Debug()
+		if p.Debug {
+			db.Debug()
+		}
 		newDB := db.Session(&gorm.Session{NewDB: true})
 		newDB.Statement = db.Statement.Statement
 
@@ -47,6 +52,18 @@ func (p PaGormMinator) count(db *gorm.DB) {
 
 		if db.Statement.Distinct {
 			tx.Distinct(db.Statement.Selects)
+		}
+
+		for _, join := range db.Statement.Joins {
+			switch join.JoinType {
+			case clause.InnerJoin:
+				tx.InnerJoins(join.Name, join.Conds)
+			case clause.LeftJoin:
+				tx.Joins(join.Name, join.Conds)
+			default:
+				continue
+			}
+
 		}
 
 		if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
