@@ -45,7 +45,7 @@ func (p PaGormMinator) count(db *gorm.DB) {
 
 		var totalElements int64
 
-		tx := newDB.Set(countKey, true)
+		tx := newDB.Set(countKey, true).WithContext(db.Statement.Context)
 		if db.Statement.Schema != nil {
 			tx.Model(newDB.Statement.Model)
 		} else if db.Statement.Table != "" {
