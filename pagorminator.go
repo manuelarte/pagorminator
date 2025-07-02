@@ -56,15 +56,14 @@ func (p PaGormMinator) count(db *gorm.DB) {
 			tx.Distinct(db.Statement.Selects)
 		}
 
-		//nolint:asasalint // it is working
 		for _, join := range db.Statement.Joins {
 			args := join.Conds
 			//nolint:exhaustive // other cases not supported
 			switch join.JoinType {
 			case clause.InnerJoin:
-				tx.InnerJoins(join.Name, args)
+				tx.InnerJoins(join.Name, args...)
 			case clause.LeftJoin:
-				tx.Joins(join.Name, args)
+				tx.Joins(join.Name, args...)
 			default:
 				continue
 			}
