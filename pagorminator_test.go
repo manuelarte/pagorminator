@@ -850,6 +850,7 @@ func TestPaGorminator_Nil(t *testing.T) {
 	t.Parallel()
 
 	db := setupDB(t)
+
 	var products []*TestStruct
 	db.Clauses(nil).Find(&products)
 }
