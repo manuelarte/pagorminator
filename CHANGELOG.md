@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added PaGORMinator plugin for gorm
+- Added PaGorminator plugin for gorm
   - size & page
   - sorting
 
@@ -55,6 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added PaGORMinator plugin for gorm
+- Added PaGorminator plugin for gorm
 - Added examples
 - Added badges
