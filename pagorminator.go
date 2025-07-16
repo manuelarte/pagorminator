@@ -9,18 +9,18 @@ const (
 	countKey = "pagorminator.count"
 )
 
-var _ gorm.Plugin = new(PaGormMinator)
+var _ gorm.Plugin = new(PaGorminator)
 
-// PaGormMinator Gorm plugin to add total elements and total pages to your pagination query.
-type PaGormMinator struct {
+// PaGorminator Gorm plugin to add total elements and total pages to your pagination query.
+type PaGorminator struct {
 	Debug bool
 }
 
-func (p PaGormMinator) Name() string {
+func (p PaGorminator) Name() string {
 	return "pagorminator"
 }
 
-func (p PaGormMinator) Initialize(db *gorm.DB) error {
+func (p PaGorminator) Initialize(db *gorm.DB) error {
 	err := db.Callback().Query().Before("gorm:query").Register("pagorminator:count", p.count)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (p PaGormMinator) Initialize(db *gorm.DB) error {
 }
 
 //nolint:gocognit // many ifs to check conditions
-func (p PaGormMinator) count(db *gorm.DB) {
+func (p PaGorminator) count(db *gorm.DB) {
 	if db.Statement.Schema == nil && db.Statement.Table == "" {
 		return
 	}
@@ -83,8 +83,8 @@ func (p PaGormMinator) count(db *gorm.DB) {
 	}
 }
 
-func (p PaGormMinator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
-	if value, ok := db.Get(_pagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
+func (p PaGorminator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
+	if value, ok := db.Get(pagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
 		if paginationClause, okP := value.(*Pagination); okP {
 			if countValue, okCount := db.Get(countKey); !okCount {
 				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {

@@ -25,7 +25,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	_ = db.Use(pagorminator.PaGormMinator{})
+	_ = db.Use(pagorminator.PaGorminator{})
 	_ = db.AutoMigrate(&Product{})
 	migrateProducts := []*Product{
 		{Code: "1", Price: 1},
