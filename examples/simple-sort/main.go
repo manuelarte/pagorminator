@@ -25,7 +25,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	_ = db.Use(pagorminator.PaGormMinator{})
+	_ = db.Use(pagorminator.PaGorminator{})
 	_ = db.AutoMigrate(&Product{})
 	db.Create(&Product{Code: "D42", Price: 100})
 	db.Create(&Product{Code: "E42", Price: 200})

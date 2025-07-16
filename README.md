@@ -1,4 +1,4 @@
-# 📃 PaGORMinator
+# 📃 PaGorminator
 
 [![Go](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml/badge.svg)](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml)
 ![coverage](https://raw.githubusercontent.com/manuelarte/pagorminator/badges/.badges/main/coverage.svg)
@@ -19,7 +19,7 @@ Gorm plugin to add **Pagination** to your select queries
 
 ```go
 var DB *gorm.DB
-DB.Use(pagorminator.PaGormMinator{})
+DB.Use(pagorminator.PaGorminator{})
 var products []*Products
 // Without sorting
 pageRequest, err := pagorminator.PageRequest(0, 10)

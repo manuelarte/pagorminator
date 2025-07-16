@@ -799,7 +799,7 @@ func setupDB(t *testing.T) *gorm.DB {
 		t.Fatal(err)
 	}
 
-	err = db.Use(PaGormMinator{Debug: true})
+	err = db.Use(PaGorminator{Debug: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -844,4 +844,13 @@ func equalsArrays(a1, a2 []*TestStruct) bool {
 	}
 
 	return true
+}
+
+func TestPaGorminator_Nil(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+
+	var products []*TestStruct
+	db.Clauses(nil).Find(&products)
 }

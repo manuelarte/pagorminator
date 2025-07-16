@@ -33,7 +33,7 @@ func main() {
 		panic("failed to connect database")
 	}
 
-	_ = db.Use(pagorminator.PaGormMinator{})
+	_ = db.Use(pagorminator.PaGorminator{})
 	_ = db.AutoMigrate(&Product{}, &Price{})
 	length := 10
 	for i := 0; i < length; i++ {
