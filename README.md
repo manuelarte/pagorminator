@@ -56,7 +56,7 @@ The pagination struct contains the following data:
 The pagination instance provides `GetTotalElements()` and `GetTotalPages()` methods to retrieve the total counts.
 The pagination starts at index `0`, e.g., if the total pages is `6`, then the pagination index goes from `0` to `5`.
 
-## Features
+## 🚀 Features
 
 ### Sorting
 
