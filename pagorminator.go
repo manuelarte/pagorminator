@@ -77,9 +77,9 @@ func (p PaGorminator) count(db *gorm.DB) {
 
 		if tx.Error != nil {
 			_ = db.AddError(tx.Error)
-		} else {
-			pageable.setTotalElements(totalElements)
+			return
 		}
+		pageable.setTotalElements(totalElements)
 	}
 }
 
