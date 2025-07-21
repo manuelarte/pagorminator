@@ -29,7 +29,6 @@ func (p PaGorminator) Initialize(db *gorm.DB) error {
 	return nil
 }
 
-//nolint:gocognit // many ifs to check conditions
 func (p PaGorminator) count(db *gorm.DB) {
 	if db.Statement.Schema == nil && db.Statement.Table == "" {
 		return
@@ -77,9 +76,10 @@ func (p PaGorminator) count(db *gorm.DB) {
 
 		if tx.Error != nil {
 			_ = db.AddError(tx.Error)
-		} else {
-			pageable.setTotalElements(totalElements)
+			return
 		}
+
+		pageable.setTotalElements(totalElements)
 	}
 }
 
