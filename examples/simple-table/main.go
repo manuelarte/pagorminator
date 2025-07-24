@@ -31,7 +31,7 @@ func main() {
 	fmt.Printf("1 product created\n")
 
 	var products map[string]any
-	pageRequest, _ := pagorminator.PageRequest(0, 1)
+	pageRequest, _ := pagorminator.NewPageRequest(0, 1)
 	db.Clauses(pageRequest).Table("products").Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",

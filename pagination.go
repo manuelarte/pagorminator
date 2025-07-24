@@ -42,6 +42,7 @@ func MustPageRequest(page, size int, orders ...Order) *Pagination {
 	if err != nil {
 		panic(err)
 	}
+
 	return pagination
 }
 

@@ -808,7 +808,7 @@ func setupDB(t *testing.T) *gorm.DB {
 }
 
 func mustPageRequestOf(page, size int, orders ...Order) *Pagination {
-	toReturn, _ := PageRequest(page, size, orders...)
+	toReturn, _ := NewPageRequest(page, size, orders...)
 	return toReturn
 }
 

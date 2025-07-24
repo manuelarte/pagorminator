@@ -31,7 +31,7 @@ func TestPagination_UnPaged(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			page, err := PageRequest(test.page, test.size)
+			page, err := NewPageRequest(test.page, test.size)
 			if err != nil {
 				t.Errorf("Unexpected error: %s", err)
 			}
