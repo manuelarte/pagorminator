@@ -7,7 +7,7 @@ replace github.com/manuelarte/pagorminator v0.0.5 => ../
 require (
 	github.com/manuelarte/pagorminator v0.0.5
 	gorm.io/driver/sqlite v1.6.0
-	gorm.io/gorm v1.30.0
+	gorm.io/gorm v1.30.1
 )
 
 require (
