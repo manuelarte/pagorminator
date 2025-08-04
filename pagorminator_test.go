@@ -63,7 +63,7 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1),
+			pageRequest: MustPageRequest(1, 1),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -74,7 +74,7 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(0, 2),
+			pageRequest: MustPageRequest(0, 2),
 			expectedPage: &Pagination{
 				page:          0,
 				size:          2,
@@ -115,7 +115,7 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1, mustNewOrder("id", ASC)),
+			pageRequest: MustPageRequest(1, 1, mustNewOrder("id", ASC)),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -129,7 +129,7 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1, mustNewOrder("id", DESC)),
+			pageRequest: MustPageRequest(1, 1, mustNewOrder("id", DESC)),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -216,7 +216,7 @@ func TestPaGorminator_Where(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1),
+			pageRequest: MustPageRequest(0, 1),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -262,7 +262,7 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", ASC)),
+			pageRequest: MustPageRequest(0, 1, mustNewOrder("price", ASC)),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -280,7 +280,7 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", DESC)),
+			pageRequest: MustPageRequest(0, 1, mustNewOrder("price", DESC)),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -595,7 +595,7 @@ func TestPaGorminator_Table(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1),
+			pageRequest: MustPageRequest(1, 1),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -606,7 +606,7 @@ func TestPaGorminator_Table(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(0, 2),
+			pageRequest: MustPageRequest(0, 2),
 			expectedPage: &Pagination{
 				page:          0,
 				size:          2,
@@ -689,7 +689,7 @@ func TestPaGorminator_TableWithWhere(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1),
+			pageRequest: MustPageRequest(0, 1),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -805,11 +805,6 @@ func setupDB(t *testing.T) *gorm.DB {
 	}
 
 	return db
-}
-
-func mustPageRequestOf(page, size int, orders ...Order) *Pagination {
-	toReturn, _ := NewPageRequest(page, size, orders...)
-	return toReturn
 }
 
 func mustNewOrder(property string, direction Direction) Order {
