@@ -30,7 +30,7 @@ if err != nil {
 db.Use(pagorminator.PaGorminator{})
 
 // Create a page request (page 0, size 10)
-pageRequest, err := pagorminator.PageRequest(0, 10)
+pageRequest, err := pagorminator.NewPageRequest(0, 10)
 if err != nil {
     // Handle error
 }
@@ -64,11 +64,11 @@ You can add sorting to your pagination request:
 
 ```go
 // Single sort criterion
-pageRequest, err := pagorminator.PageRequest(0, 10, 
+pageRequest, err := pagorminator.NewPageRequest(0, 10, 
     pagorminator.MustOrder("id", pagorminator.DESC))
 
 // Multiple sort criteria
-pageRequest, err := pagorminator.PageRequest(0, 10, 
+pageRequest, err := pagorminator.NewPageRequest(0, 10, 
     pagorminator.MustOrder("name", pagorminator.ASC),
     pagorminator.MustOrder("id", pagorminator.DESC))
 ```

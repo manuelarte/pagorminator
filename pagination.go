@@ -15,8 +15,9 @@ type Pagination struct {
 	totalElements    int64
 }
 
-// PageRequest Create page to query the database.
-func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
+// NewPageRequest Create page given page, size and orders.
+// It returns the pagination object and any error encountered.
+func NewPageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -32,6 +33,17 @@ func PageRequest(page, size int, orders ...Order) (*Pagination, error) {
 	sort := NewSort(orders...)
 
 	return &Pagination{page: page, size: size, sort: sort}, nil
+}
+
+// MustPageRequest Create page given page, size and orders.
+// It returns the pagination object or panic if any error is encountered.
+func MustPageRequest(page, size int, orders ...Order) *Pagination {
+	pagination, err := NewPageRequest(page, size, orders...)
+	if err != nil {
+		panic(err)
+	}
+
+	return pagination
 }
 
 // UnPaged Create an unpaged request (no pagination is applied).

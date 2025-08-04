@@ -37,7 +37,7 @@ func main() {
 	db.CreateInBatches(&migrateProducts, len(migrateProducts))
 	fmt.Printf("%d products created\n", len(migrateProducts))
 
-	pageRequest, _ := pagorminator.PageRequest(0, 1)
+	pageRequest, _ := pagorminator.NewPageRequest(0, 1)
 	var products []*Product
 	db.Clauses(pageRequest).Where("price > 10").Find(&products)
 	fmt.Printf("Query: Products (Page: %d, Size: %d) with '%s'\n", pageRequest.GetPage(), pageRequest.GetSize(), "price > 10")

@@ -63,7 +63,7 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1),
+			pageRequest: MustPageRequest(1, 1),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -74,7 +74,7 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(0, 2),
+			pageRequest: MustPageRequest(0, 2),
 			expectedPage: &Pagination{
 				page:          0,
 				size:          2,
@@ -89,7 +89,11 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestStruct
 
@@ -115,7 +119,7 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1, mustNewOrder("id", ASC)),
+			pageRequest: MustPageRequest(1, 1, mustNewOrder("id", ASC)),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -129,7 +133,7 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1, mustNewOrder("id", DESC)),
+			pageRequest: MustPageRequest(1, 1, mustNewOrder("id", DESC)),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -147,11 +151,18 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestStruct
 
-			db.Debug().Clauses(test.pageRequest).Find(&products)
+			tx := db.Clauses(test.pageRequest).Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -216,7 +227,7 @@ func TestPaGorminator_Where(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1),
+			pageRequest: MustPageRequest(0, 1),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -232,11 +243,18 @@ func TestPaGorminator_Where(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestStruct
 
-			db.Clauses(test.pageRequest).Where(test.where).Find(&products)
+			tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -262,7 +280,7 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", ASC)),
+			pageRequest: MustPageRequest(0, 1, mustNewOrder("price", ASC)),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -280,7 +298,7 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1, mustNewOrder("price", DESC)),
+			pageRequest: MustPageRequest(0, 1, mustNewOrder("price", DESC)),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -299,11 +317,18 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestStruct
 
-			db.Debug().Clauses(test.pageRequest).Where(test.where).Find(&products)
+			tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -367,11 +392,18 @@ func TestPaGorminatorWithPreload(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestProduct
 
-			db.Clauses(test.pageRequest).Preload("Price").Find(&products)
+			tx := db.Clauses(test.pageRequest).Preload("Price").Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -426,11 +458,18 @@ func TestPaGorminatorWithPreloadAndWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestProduct
 
-			db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&products)
+			tx := db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -478,11 +517,18 @@ func TestPaGorminatorWithJoins(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestProduct
 
-			db.Clauses(test.pageRequest).Joins("Price").Find(&products)
+			tx := db.Clauses(test.pageRequest).Joins("Price").Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -548,11 +594,18 @@ func TestPaGorminatorWithJoins_WhereClause(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products []*TestProduct
 
-			db.Clauses(test.pageRequest).Joins("Price").Where(test.where).Find(&products)
+			tx := db.Clauses(test.pageRequest).Joins("Price").Where(test.where).Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -595,7 +648,7 @@ func TestPaGorminator_Table(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(1, 1),
+			pageRequest: MustPageRequest(1, 1),
 			expectedPage: &Pagination{
 				page:          1,
 				size:          1,
@@ -606,7 +659,7 @@ func TestPaGorminator_Table(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: mustPageRequestOf(0, 2),
+			pageRequest: MustPageRequest(0, 2),
 			expectedPage: &Pagination{
 				page:          0,
 				size:          2,
@@ -621,7 +674,11 @@ func TestPaGorminator_Table(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var result map[string]any
 
@@ -689,7 +746,7 @@ func TestPaGorminator_TableWithWhere(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: mustPageRequestOf(0, 1),
+			pageRequest: MustPageRequest(0, 1),
 			where:       "price > 50",
 			expectedPage: &Pagination{
 				page:          0,
@@ -705,11 +762,18 @@ func TestPaGorminator_TableWithWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products map[string]any
 
-			db.Clauses(test.pageRequest).Where(test.where).Table("test_structs").Find(&products)
+			tx := db.Clauses(test.pageRequest).Where(test.where).Table("test_structs").Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -774,11 +838,18 @@ func TestPaGorminator_Distinct(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
-			db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+
+			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
+			if txCreate.Error != nil {
+				t.Fatal(txCreate.Error)
+			}
 
 			var products map[string]any
 
-			db.Clauses(test.pageRequest).Distinct("price").Model(&TestStruct{}).Find(&products)
+			tx := db.Clauses(test.pageRequest).Distinct("price").Model(&TestStruct{}).Find(&products)
+			if tx.Error != nil {
+				t.Fatal(tx.Error)
+			}
 
 			if !equalPageRequests(test.pageRequest, test.expectedPage) {
 				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
@@ -805,11 +876,6 @@ func setupDB(t *testing.T) *gorm.DB {
 	}
 
 	return db
-}
-
-func mustPageRequestOf(page, size int, orders ...Order) *Pagination {
-	toReturn, _ := PageRequest(page, size, orders...)
-	return toReturn
 }
 
 func mustNewOrder(property string, direction Direction) Order {
