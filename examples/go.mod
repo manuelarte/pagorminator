@@ -2,12 +2,12 @@ module examples
 
 go 1.23.10
 
-replace github.com/manuelarte/pagorminator v0.0.5 => ../
+replace github.com/manuelarte/pagorminator v0.1.0 => ../
 
 require (
-	github.com/manuelarte/pagorminator v0.0.5
+	github.com/manuelarte/pagorminator v0.1.0
 	gorm.io/driver/sqlite v1.6.0
-	gorm.io/gorm v1.30.1
+	gorm.io/gorm v1.31.0
 )
 
 require (
