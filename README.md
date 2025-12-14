@@ -1,6 +1,6 @@
 # 📃 PaGorminator
 
-[![Go](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml/badge.svg)](https://github.com/manuelarte/pagorminator/actions/workflows/go.yml)
+[![CI](https://github.com/manuelarte/pagorminator/actions/workflows/ci.yml/badge.svg)](https://github.com/manuelarte/pagorminator/actions/workflows/ci.yml)
 ![coverage](https://raw.githubusercontent.com/manuelarte/pagorminator/badges/.badges/main/coverage.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/manuelarte/pagorminator)](https://goreportcard.com/report/github.com/manuelarte/pagorminator)
 [![Go Reference](https://pkg.go.dev/badge/github.com/manuelarte/pagorminator.svg)](https://pkg.go.dev/github.com/manuelarte/pagorminator)
