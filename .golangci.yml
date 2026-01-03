@@ -3,9 +3,11 @@ version: "2"
 
 formatters:
   enable:
+    # keep-sorted start
     - gci
     - gofmt
     - gofumpt
+    # keep-sorted end
   settings:
     gofmt:
       simplify: true
@@ -23,6 +25,7 @@ formatters:
 linters:
   default: all
   disable:
+    # keep-sorted start
     - copyloopvar
     - decorder  # codespell:ignore decorder
     - dupl
@@ -52,6 +55,7 @@ linters:
     - wrapcheck
     - wsl  # Deprecated, use wsl_v5 instead.
     - zerologlint
+    # keep-sorted end
 
   settings:
     cyclop:
