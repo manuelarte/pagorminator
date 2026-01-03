@@ -49,8 +49,6 @@ func TestOrder_NewOrder(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -90,8 +88,6 @@ func TestOrder_String(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -119,8 +115,6 @@ func TestSort_String(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

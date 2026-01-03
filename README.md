@@ -5,6 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/manuelarte/pagorminator)](https://goreportcard.com/report/github.com/manuelarte/pagorminator)
 [![Go Reference](https://pkg.go.dev/badge/github.com/manuelarte/pagorminator.svg)](https://pkg.go.dev/github.com/manuelarte/pagorminator)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/10813/badge)](https://www.bestpractices.dev/projects/10813)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=manuelarte_pagorminator&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=manuelarte_pagorminator)
 ![version](https://img.shields.io/github/v/release/manuelarte/pagorminator)
 
 Gorm plugin to add **Pagination** to your select queries

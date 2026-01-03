@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestPagination_UnPaged(t *testing.T) {
+func TestUnPaged(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -26,8 +26,6 @@ func TestPagination_UnPaged(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -43,7 +41,7 @@ func TestPagination_UnPaged(t *testing.T) {
 	}
 }
 
-func TestPagination_CalculateTotalPages(t *testing.T) {
+func TestCalculateTotalPages(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -69,8 +67,6 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -82,7 +78,7 @@ func TestPagination_CalculateTotalPages(t *testing.T) {
 	}
 }
 
-func TestPagination_SetTotalElements(t *testing.T) {
+func TestSetTotalElements(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -102,8 +98,6 @@ func TestPagination_SetTotalElements(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
