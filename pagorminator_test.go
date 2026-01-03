@@ -29,7 +29,7 @@ type TestPrice struct {
 	TestProductID uint
 }
 
-func TestPaGorminator_NoWhere(t *testing.T) {
+func TestNoWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -84,8 +84,6 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -106,7 +104,7 @@ func TestPaGorminator_NoWhere(t *testing.T) {
 	}
 }
 
-func TestPaGorminator_SortNoWhere(t *testing.T) {
+func TestSortNoWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -146,8 +144,6 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -175,7 +171,7 @@ func TestPaGorminator_SortNoWhere(t *testing.T) {
 	}
 }
 
-func TestPaGorminator_Where(t *testing.T) {
+func TestPWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -238,8 +234,6 @@ func TestPaGorminator_Where(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -263,7 +257,7 @@ func TestPaGorminator_Where(t *testing.T) {
 	}
 }
 
-func TestPaGorminator_SortWhere(t *testing.T) {
+func TestSortWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -312,8 +306,6 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -341,7 +333,7 @@ func TestPaGorminator_SortWhere(t *testing.T) {
 	}
 }
 
-func TestPaGorminatorWithPreload(t *testing.T) {
+func TestWithPreload(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -387,8 +379,6 @@ func TestPaGorminatorWithPreload(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -412,7 +402,7 @@ func TestPaGorminatorWithPreload(t *testing.T) {
 	}
 }
 
-func TestPaGorminatorWithPreloadAndWhere(t *testing.T) {
+func TestWithPreloadAndWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -453,8 +443,6 @@ func TestPaGorminatorWithPreloadAndWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -478,7 +466,7 @@ func TestPaGorminatorWithPreloadAndWhere(t *testing.T) {
 	}
 }
 
-func TestPaGorminatorWithJoins(t *testing.T) {
+func TestWithJoins(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -512,8 +500,6 @@ func TestPaGorminatorWithJoins(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -537,7 +523,7 @@ func TestPaGorminatorWithJoins(t *testing.T) {
 	}
 }
 
-func TestPaGorminatorWithJoins_WhereClause(t *testing.T) {
+func TestWithJoins_WhereClause(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -589,8 +575,6 @@ func TestPaGorminatorWithJoins_WhereClause(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -614,7 +598,7 @@ func TestPaGorminatorWithJoins_WhereClause(t *testing.T) {
 	}
 }
 
-func TestPaGorminator_Table(t *testing.T) {
+func TestTable(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -669,8 +653,6 @@ func TestPaGorminator_Table(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -694,7 +676,7 @@ func TestPaGorminator_Table(t *testing.T) {
 	}
 }
 
-func TestPaGorminator_TableWithWhere(t *testing.T) {
+func TestTableWithWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -757,8 +739,6 @@ func TestPaGorminator_TableWithWhere(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
@@ -782,7 +762,7 @@ func TestPaGorminator_TableWithWhere(t *testing.T) {
 	}
 }
 
-func TestPaGorminator_Distinct(t *testing.T) {
+func TestDistinct(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -833,8 +813,6 @@ func TestPaGorminator_Distinct(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		test := test
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)

@@ -29,4 +29,5 @@ func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 
 // Build N/A for pagination.
 func (p *Pagination) Build(_ clause.Builder) {
+	// method needed to implement interface [clause.Expression]
 }
