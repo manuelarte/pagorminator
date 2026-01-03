@@ -523,7 +523,7 @@ func TestWithJoins(t *testing.T) {
 	}
 }
 
-func TestWithJoins_WhereClause(t *testing.T) {
+func TestWithJoinsWhereClause(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
