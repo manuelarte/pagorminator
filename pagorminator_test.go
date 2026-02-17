@@ -127,7 +127,7 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-			pageRequest: pagination.Must(1, 1, sort.MustOrder("id", sort.ASC)),
+			pageRequest: pagination.Must(1, 1, sort.Asc("id")),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1)
 				_ = p.SetTotalElements(2)
@@ -142,7 +142,7 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: pagination.Must(1, 1, sort.MustOrder("id", sort.DESC)),
+			pageRequest: pagination.Must(1, 1, sort.Desc("id")),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1)
 				_ = p.SetTotalElements(2)
@@ -294,7 +294,7 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: pagination.Must(0, 1, sort.MustOrder("price", sort.ASC)),
+			pageRequest: pagination.Must(0, 1, sort.Asc("price")),
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
@@ -313,7 +313,7 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: pagination.Must(0, 1, sort.MustOrder("price", sort.DESC)),
+			pageRequest: pagination.Must(0, 1, sort.Desc("price")),
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
