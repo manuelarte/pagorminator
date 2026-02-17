@@ -1,4 +1,4 @@
-package pagorminator //nolint:testpackage // testing expected page
+package pagorminator
 
 import (
 	"fmt"
@@ -6,6 +6,9 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/manuelarte/pagorminator/pagination"
+	"github.com/manuelarte/pagorminator/pagination/sort"
 )
 
 type TestStruct struct {
@@ -33,52 +36,56 @@ func TestNoWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestStruct
-		pageRequest  *Pagination
-		expectedPage *Pagination
+		toMigrate   []*TestStruct
+		pageRequest *pagination.Pagination
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item": {
 			toMigrate: []*TestStruct{
 				{Code: "1"},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"UnPaged several items": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 2,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 		"Paged 1/2 items": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(1, 1),
-			expectedPage: &Pagination{
-				page:          1,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(1, 1),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(1, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 		"Paged 0/2 items, size 2": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(0, 2),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          2,
-				totalElements: 2,
+			pageRequest: pagination.Must(0, 2),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 2)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 	}
@@ -86,6 +93,8 @@ func TestNoWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
+			want := test.wantFn()
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -97,8 +106,9 @@ func TestNoWhere(t *testing.T) {
 
 			db.Clauses(test.pageRequest).Find(&products)
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			// TODO: change for cmp.Equal
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -109,19 +119,20 @@ func TestSortNoWhere(t *testing.T) {
 
 	tests := map[string]struct {
 		toMigrate      []*TestStruct
-		pageRequest    *Pagination
-		expectedPage   *Pagination
+		pageRequest    *pagination.Pagination
+		wantFn         func() *pagination.Pagination
 		expectedResult []*TestStruct
 	}{
 		"Paged 1/2 items, sort by id asc": {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(1, 1, mustNewOrder("id", ASC)),
-			expectedPage: &Pagination{
-				page:          1,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(1, 1, sort.MustOrder("id", sort.ASC)),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(1, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -131,11 +142,12 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(1, 1, mustNewOrder("id", DESC)),
-			expectedPage: &Pagination{
-				page:          1,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(1, 1, sort.MustOrder("id", sort.DESC)),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(1, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
@@ -147,6 +159,8 @@ func TestSortNoWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -160,8 +174,8 @@ func TestSortNoWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 
 			if !equalsArrays(products, test.expectedResult) {
@@ -171,49 +185,52 @@ func TestSortNoWhere(t *testing.T) {
 	}
 }
 
-func TestPWhere(t *testing.T) {
+func TestWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestStruct
-		pageRequest  *Pagination
-		where        string
-		expectedPage *Pagination
+		toMigrate   []*TestStruct
+		pageRequest *pagination.Pagination
+		where       string
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "price < 100",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"UnPaged one item, filtered out": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "price > 100",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 0,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(0)
+
+				return p
 			},
 		},
 		"UnPaged two items, one filtered out": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "100", Price: 100},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "price > 50",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"Paged four items, two filtered out": {
@@ -223,12 +240,13 @@ func TestPWhere(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: MustPageRequest(0, 1),
+			pageRequest: pagination.Must(0, 1),
 			where:       "price > 50",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 2,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 	}
@@ -237,6 +255,8 @@ func TestPWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -250,8 +270,8 @@ func TestPWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -262,9 +282,9 @@ func TestSortWhere(t *testing.T) {
 
 	tests := map[string]struct {
 		toMigrate      []*TestStruct
-		pageRequest    *Pagination
+		pageRequest    *pagination.Pagination
 		where          string
-		expectedPage   *Pagination
+		wantFn         func() *pagination.Pagination
 		expectedResult []*TestStruct
 	}{
 		"Paged 0 1/2 items, two items filtered out, sort by price asc": {
@@ -274,12 +294,13 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: MustPageRequest(0, 1, mustNewOrder("price", ASC)),
+			pageRequest: pagination.Must(0, 1, sort.MustOrder("price", sort.ASC)),
 			where:       "price > 50",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 2,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
@@ -292,12 +313,13 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: MustPageRequest(0, 1, mustNewOrder("price", DESC)),
+			pageRequest: pagination.Must(0, 1, sort.MustOrder("price", sort.DESC)),
 			where:       "price > 50",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 2,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
@@ -309,6 +331,8 @@ func TestSortWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -322,8 +346,8 @@ func TestSortWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 
 			if !equalsArrays(products, test.expectedResult) {
@@ -337,19 +361,20 @@ func TestWithPreload(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestProduct
-		pageRequest  *Pagination
-		expectedPage *Pagination
+		toMigrate   []*TestProduct
+		pageRequest *pagination.Pagination
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"Paged 1/2 items": {
@@ -357,11 +382,12 @@ func TestWithPreload(t *testing.T) {
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
-			pageRequest: &Pagination{page: 0, size: 1},
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(0, 1),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 		"Paged 2/2 items": {
@@ -369,11 +395,12 @@ func TestWithPreload(t *testing.T) {
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
-			pageRequest: &Pagination{page: 1, size: 1},
-			expectedPage: &Pagination{
-				page:          1,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(1, 1),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(1, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 	}
@@ -382,6 +409,8 @@ func TestWithPreload(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -395,8 +424,8 @@ func TestWithPreload(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -406,9 +435,9 @@ func TestWithPreloadAndWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestProduct
-		pageRequest  *Pagination
-		expectedPage *Pagination
+		toMigrate   []*TestProduct
+		pageRequest *pagination.Pagination
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
@@ -418,11 +447,12 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				{Code: "4", Price: TestPrice{Amount: 4, Currency: "EUR"}},
 				{Code: "5", Price: TestPrice{Amount: 5, Currency: "EUR"}},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 4,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(4)
+
+				return p
 			},
 		},
 		"Paged 1/2 items": {
@@ -433,11 +463,12 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				{Code: "4", Price: TestPrice{Amount: 4, Currency: "EUR"}},
 				{Code: "5", Price: TestPrice{Amount: 5, Currency: "EUR"}},
 			},
-			pageRequest: &Pagination{page: 0, size: 2},
-			expectedPage: &Pagination{
-				page:          0,
-				size:          2,
-				totalElements: 4,
+			pageRequest: pagination.Must(0, 2),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 2)
+				_ = p.SetTotalElements(4)
+
+				return p
 			},
 		},
 	}
@@ -446,6 +477,8 @@ func TestWithPreloadAndWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -459,8 +492,8 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -470,19 +503,20 @@ func TestWithJoins(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestProduct
-		pageRequest  *Pagination
-		expectedPage *Pagination
+		toMigrate   []*TestProduct
+		pageRequest *pagination.Pagination
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"Paged 1/2 items": {
@@ -490,11 +524,12 @@ func TestWithJoins(t *testing.T) {
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
-			pageRequest: &Pagination{page: 0, size: 1},
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(0, 1),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 	}
@@ -503,6 +538,8 @@ func TestWithJoins(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -516,8 +553,8 @@ func TestWithJoins(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -527,21 +564,22 @@ func TestWithJoinsWhereClause(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestProduct
-		pageRequest  *Pagination
-		where        any
-		expectedPage *Pagination
+		toMigrate   []*TestProduct
+		pageRequest *pagination.Pagination
+		where       any
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "1=1",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"Paged 1/2 items": {
@@ -549,12 +587,13 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
-			pageRequest: &Pagination{page: 0, size: 1},
+			pageRequest: pagination.Must(0, 1),
 			where:       "Price.amount > 1",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 1,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"Paged 2/2 items": {
@@ -564,12 +603,13 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				{Code: "3", Price: TestPrice{Amount: 3, Currency: "EUR"}},
 				{Code: "4", Price: TestPrice{Amount: 4, Currency: "EUR"}},
 			},
-			pageRequest: &Pagination{page: 0, size: 2},
+			pageRequest: pagination.Must(0, 2),
 			where:       "Price.amount >= 2",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          2,
-				totalElements: 3,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 2)
+				_ = p.SetTotalElements(3)
+
+				return p
 			},
 		},
 	}
@@ -578,6 +618,8 @@ func TestWithJoinsWhereClause(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -591,8 +633,8 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -602,52 +644,56 @@ func TestTable(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestStruct
-		pageRequest  *Pagination
-		expectedPage *Pagination
+		toMigrate   []*TestStruct
+		pageRequest *pagination.Pagination
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item": {
 			toMigrate: []*TestStruct{
 				{Code: "1"},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"UnPaged several items": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 2,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 		"Paged 1/2 items": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(1, 1),
-			expectedPage: &Pagination{
-				page:          1,
-				size:          1,
-				totalElements: 2,
+			pageRequest: pagination.Must(1, 1),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(1, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 		"Paged 0/2 items, size 2": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(0, 2),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          2,
-				totalElements: 2,
+			pageRequest: pagination.Must(0, 2),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 2)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 	}
@@ -656,6 +702,8 @@ func TestTable(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -669,8 +717,8 @@ func TestTable(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -680,45 +728,48 @@ func TestTableWithWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestStruct
-		pageRequest  *Pagination
-		where        string
-		expectedPage *Pagination
+		toMigrate   []*TestStruct
+		pageRequest *pagination.Pagination
+		where       string
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "price < 100",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"UnPaged one item, filtered out": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "price > 100",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 0,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(0)
+
+				return p
 			},
 		},
 		"UnPaged two items, one filtered out": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "100", Price: 100},
 			},
-			pageRequest: UnPaged(),
+			pageRequest: pagination.UnPaged(),
 			where:       "price > 50",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"Paged four items, two filtered out": {
@@ -728,12 +779,13 @@ func TestTableWithWhere(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: MustPageRequest(0, 1),
+			pageRequest: pagination.Must(0, 1),
 			where:       "price > 50",
-			expectedPage: &Pagination{
-				page:          0,
-				size:          1,
-				totalElements: 2,
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 1)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 	}
@@ -742,6 +794,8 @@ func TestTableWithWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -755,8 +809,8 @@ func TestTableWithWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -766,20 +820,21 @@ func TestDistinct(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate    []*TestStruct
-		pageRequest  *Pagination
-		expectedPage *Pagination
+		toMigrate   []*TestStruct
+		pageRequest *pagination.Pagination
+		wantFn      func() *pagination.Pagination
 	}{
 		"UnPaged two items, same price": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 				{Code: "2", Price: 1},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 1,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(1)
+
+				return p
 			},
 		},
 		"UnPaged four items, two different prices": {
@@ -789,11 +844,12 @@ func TestDistinct(t *testing.T) {
 				{Code: "3", Price: 1},
 				{Code: "4", Price: 2},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 2,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(2)
+
+				return p
 			},
 		},
 		"UnPaged four items, four different prices": {
@@ -803,11 +859,12 @@ func TestDistinct(t *testing.T) {
 				{Code: "3", Price: 3},
 				{Code: "4", Price: 4},
 			},
-			pageRequest: UnPaged(),
-			expectedPage: &Pagination{
-				page:          0,
-				size:          0,
-				totalElements: 4,
+			pageRequest: pagination.UnPaged(),
+			wantFn: func() *pagination.Pagination {
+				p := pagination.Must(0, 0)
+				_ = p.SetTotalElements(4)
+
+				return p
 			},
 		},
 	}
@@ -816,6 +873,8 @@ func TestDistinct(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
+
+			want := test.wantFn()
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
 			if txCreate.Error != nil {
@@ -829,8 +888,8 @@ func TestDistinct(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, test.expectedPage) {
-				t.Fatalf("expected page to be %+v, got %+v", test.expectedPage, test.pageRequest)
+			if !equalPageRequests(test.pageRequest, want) {
+				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
 			}
 		})
 	}
@@ -856,15 +915,11 @@ func setupDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func mustNewOrder(property string, direction Direction) Order {
-	toReturn, _ := NewOrder(property, direction)
-	return toReturn
-}
-
-func equalPageRequests(p1, p2 *Pagination) bool {
-	return p1.page == p2.page &&
-		p1.size == p2.size &&
-		p1.totalElements == p2.totalElements &&
+func equalPageRequests(p1, p2 *pagination.Pagination) bool {
+	// cmp.Equal(p1, p2, cmp.AllowUnexported(pagination.Pagination{})
+	return p1.Page() == p2.Page() &&
+		p1.Size() == p2.Size() &&
+		p1.TotalElements() == p2.TotalElements() &&
 		p1.GetTotalPages() == p2.GetTotalPages()
 }
 

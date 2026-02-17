@@ -1,4 +1,4 @@
-package pagorminator
+package pagination
 
 import (
 	"errors"
@@ -29,13 +29,14 @@ func TestUnPaged(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			page, err := NewPageRequest(test.page, test.size)
+			page, err := New(test.page, test.size)
 			if err != nil {
 				t.Errorf("Unexpected error: %s", err)
 			}
 
-			if page.IsUnPaged() != test.expected {
-				t.Errorf("IsUnPaged() expected %v, got %v", test.expected, page.IsUnPaged())
+			got := page.IsUnPaged()
+			if got != test.expected {
+				t.Errorf("IsUnPaged() = %v, want %v", got, test.expected)
 			}
 		})
 	}
@@ -72,7 +73,7 @@ func TestCalculateTotalPages(t *testing.T) {
 
 			actual := calculateTotalPages(test.totalElements, test.size)
 			if actual != test.expected {
-				t.Errorf("totalPages expected %v, got %v", test.expected, actual)
+				t.Errorf("calculateTotalPages(%d, %d) = %v, want %v", test.totalElements, test.size, actual, test.expected)
 			}
 		})
 	}

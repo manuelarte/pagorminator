@@ -1,4 +1,4 @@
-package pagorminator
+package sort
 
 import (
 	"fmt"
@@ -53,8 +53,8 @@ func (o Order) String() string {
 
 type Sort []Order
 
-// NewSort Creates sort (slices of [Order]).
-func NewSort(orders ...Order) Sort {
+// New sort (slices of [Order]).
+func New(orders ...Order) Sort {
 	return orders
 }
 

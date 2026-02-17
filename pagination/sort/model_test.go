@@ -1,10 +1,8 @@
-package pagorminator_test
+package sort
 
 import (
 	"errors"
 	"testing"
-
-	"github.com/manuelarte/pagorminator"
 )
 
 func TestOrder_NewOrder(t *testing.T) {
@@ -12,39 +10,39 @@ func TestOrder_NewOrder(t *testing.T) {
 
 	tests := map[string]struct {
 		property      string
-		direction     pagorminator.Direction
-		expectedOrder pagorminator.Order
+		direction     Direction
+		expectedOrder Order
 		expectedErr   error
 	}{
 		"order with valid property and asc direction": {
 			property:      "name",
 			direction:     "asc",
-			expectedOrder: pagorminator.MustOrder("name", pagorminator.ASC),
+			expectedOrder: MustOrder("name", ASC),
 		},
 		"order with valid property and desc direction": {
 			property:      "name",
 			direction:     "desc",
-			expectedOrder: pagorminator.MustOrder("name", pagorminator.DESC),
+			expectedOrder: MustOrder("name", DESC),
 		},
 		"order with valid property and empty direction": {
 			property:      "name",
 			direction:     "",
-			expectedOrder: pagorminator.MustOrder("name", ""),
+			expectedOrder: MustOrder("name", ""),
 		},
 		"order with valid property and invalid direction (uppercase)": {
 			property:    "name",
 			direction:   "DESC",
-			expectedErr: pagorminator.OrderDirectionNotValidError{Direction: "DESC"},
+			expectedErr: OrderDirectionNotValidError{Direction: "DESC"},
 		},
 		"order with valid property and invalid direction (not related)": {
 			property:    "name",
 			direction:   "hello",
-			expectedErr: pagorminator.OrderDirectionNotValidError{Direction: "hello"},
+			expectedErr: OrderDirectionNotValidError{Direction: "hello"},
 		},
 		"order with invalid property": {
 			property:    "",
 			direction:   "asc",
-			expectedErr: pagorminator.ErrOrderPropertyIsEmpty,
+			expectedErr: ErrOrderPropertyIsEmpty,
 		},
 	}
 
@@ -52,7 +50,7 @@ func TestOrder_NewOrder(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			order, err := pagorminator.NewOrder(test.property, test.direction)
+			order, err := NewOrder(test.property, test.direction)
 			if err != nil {
 				if !errors.Is(err, test.expectedErr) {
 					t.Errorf("got err %v, expected %v", err, test.expectedErr)
@@ -70,19 +68,19 @@ func TestOrder_String(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		order    pagorminator.Order
+		order    Order
 		expected string
 	}{
 		"order with asc direction": {
-			order:    pagorminator.MustOrder("name", pagorminator.ASC),
+			order:    MustOrder("name", ASC),
 			expected: "name asc",
 		},
 		"order with desc direction": {
-			order:    pagorminator.MustOrder("name", pagorminator.DESC),
+			order:    MustOrder("name", DESC),
 			expected: "name desc",
 		},
 		"order without direction": {
-			order:    pagorminator.MustOrder("name", ""),
+			order:    MustOrder("name", ""),
 			expected: "name",
 		},
 	}
@@ -102,13 +100,13 @@ func TestSort_String(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		sort     pagorminator.Sort
+		sort     Sort
 		expected string
 	}{
 		"order with asc direction": {
-			sort: pagorminator.Sort([]pagorminator.Order{
-				pagorminator.MustOrder("name", pagorminator.ASC),
-				pagorminator.MustOrder("surname", pagorminator.DESC),
+			sort: Sort([]Order{
+				MustOrder("name", ASC),
+				MustOrder("surname", DESC),
 			}),
 			expected: "name asc, surname desc",
 		},

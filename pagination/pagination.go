@@ -1,23 +1,29 @@
-package pagorminator
+package pagination
 
 import (
 	"math"
 	"sync"
+
+	"github.com/manuelarte/pagorminator/pagination/sort"
 )
 
 // Pagination Clause to apply pagination.
 type Pagination struct {
-	page             int
-	size             int
-	sort             Sort
+	/* Input fields */
+
+	page int
+	size int
+	sort sort.Sort
+
+	/* Output fields */
 	mu               sync.RWMutex
 	totalElementsSet bool
 	totalElements    int64
 }
 
-// NewPageRequest Create page given page, size and orders.
+// New pagination given page, size and orders.
 // It returns the pagination object and any error encountered.
-func NewPageRequest(page, size int, orders ...Order) (*Pagination, error) {
+func New(page, size int, orders ...sort.Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -30,15 +36,15 @@ func NewPageRequest(page, size int, orders ...Order) (*Pagination, error) {
 		return nil, ErrSizeNotAllowed
 	}
 
-	sort := NewSort(orders...)
+	sort := sort.New(orders...)
 
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
-// MustPageRequest Create page given page, size and orders.
+// Must Create pagination given page, size and orders.
 // It returns the pagination object or panic if any error is encountered.
-func MustPageRequest(page, size int, orders ...Order) *Pagination {
-	pagination, err := NewPageRequest(page, size, orders...)
+func Must(page, size int, orders ...sort.Order) *Pagination {
+	pagination, err := New(page, size, orders...)
 	if err != nil {
 		panic(err)
 	}
@@ -51,18 +57,18 @@ func UnPaged() *Pagination {
 	return &Pagination{page: 0, size: 0}
 }
 
-// GetPage Get the page number.
-func (p *Pagination) GetPage() int {
+// Page Get the pagination number.
+func (p *Pagination) Page() int {
 	return p.page
 }
 
-// GetSize Get the page size.
-func (p *Pagination) GetSize() int {
+// Size Get the pagination size.
+func (p *Pagination) Size() int {
 	return p.size
 }
 
-// GetOffset Get the offset.
-func (p *Pagination) GetOffset() int {
+// Offset Get the offset.
+func (p *Pagination) Offset() int {
 	return p.page * p.size
 }
 
@@ -75,8 +81,8 @@ func (p *Pagination) GetTotalPages() int {
 	return 1
 }
 
-// GetTotalElements returns the total elements.
-func (p *Pagination) GetTotalElements() int64 {
+// TotalElements returns the total elements.
+func (p *Pagination) TotalElements() int64 {
 	return p.totalElements
 }
 
@@ -101,16 +107,16 @@ func (p *Pagination) IsSort() bool {
 	return len(p.sort) > 0
 }
 
+func (p *Pagination) IsTotalElementsSet() bool {
+	return p.totalElementsSet
+}
+
 func (p *Pagination) setTotalElements(totalElements int64) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.totalElementsSet = true
 	p.totalElements = totalElements
-}
-
-func (p *Pagination) isTotalElementsSet() bool {
-	return p.totalElementsSet
 }
 
 func calculateTotalPages(totalElements int64, size int) int {

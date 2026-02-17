@@ -3,6 +3,8 @@ package pagorminator
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/manuelarte/pagorminator/pagination"
 )
 
 const (
@@ -34,7 +36,7 @@ func (p PaGorminator) count(db *gorm.DB) {
 		return
 	}
 	//nolint: nestif // not so complex
-	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
+	if pageable, ok := p.getPageRequest(db); ok && !pageable.IsTotalElementsSet() {
 		if p.Debug {
 			db.Debug()
 		}
@@ -79,13 +81,13 @@ func (p PaGorminator) count(db *gorm.DB) {
 			return
 		}
 
-		pageable.setTotalElements(totalElements)
+		_ = pageable.SetTotalElements(totalElements)
 	}
 }
 
-func (p PaGorminator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
-	if value, ok := db.Get(pagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
-		if paginationClause, okP := value.(*Pagination); okP {
+func (p PaGorminator) getPageRequest(db *gorm.DB) (*pagination.Pagination, bool) {
+	if value, ok := db.Get(pagination.PagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
+		if paginationClause, okP := value.(*pagination.Pagination); okP {
 			if countValue, okCount := db.Get(countKey); !okCount {
 				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {
 					return paginationClause, true
