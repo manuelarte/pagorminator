@@ -15,11 +15,11 @@ type (
 		gormString() string
 	}
 
+	Sort []Order
+
 	Asc string
 
 	Desc string
-
-	Sort []Order
 )
 
 func (a Asc) gormString() string {
