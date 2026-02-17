@@ -33,6 +33,10 @@ jobs:
       - name: Test
         run: go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
 
+      - name: Run examples
+        run: make run-all
+        working-directory: ./examples
+
       - name: check test coverage
         if: matrix.os == 'ubuntu-latest' && matrix.go == 'stable'
         uses: vladopajic/go-test-coverage@v2
