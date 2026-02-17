@@ -23,11 +23,11 @@ type (
 )
 
 func (a Asc) gormString() string {
-	return fmt.Sprintf("%s asc", a)
+	return fmt.Sprintf("%s ASC", a)
 }
 
 func (d Desc) gormString() string {
-	return fmt.Sprintf("%s desc", d)
+	return fmt.Sprintf("%s DESC", d)
 }
 
 // NewSort Creates sort (slices of [Order]).

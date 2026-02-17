@@ -151,6 +151,26 @@ func TestSortNoWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 			},
 		},
+		"Paged 1/2 items, sort by code asc, and price desc": {
+			toMigrate: []*TestStruct{
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
+				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
+			},
+			pageRequest: MustPageRequest(0, 5, Asc("code"), Desc("price")),
+			wantPage: &Pagination{
+				page:             0,
+				size:             5,
+				totalElementsSet: true,
+				totalElements:    3,
+				sort:             []Order{Asc("code"), Desc("price")},
+			},
+			expectedResult: []*TestStruct{
+				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
+				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
+				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -165,8 +185,7 @@ func TestSortNoWhere(t *testing.T) {
 
 			var products []*TestStruct
 
-			tx := db.Clauses(test.pageRequest).Find(&products)
-			if tx.Error != nil {
+			if tx := db.Clauses(test.pageRequest).Find(&products); tx.Error != nil {
 				t.Fatal(tx.Error)
 			}
 
@@ -181,7 +200,7 @@ func TestSortNoWhere(t *testing.T) {
 	}
 }
 
-func TestPWhere(t *testing.T) {
+func TestWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -250,17 +269,16 @@ func TestPWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
-			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
-			if txCreate.Error != nil {
+			if txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate)); txCreate.Error != nil {
 				t.Fatal(txCreate.Error)
 			}
 
 			var products []*TestStruct
 
-			tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products)
-			if tx.Error != nil {
+			if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
 				t.Fatal(tx.Error)
 			}
 
@@ -328,16 +346,14 @@ func TestSortWhere(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
 
-			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
-			if txCreate.Error != nil {
-				t.Fatal(txCreate.Error)
+			if txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate)); txCreate.Error != nil {
+				t.Fatalf("error creating products: %v", txCreate.Error)
 			}
 
 			var products []*TestStruct
 
-			tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
+			if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
+				t.Fatalf("error querying products: %v", tx.Error)
 			}
 
 			if diff := cmp.Diff(test.pageRequest, test.wantPage, paginationCmpOpt()); diff != "" {
@@ -404,16 +420,14 @@ func TestWithPreload(t *testing.T) {
 			t.Parallel()
 			db := setupDB(t)
 
-			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
-			if txCreate.Error != nil {
-				t.Fatal(txCreate.Error)
+			if txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate)); txCreate.Error != nil {
+				t.Fatalf("error creating products: %v", txCreate.Error)
 			}
 
 			var products []*TestProduct
 
-			tx := db.Clauses(test.pageRequest).Preload("Price").Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
+			if tx := db.Clauses(test.pageRequest).Preload("Price").Find(&products); tx.Error != nil {
+				t.Fatalf("error querying products: %v", tx.Error)
 			}
 
 			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
