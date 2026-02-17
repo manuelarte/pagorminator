@@ -1,7 +1,6 @@
 package pagination
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -9,8 +8,8 @@ func TestUnPaged(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		page     int
-		size     int
+		page     Page
+		size     Size
 		expected bool
 	}{
 		"page 0 size 0": {
@@ -46,24 +45,24 @@ func TestCalculateTotalPages(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		totalElements int64
-		size          int
-		expected      int
+		totalElements uint64
+		size          Size
+		want          uint
 	}{
 		"totalElements lower than size": {
 			totalElements: 2,
 			size:          4,
-			expected:      1,
+			want:          1,
 		},
 		"totalElements greater and not divisible by size": {
 			totalElements: 3,
 			size:          2,
-			expected:      2,
+			want:          2,
 		},
 		"totalElements greater and divisible by size": {
 			totalElements: 4,
 			size:          2,
-			expected:      2,
+			want:          2,
 		},
 	}
 
@@ -71,9 +70,9 @@ func TestCalculateTotalPages(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := calculateTotalPages(test.totalElements, test.size)
-			if actual != test.expected {
-				t.Errorf("calculateTotalPages(%d, %d) = %v, want %v", test.totalElements, test.size, actual, test.expected)
+			got := calculateTotalPages(test.totalElements, test.size)
+			if got != test.want {
+				t.Errorf("calculateTotalPages(%d, %d) = %v, want %v", test.totalElements, test.size, got, test.want)
 			}
 		})
 	}
@@ -83,7 +82,7 @@ func TestSetTotalElements(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		totalElements int64
+		totalElements uint64
 		expectedErr   error
 	}{
 		"positive totalElements": {
@@ -91,10 +90,6 @@ func TestSetTotalElements(t *testing.T) {
 		},
 		"0 totalElements": {
 			totalElements: 0,
-		},
-		"negative totalElements": {
-			totalElements: -1,
-			expectedErr:   TotalElementsNotValidError{totalElements: -1},
 		},
 	}
 
@@ -104,10 +99,11 @@ func TestSetTotalElements(t *testing.T) {
 
 			p := &Pagination{}
 
-			actualErr := p.SetTotalElements(test.totalElements)
-			if !errors.Is(actualErr, test.expectedErr) {
-				t.Errorf("expected: %v, got: %v", test.expectedErr, actualErr)
-				t.Fail()
+			p.SetTotalElements(test.totalElements)
+
+			got := p.TotalElements()
+			if got != test.totalElements {
+				t.Errorf("p.TotalElements() = %v, want %v", got, test.totalElements)
 			}
 		})
 	}

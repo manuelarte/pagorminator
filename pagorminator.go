@@ -81,20 +81,31 @@ func (p PaGorminator) count(db *gorm.DB) {
 			return
 		}
 
-		_ = pageable.SetTotalElements(totalElements)
+		// #nosec G115 // ignoring since the value needs to be positive
+		pageable.SetTotalElements(uint64(totalElements))
 	}
 }
 
 func (p PaGorminator) getPageRequest(db *gorm.DB) (*pagination.Pagination, bool) {
-	if value, ok := db.Get(pagination.PagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
-		if paginationClause, okP := value.(*pagination.Pagination); okP {
-			if countValue, okCount := db.Get(countKey); !okCount {
-				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {
-					return paginationClause, true
-				}
-			}
-		}
+	value, ok := db.Get(pagination.PagorminatorClause)
+	if !ok {
+		return nil, false
 	}
 
-	return nil, false
+	paginationClause, okP := value.(*pagination.Pagination)
+	if !okP {
+		return nil, false
+	}
+
+	countValue, okCount := db.Get(countKey)
+	if okCount {
+		return nil, false
+	}
+
+	isCount, hasCount := countValue.(bool)
+	if hasCount || isCount {
+		return nil, false
+	}
+
+	return paginationClause, true
 }

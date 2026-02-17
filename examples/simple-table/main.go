@@ -7,10 +7,12 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagination"
 )
 
 type Product struct {
 	gorm.Model
+
 	Code  string
 	Price uint
 }
@@ -31,9 +33,9 @@ func main() {
 	fmt.Printf("1 product created\n")
 
 	var products map[string]any
-	pageRequest, _ := pagorminator.NewPageRequest(0, 1)
+	pageRequest, _ := pagination.New(0, 1)
 	db.Clauses(pageRequest).Table("products").Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.TotalPages())
 }

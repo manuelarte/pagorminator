@@ -12,6 +12,7 @@ import (
 
 type Product struct {
 	gorm.Model
+
 	Code  string
 	Price uint
 }
@@ -44,5 +45,5 @@ func main() {
 	fmt.Printf("Query: Products (Page: %d, Size: %d) with '%s'\n", pageRequest.Page(), pageRequest.Size(), "price > 10")
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.GetTotalPages())
+		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.TotalPages())
 }

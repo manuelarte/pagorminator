@@ -7,10 +7,13 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagination"
+	"github.com/manuelarte/pagorminator/pagination/sort"
 )
 
 type Product struct {
 	gorm.Model
+
 	Code  string
 	Price uint
 }
@@ -32,11 +35,11 @@ func main() {
 	fmt.Printf("2 products created\n")
 
 	var products []*Product
-	pageRequest, _ := pagorminator.NewPageRequest(0, 1, pagorminator.MustOrder("price", pagorminator.DESC))
-	db.Clauses(pageRequest).Find(&products)
+	pageRequest, _ := pagination.New(0, 2, sort.Desc("price"))
+	db.Debug().Clauses(pageRequest).Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.TotalPages())
 	for _, product := range products {
 		fmt.Printf("%s\n", product)
 	}

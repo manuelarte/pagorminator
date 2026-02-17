@@ -8,27 +8,24 @@ import (
 )
 
 // Pagination Clause to apply pagination.
-type Pagination struct {
-	page int
-	size int
-	sort sort.Sort
+type (
+	Page uint
+	Size uint
 
-	mu               sync.RWMutex
-	totalElementsSet bool
-	totalElements    int64
-}
+	Pagination struct {
+		page Page
+		size Size
+		sort sort.Sort
+
+		mu               sync.RWMutex
+		totalElementsSet bool
+		totalElements    uint64
+	}
+)
 
 // New pagination given page, size and orders.
 // It returns the pagination object and any error encountered.
-func New(page, size int, orders ...sort.Order) (*Pagination, error) {
-	if page < 0 {
-		return nil, ErrPageCantBeNegative
-	}
-
-	if size < 0 {
-		return nil, ErrSizeCantBeNegative
-	}
-
+func New(page Page, size Size, orders ...sort.Order) (*Pagination, error) {
 	if page > 0 && size == 0 {
 		return nil, ErrSizeNotAllowed
 	}
@@ -40,7 +37,7 @@ func New(page, size int, orders ...sort.Order) (*Pagination, error) {
 
 // Must Create pagination given page, size and orders.
 // It returns the pagination object or panic if any error is encountered.
-func Must(page, size int, orders ...sort.Order) *Pagination {
+func Must(page Page, size Size, orders ...sort.Order) *Pagination {
 	pagination, err := New(page, size, orders...)
 	if err != nil {
 		panic(err)
@@ -55,22 +52,22 @@ func UnPaged() *Pagination {
 }
 
 // Page Get the pagination number.
-func (p *Pagination) Page() int {
+func (p *Pagination) Page() Page {
 	return p.page
 }
 
 // Size Get the pagination size.
-func (p *Pagination) Size() int {
+func (p *Pagination) Size() Size {
 	return p.size
 }
 
 // Offset Get the offset.
-func (p *Pagination) Offset() int {
-	return p.page * p.size
+func (p *Pagination) Offset() uint {
+	return uint(p.page) * uint(p.size)
 }
 
-// GetTotalPages Get the total number of pages.
-func (p *Pagination) GetTotalPages() int {
+// TotalPages Get the total number of pages.
+func (p *Pagination) TotalPages() uint {
 	if p.size > 0 {
 		return calculateTotalPages(p.totalElements, p.size)
 	}
@@ -79,19 +76,13 @@ func (p *Pagination) GetTotalPages() int {
 }
 
 // TotalElements returns the total elements.
-func (p *Pagination) TotalElements() int64 {
+func (p *Pagination) TotalElements() uint64 {
 	return p.totalElements
 }
 
 // SetTotalElements manually sets the total elements.
-func (p *Pagination) SetTotalElements(totalElements int64) error {
-	if totalElements < 0 {
-		return TotalElementsNotValidError{totalElements: totalElements}
-	}
-
+func (p *Pagination) SetTotalElements(totalElements uint64) {
 	p.setTotalElements(totalElements)
-
-	return nil
 }
 
 // IsUnPaged Check whether the pagination is applicable.
@@ -108,7 +99,7 @@ func (p *Pagination) IsTotalElementsSet() bool {
 	return p.totalElementsSet
 }
 
-func (p *Pagination) setTotalElements(totalElements int64) {
+func (p *Pagination) setTotalElements(totalElements uint64) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -116,6 +107,6 @@ func (p *Pagination) setTotalElements(totalElements int64) {
 	p.totalElements = totalElements
 }
 
-func calculateTotalPages(totalElements int64, size int) int {
-	return int(math.Ceil(float64(totalElements) / float64(size)))
+func calculateTotalPages(totalElements uint64, size Size) uint {
+	return uint(math.Ceil(float64(totalElements) / float64(size)))
 }

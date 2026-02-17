@@ -13,6 +13,7 @@ import (
 
 type Product struct {
 	gorm.Model
+
 	Code  string
 	Price uint
 }
@@ -41,7 +42,7 @@ func main() {
 	db.Clauses(pageRequest).Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.GetTotalPages())
+		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.TotalPages())
 	for _, product := range products {
 		fmt.Printf("\t Product: %s\n", product)
 	}
@@ -49,7 +50,7 @@ func main() {
 	pageRequest, _ = pagination.New(1, 5)
 	db.Clauses(pageRequest).Find(&products)
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.GetTotalPages())
+		pageRequest.Page(), pageRequest.Size(), pageRequest.TotalElements(), pageRequest.TotalPages())
 	for _, product := range products {
 		fmt.Printf("\t Product: %s\n", product)
 	}

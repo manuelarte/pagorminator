@@ -19,7 +19,8 @@ func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 
 	tx := stm.DB
 	if !p.IsUnPaged() {
-		tx = tx.Limit(p.size).Offset(p.Offset())
+		// #nosec G115 // hoping the size and offset is not that big
+		tx = tx.Limit(int(p.size)).Offset(int(p.Offset()))
 	}
 
 	if p.IsSort() {

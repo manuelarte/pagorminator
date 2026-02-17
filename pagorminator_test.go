@@ -49,7 +49,7 @@ func TestNoWhere(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -61,7 +61,7 @@ func TestNoWhere(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -73,7 +73,7 @@ func TestNoWhere(t *testing.T) {
 			pageRequest: pagination.Must(1, 1),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -85,7 +85,7 @@ func TestNoWhere(t *testing.T) {
 			pageRequest: pagination.Must(0, 2),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 2)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -131,7 +131,7 @@ func TestSortNoWhere(t *testing.T) {
 			pageRequest: pagination.Must(1, 1, sort.Asc("id")),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1, sort.Asc("id"))
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -146,7 +146,7 @@ func TestSortNoWhere(t *testing.T) {
 			pageRequest: pagination.Must(1, 1, sort.Desc("id")),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1, sort.Desc("id"))
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -201,7 +201,7 @@ func TestWhere(t *testing.T) {
 			where:       "price < 100",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -214,7 +214,7 @@ func TestWhere(t *testing.T) {
 			where:       "price > 100",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(0)
+				p.SetTotalElements(0)
 
 				return p
 			},
@@ -227,7 +227,7 @@ func TestWhere(t *testing.T) {
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -243,7 +243,7 @@ func TestWhere(t *testing.T) {
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -297,7 +297,7 @@ func TestSortWhere(t *testing.T) {
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1, sort.Asc("price"))
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -316,7 +316,7 @@ func TestSortWhere(t *testing.T) {
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1, sort.Desc("price"))
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -372,7 +372,7 @@ func TestWithPreload(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -385,7 +385,7 @@ func TestWithPreload(t *testing.T) {
 			pageRequest: pagination.Must(0, 1),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -398,7 +398,7 @@ func TestWithPreload(t *testing.T) {
 			pageRequest: pagination.Must(1, 1),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -450,7 +450,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(4)
+				p.SetTotalElements(4)
 
 				return p
 			},
@@ -466,7 +466,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 			pageRequest: pagination.Must(0, 2),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 2)
-				_ = p.SetTotalElements(4)
+				p.SetTotalElements(4)
 
 				return p
 			},
@@ -514,7 +514,7 @@ func TestWithJoins(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -527,7 +527,7 @@ func TestWithJoins(t *testing.T) {
 			pageRequest: pagination.Must(0, 1),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -577,7 +577,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			where:       "1=1",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -591,7 +591,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			where:       "Price.amount > 1",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -607,7 +607,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			where:       "Price.amount >= 2",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 2)
-				_ = p.SetTotalElements(3)
+				p.SetTotalElements(3)
 
 				return p
 			},
@@ -655,7 +655,7 @@ func TestTable(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -667,7 +667,7 @@ func TestTable(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -679,7 +679,7 @@ func TestTable(t *testing.T) {
 			pageRequest: pagination.Must(1, 1),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(1, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -691,7 +691,7 @@ func TestTable(t *testing.T) {
 			pageRequest: pagination.Must(0, 2),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 2)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -741,7 +741,7 @@ func TestTableWithWhere(t *testing.T) {
 			where:       "price < 100",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -754,7 +754,7 @@ func TestTableWithWhere(t *testing.T) {
 			where:       "price > 100",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(0)
+				p.SetTotalElements(0)
 
 				return p
 			},
@@ -767,7 +767,7 @@ func TestTableWithWhere(t *testing.T) {
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -783,7 +783,7 @@ func TestTableWithWhere(t *testing.T) {
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 1)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -832,7 +832,7 @@ func TestDistinct(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(1)
+				p.SetTotalElements(1)
 
 				return p
 			},
@@ -847,7 +847,7 @@ func TestDistinct(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(2)
+				p.SetTotalElements(2)
 
 				return p
 			},
@@ -862,7 +862,7 @@ func TestDistinct(t *testing.T) {
 			pageRequest: pagination.UnPaged(),
 			wantFn: func() *pagination.Pagination {
 				p := pagination.Must(0, 0)
-				_ = p.SetTotalElements(4)
+				p.SetTotalElements(4)
 
 				return p
 			},
