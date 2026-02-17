@@ -7,9 +7,10 @@ import (
 
 // Pagination Clause to apply pagination.
 type Pagination struct {
-	page             int
-	size             int
-	sort             Sort
+	page int
+	size int
+	sort Sort
+
 	mu               sync.RWMutex
 	totalElementsSet bool
 	totalElements    int64

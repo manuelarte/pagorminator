@@ -12,12 +12,14 @@ import (
 
 type Product struct {
 	gorm.Model
+
 	Code  string
 	Price Price
 }
 
 type Price struct {
 	gorm.Model
+
 	Unit      uint
 	Currency  string
 	ProductID uint
