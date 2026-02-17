@@ -12,10 +12,16 @@ const (
 	DESC Direction = "desc"
 )
 
-type Order struct {
-	property  string
-	direction Direction
-}
+type (
+	// Order represents a sort order.
+	Order struct {
+		property  string
+		direction Direction
+	}
+
+	// Sort represents a slice of orders.
+	Sort []Order
+)
 
 // NewOrder Creates new order based on a property and a direction.
 func NewOrder(property string, direction Direction) (Order, error) {
@@ -50,8 +56,6 @@ func (o Order) String() string {
 
 	return fmt.Sprintf("%s %s", o.property, o.direction)
 }
-
-type Sort []Order
 
 // New sort (slices of [Order]).
 func New(orders ...Order) Sort {

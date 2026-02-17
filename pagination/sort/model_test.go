@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestOrder_NewOrder(t *testing.T) {
+func TestOrderNewOrder(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -64,7 +64,7 @@ func TestOrder_NewOrder(t *testing.T) {
 	}
 }
 
-func TestOrder_String(t *testing.T) {
+func TestOrderString(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -96,7 +96,7 @@ func TestOrder_String(t *testing.T) {
 	}
 }
 
-func TestSort_String(t *testing.T) {
+func TestSortString(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
