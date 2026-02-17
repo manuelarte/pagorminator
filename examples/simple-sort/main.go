@@ -11,6 +11,7 @@ import (
 
 type Product struct {
 	gorm.Model
+
 	Code  string
 	Price uint
 }
@@ -32,7 +33,7 @@ func main() {
 	fmt.Printf("2 products created\n")
 
 	var products []*Product
-	pageRequest, _ := pagorminator.NewPageRequest(0, 1, pagorminator.MustOrder("price", pagorminator.DESC))
+	pageRequest, _ := pagorminator.NewPageRequest(0, 1, pagorminator.Desc("price"))
 	db.Clauses(pageRequest).Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
