@@ -9,13 +9,10 @@ import (
 
 // Pagination Clause to apply pagination.
 type Pagination struct {
-	/* Input fields */
-
 	page int
 	size int
 	sort sort.Sort
 
-	/* Output fields */
 	mu               sync.RWMutex
 	totalElementsSet bool
 	totalElements    int64
@@ -36,9 +33,9 @@ func New(page, size int, orders ...sort.Order) (*Pagination, error) {
 		return nil, ErrSizeNotAllowed
 	}
 
-	sort := sort.New(orders...)
+	sorting := sort.New(orders...)
 
-	return &Pagination{page: page, size: size, sort: sort}, nil
+	return &Pagination{page: page, size: size, sort: sorting}, nil
 }
 
 // Must Create pagination given page, size and orders.
