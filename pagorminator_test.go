@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -106,9 +108,8 @@ func TestNoWhere(t *testing.T) {
 
 			db.Clauses(test.pageRequest).Find(&products)
 
-			// TODO: change for cmp.Equal
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -129,7 +130,7 @@ func TestSortNoWhere(t *testing.T) {
 			},
 			pageRequest: pagination.Must(1, 1, sort.Asc("id")),
 			wantFn: func() *pagination.Pagination {
-				p := pagination.Must(1, 1)
+				p := pagination.Must(1, 1, sort.Asc("id"))
 				_ = p.SetTotalElements(2)
 
 				return p
@@ -144,7 +145,7 @@ func TestSortNoWhere(t *testing.T) {
 			},
 			pageRequest: pagination.Must(1, 1, sort.Desc("id")),
 			wantFn: func() *pagination.Pagination {
-				p := pagination.Must(1, 1)
+				p := pagination.Must(1, 1, sort.Desc("id"))
 				_ = p.SetTotalElements(2)
 
 				return p
@@ -162,24 +163,22 @@ func TestSortNoWhere(t *testing.T) {
 
 			want := test.wantFn()
 
-			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
-			if txCreate.Error != nil {
+			if txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate)); txCreate.Error != nil {
 				t.Fatal(txCreate.Error)
 			}
 
 			var products []*TestStruct
 
-			tx := db.Clauses(test.pageRequest).Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
+			if tx := db.Clauses(test.pageRequest).Find(&products); tx.Error != nil {
+				t.Fatalf("error finding products: %v", tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 
-			if !equalsArrays(products, test.expectedResult) {
-				t.Fatalf("expected result to be %+v, got %+v", test.expectedResult, products)
+			if !cmp.Equal(products, test.expectedResult, cmpopts.IgnoreFields(TestStruct{}, "Model")) {
+				t.Errorf("expected result to be %+v, got %+v", test.expectedResult, products)
 			}
 		})
 	}
@@ -270,8 +269,8 @@ func TestWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -297,7 +296,7 @@ func TestSortWhere(t *testing.T) {
 			pageRequest: pagination.Must(0, 1, sort.Asc("price")),
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
-				p := pagination.Must(0, 1)
+				p := pagination.Must(0, 1, sort.Asc("price"))
 				_ = p.SetTotalElements(2)
 
 				return p
@@ -316,7 +315,7 @@ func TestSortWhere(t *testing.T) {
 			pageRequest: pagination.Must(0, 1, sort.Desc("price")),
 			where:       "price > 50",
 			wantFn: func() *pagination.Pagination {
-				p := pagination.Must(0, 1)
+				p := pagination.Must(0, 1, sort.Desc("price"))
 				_ = p.SetTotalElements(2)
 
 				return p
@@ -330,6 +329,7 @@ func TestSortWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			want := test.wantFn()
@@ -346,11 +346,11 @@ func TestSortWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Fatalf("diff (-want +got):\n%s", diff)
 			}
 
-			if !equalsArrays(products, test.expectedResult) {
+			if !cmp.Equal(products, test.expectedResult, cmpopts.IgnoreFields(TestStruct{}, "Model")) {
 				t.Fatalf("expected result to be %+v, got %+v", test.expectedResult, products)
 			}
 		})
@@ -424,8 +424,8 @@ func TestWithPreload(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -492,8 +492,8 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -553,8 +553,8 @@ func TestWithJoins(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -633,8 +633,8 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -717,8 +717,8 @@ func TestTable(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -809,8 +809,8 @@ func TestTableWithWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
@@ -888,11 +888,20 @@ func TestDistinct(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if !equalPageRequests(test.pageRequest, want) {
-				t.Fatalf("expected page to be %+v, got %+v", want, test.pageRequest)
+			if diff := cmp.Diff(test.pageRequest, want, paginationCmpOpt()); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
 	}
+}
+
+func TestPaGorminatorNil(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+
+	var products []*TestStruct
+	db.Clauses(nil).Find(&products)
 }
 
 func setupDB(t *testing.T) *gorm.DB {
@@ -915,41 +924,9 @@ func setupDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func equalPageRequests(p1, p2 *pagination.Pagination) bool {
-	// cmp.Equal(p1, p2, cmp.AllowUnexported(pagination.Pagination{})
-	return p1.Page() == p2.Page() &&
-		p1.Size() == p2.Size() &&
-		p1.TotalElements() == p2.TotalElements() &&
-		p1.GetTotalPages() == p2.GetTotalPages()
-}
-
-func equalsTestStruct(t1, t2 *TestStruct) bool {
-	sameID := t1.ID == t2.ID
-	sameCode := t1.Code == t2.Code
-	samePrice := t1.Price == t2.Price
-
-	return sameID && sameCode && samePrice
-}
-
-func equalsArrays(a1, a2 []*TestStruct) bool {
-	if len(a1) != len(a2) {
-		return false
+func paginationCmpOpt() cmp.Options {
+	return cmp.Options{
+		cmp.AllowUnexported(pagination.Pagination{}),
+		cmpopts.IgnoreFields(pagination.Pagination{}, "mu"),
 	}
-
-	for i, item := range a1 {
-		if !equalsTestStruct(item, a2[i]) {
-			return false
-		}
-	}
-
-	return true
-}
-
-func TestPaGorminator_Nil(t *testing.T) {
-	t.Parallel()
-
-	db := setupDB(t)
-
-	var products []*TestStruct
-	db.Clauses(nil).Find(&products)
 }
