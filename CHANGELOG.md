@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0](https://github.com/manuelarte/pagorminator/compare/v0.1.0...v0.2.0) (2026-02-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **sort:** changing sorting ([#79](https://github.com/manuelarte/pagorminator/issues/79))
+
+### Miscellaneous Chores
+
+* release v0.2.0 ([#82](https://github.com/manuelarte/pagorminator/issues/82)) ([bd31bc9](https://github.com/manuelarte/pagorminator/commit/bd31bc96ae5e542b9ac626b421b8391d28f7f9a6))
+
+
+### Code Refactoring
+
+* **sort:** changing sorting ([#79](https://github.com/manuelarte/pagorminator/issues/79)) ([c81a761](https://github.com/manuelarte/pagorminator/commit/c81a7613221b4d6c8433272d6672cf495e0a91f0))
+
 ## [v0.1.0](https://github.com/manuelarte/pagorminator/compare/v0.0.5...v0.1.0) (2025-07-16)
 
 
