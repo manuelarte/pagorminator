@@ -92,6 +92,7 @@ func TestNoWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -176,6 +177,7 @@ func TestSortNoWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -344,6 +346,7 @@ func TestSortWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			if txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate)); txCreate.Error != nil {
@@ -418,6 +421,7 @@ func TestWithPreload(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			if txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate)); txCreate.Error != nil {
@@ -482,6 +486,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -541,6 +546,7 @@ func TestWithJoins(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -619,6 +625,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -791,6 +798,7 @@ func TestTableWithWhere(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))
@@ -868,6 +876,7 @@ func TestDistinct(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
 			db := setupDB(t)
 
 			txCreate := db.CreateInBatches(&test.toMigrate, len(test.toMigrate))

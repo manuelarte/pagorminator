@@ -25,7 +25,7 @@ func TestOrderString(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := test.order.gormString()
+			got := test.order.GormString()
 			if got != test.want {
 				t.Errorf("test.order.gormString() = %q, want %q", got, test.want)
 			}
