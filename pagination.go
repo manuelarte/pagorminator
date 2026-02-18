@@ -2,6 +2,7 @@ package pagorminator
 
 import (
 	"math"
+	"slices"
 	"sync"
 )
 
@@ -90,6 +91,11 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 	p.setTotalElements(totalElements)
 
 	return nil
+}
+
+// GetSort Get the sort constraints.
+func (p *Pagination) GetSort() Sort {
+	return slices.Clone(p.sort)
 }
 
 // IsUnPaged Check whether the pagination is applicable.

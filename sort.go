@@ -12,7 +12,8 @@ var (
 
 type (
 	Order interface {
-		gormString() string
+		GormString() string
+		order()
 	}
 
 	Sort []Order
@@ -22,13 +23,17 @@ type (
 	Desc string
 )
 
-func (a Asc) gormString() string {
+func (a Asc) GormString() string {
 	return fmt.Sprintf("%s ASC", a)
 }
 
-func (d Desc) gormString() string {
+func (a Asc) order() {}
+
+func (d Desc) GormString() string {
 	return fmt.Sprintf("%s DESC", d)
 }
+
+func (d Desc) order() {}
 
 // NewSort Creates sort (slices of [Order]).
 func NewSort(orders ...Order) Sort {
@@ -43,7 +48,7 @@ func Unsorted() Sort {
 func (s Sort) String() string {
 	orderStrings := make([]string, len(s))
 	for i, order := range s {
-		orderStrings[i] = order.gormString()
+		orderStrings[i] = order.GormString()
 	}
 
 	return strings.Join(orderStrings, ", ")
