@@ -65,13 +65,15 @@ You can add sorting to your pagination request:
 
 ```go
 // Single sort criterion
-pageRequest, err := pagorminator.NewPageRequest(0, 10, 
-    pagorminator.MustOrder("id", pagorminator.DESC))
+pageRequest, err := pagorminator.NewPageRequest(0, 10, pagorminator.Desc("id"))
 
 // Multiple sort criteria
-pageRequest, err := pagorminator.NewPageRequest(0, 10, 
-    pagorminator.MustOrder("name", pagorminator.ASC),
-    pagorminator.MustOrder("id", pagorminator.DESC))
+pageRequest, err := pagorminator.NewPageRequest(
+	0, 
+	10, 
+    pagorminator.Asc("name"),
+    pagorminator.Desc("price")
+)
 ```
 
 ### Unpaged Requests
