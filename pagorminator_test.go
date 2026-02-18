@@ -123,13 +123,13 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(1, 1, MustOrder("id", ASC)),
+			pageRequest: MustPageRequest(1, 1, Asc("id")),
 			wantPage: &Pagination{
 				page:             1,
 				size:             1,
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{MustOrder("id", ASC)},
+				sort:             []Order{Asc("id")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -139,13 +139,13 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: MustPageRequest(1, 1, MustOrder("id", DESC)),
+			pageRequest: MustPageRequest(1, 1, Desc("id")),
 			wantPage: &Pagination{
 				page:             1,
 				size:             1,
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{MustOrder("id", DESC)},
+				sort:             []Order{Desc("id")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
@@ -157,13 +157,13 @@ func TestSortNoWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
 			},
-			pageRequest: MustPageRequest(0, 5, MustOrder("code", ASC), MustOrder("price", DESC)),
+			pageRequest: MustPageRequest(0, 5, Asc("code"), Desc("price")),
 			wantPage: &Pagination{
 				page:             0,
 				size:             5,
 				totalElementsSet: true,
 				totalElements:    3,
-				sort:             []Order{MustOrder("code", ASC), MustOrder("price", DESC)},
+				sort:             []Order{Asc("code"), Desc("price")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
@@ -306,14 +306,14 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: MustPageRequest(0, 1, MustOrder("price", ASC)),
+			pageRequest: MustPageRequest(0, 1, Asc("price")),
 			where:       "price > 50",
 			wantPage: &Pagination{
 				page:             0,
 				size:             1,
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{MustOrder("price", ASC)},
+				sort:             []Order{Asc("price")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
@@ -326,14 +326,14 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: MustPageRequest(0, 1, MustOrder("price", DESC)),
+			pageRequest: MustPageRequest(0, 1, Desc("price")),
 			where:       "price > 50",
 			wantPage: &Pagination{
 				page:             0,
 				size:             1,
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{MustOrder("price", DESC)},
+				sort:             []Order{Desc("price")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
@@ -922,6 +922,5 @@ func paginationCmpOpt() cmp.Options {
 	return cmp.Options{
 		cmp.AllowUnexported(Pagination{}),
 		cmpopts.IgnoreFields(Pagination{}, "mu"),
-		cmp.AllowUnexported(Order{}),
 	}
 }

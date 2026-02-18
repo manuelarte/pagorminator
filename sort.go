@@ -5,53 +5,30 @@ import (
 	"strings"
 )
 
-type Direction string
-
-const (
-	ASC  Direction = "asc"
-	DESC Direction = "desc"
+var (
+	_ Order = new(Asc)
+	_ Order = new(Desc)
 )
 
-type Order struct {
-	property  string
-	direction Direction
-}
-
-// NewOrder Creates new order based on a property and a direction.
-func NewOrder(property string, direction Direction) (Order, error) {
-	if property == "" {
-		return Order{}, ErrOrderPropertyIsEmpty
+type (
+	Order interface {
+		gormString() string
 	}
 
-	if direction != "" && direction != ASC && direction != DESC {
-		return Order{}, OrderDirectionNotValidError{Direction: direction}
-	}
+	Sort []Order
 
-	return Order{
-		property:  property,
-		direction: direction,
-	}, nil
+	Asc string
+
+	Desc string
+)
+
+func (a Asc) gormString() string {
+	return fmt.Sprintf("%s ASC", a)
 }
 
-// MustOrder Creates a new order based on a property and a direction, or panic.
-func MustOrder(property string, direction Direction) Order {
-	order, err := NewOrder(property, direction)
-	if err != nil {
-		panic(err)
-	}
-
-	return order
+func (d Desc) gormString() string {
+	return fmt.Sprintf("%s DESC", d)
 }
-
-func (o Order) String() string {
-	if o.direction == "" {
-		return o.property
-	}
-
-	return fmt.Sprintf("%s %s", o.property, o.direction)
-}
-
-type Sort []Order
 
 // NewSort Creates sort (slices of [Order]).
 func NewSort(orders ...Order) Sort {
@@ -66,7 +43,7 @@ func Unsorted() Sort {
 func (s Sort) String() string {
 	orderStrings := make([]string, len(s))
 	for i, order := range s {
-		orderStrings[i] = order.String()
+		orderStrings[i] = order.gormString()
 	}
 
 	return strings.Join(orderStrings, ", ")
