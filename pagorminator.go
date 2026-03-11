@@ -37,7 +37,7 @@ func (p PaGorminator) count(db *gorm.DB) {
 	}
 	//nolint: nestif // not so complex
 	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
-		newDB := db.Session(&gorm.Session{NewDB: true, Context: db.Statement.Context})
+		newDB := db.Session(&gorm.Session{NewDB: true})
 		if p.Debug {
 			newDB = newDB.Debug()
 		}
