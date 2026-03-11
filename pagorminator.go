@@ -1,10 +1,7 @@
 package pagorminator
 
 import (
-	"maps"
-
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 const (
@@ -35,47 +32,19 @@ func (p PaGorminator) count(db *gorm.DB) {
 	if db.Statement.Schema == nil && db.Statement.Table == "" {
 		return
 	}
-	//nolint: nestif // not so complex
+
 	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
-		newDB := db.Session(&gorm.Session{NewDB: true})
+		tx := db.Session(&gorm.Session{Context: db.Statement.Context})
 		if p.Debug {
-			newDB = newDB.Debug()
+			tx = tx.Debug()
 		}
 
-		newDB.Statement = clone(db.Statement.Statement)
-		delete(newDB.Statement.Clauses, "LIMIT")
-		delete(newDB.Statement.Clauses, "OFFSET")
+		delete(tx.Statement.Clauses, "LIMIT")
+		delete(tx.Statement.Clauses, "OFFSET")
 
 		var totalElements int64
 
-		tx := newDB.Set(countKey, true)
-		if db.Statement.Schema != nil {
-			tx.Model(newDB.Statement.Model)
-		} else if db.Statement.Table != "" {
-			tx.Table(db.Statement.Table)
-		}
-
-		if db.Statement.Distinct {
-			tx.Distinct(db.Statement.Selects)
-		}
-
-		for _, join := range db.Statement.Joins {
-			args := join.Conds
-			//nolint:exhaustive // other cases not supported
-			switch join.JoinType {
-			case clause.InnerJoin:
-				tx.InnerJoins(join.Name, args...)
-			case clause.LeftJoin:
-				tx.Joins(join.Name, args...)
-			default:
-				continue
-			}
-		}
-
-		if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
-			tx.Where(whereClause.Expression)
-		}
-
+		tx = tx.Set(countKey, true)
 		tx.Count(&totalElements)
 
 		if tx.Error != nil {
@@ -99,49 +68,4 @@ func (p PaGorminator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
 	}
 
 	return nil, false
-}
-
-// clone almost identically copied from gorm (only removing copying the scopes because they are not exported).
-func clone(stmt *gorm.Statement) *gorm.Statement {
-	newStmt := &gorm.Statement{
-		TableExpr:            stmt.TableExpr,
-		Table:                stmt.Table,
-		Model:                stmt.Model,
-		Unscoped:             stmt.Unscoped,
-		Dest:                 stmt.Dest,
-		ReflectValue:         stmt.ReflectValue,
-		Clauses:              map[string]clause.Clause{},
-		Distinct:             stmt.Distinct,
-		Selects:              stmt.Selects,
-		Omits:                stmt.Omits,
-		ColumnMapping:        stmt.ColumnMapping,
-		Preloads:             map[string][]any{},
-		ConnPool:             stmt.ConnPool,
-		Schema:               stmt.Schema,
-		Context:              stmt.Context,
-		RaiseErrorOnNotFound: stmt.RaiseErrorOnNotFound,
-		SkipHooks:            stmt.SkipHooks,
-		Result:               stmt.Result,
-	}
-
-	if stmt.SQL.Len() > 0 {
-		newStmt.SQL.WriteString(stmt.SQL.String())
-		newStmt.Vars = make([]any, 0, len(stmt.Vars))
-		newStmt.Vars = append(newStmt.Vars, stmt.Vars...)
-	}
-
-	maps.Copy(newStmt.Clauses, stmt.Clauses)
-
-	maps.Copy(newStmt.Preloads, stmt.Preloads)
-
-	if len(stmt.Joins) > 0 {
-		newStmt.Joins = stmt.Joins
-	}
-
-	stmt.Settings.Range(func(k, v any) bool {
-		newStmt.Settings.Store(k, v)
-		return true
-	})
-
-	return newStmt
 }
