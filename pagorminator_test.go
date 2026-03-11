@@ -1,6 +1,8 @@
 package pagorminator
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -905,6 +907,51 @@ func TestPaGorminatorNil(t *testing.T) {
 
 	var products []*TestStruct
 	db.Clauses(nil).Find(&products)
+}
+
+func TestContextCancelledAfterPagorminator(t *testing.T) {
+	t.Parallel()
+
+	toMigrate := []*TestStruct{
+		{Code: "1", Price: 1},
+		{Code: "2", Price: 2},
+	}
+	pageRequest := UnPaged()
+	want := &Pagination{
+		page:             0,
+		size:             0,
+		totalElementsSet: true,
+		totalElements:    2,
+	}
+
+	db := setupDB(t).Debug()
+
+	err := db.CreateInBatches(&toMigrate, len(toMigrate)).Error
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var products []*TestStruct
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// cancel after pagorminator:count has run
+	errRegisteringCallback := db.Callback().Query().After("pagorminator:count").Register("cancel:ctx", func(_ *gorm.DB) {
+		cancel()
+	})
+	if errRegisteringCallback != nil {
+		t.Fatalf("can't register callback: %v", errRegisteringCallback)
+	}
+
+	errFindingProducts := db.WithContext(ctx).Clauses(pageRequest).Find(&products).Error
+	if !errors.Is(errFindingProducts, context.Canceled) {
+		t.Fatalf("expecting context cancelled: %v", errFindingProducts)
+	}
+
+	if diff := cmp.Diff(want, pageRequest, paginationCmpOpt()); diff != "" {
+		t.Errorf("diff (-want +got):\n%s", diff)
+	}
 }
 
 func setupDB(t *testing.T) *gorm.DB {

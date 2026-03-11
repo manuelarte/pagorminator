@@ -2,7 +2,6 @@ package pagorminator
 
 import (
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 const (
@@ -33,45 +32,19 @@ func (p PaGorminator) count(db *gorm.DB) {
 	if db.Statement.Schema == nil && db.Statement.Table == "" {
 		return
 	}
-	//nolint: nestif // not so complex
+
 	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
+		tx := db.Session(&gorm.Session{Context: db.Statement.Context})
 		if p.Debug {
-			db.Debug()
+			tx = tx.Debug()
 		}
 
-		newDB := db.Session(&gorm.Session{NewDB: true})
-		newDB.Statement = db.Statement.Statement
+		delete(tx.Statement.Clauses, "LIMIT")
+		delete(tx.Statement.Clauses, "OFFSET")
 
 		var totalElements int64
 
-		tx := newDB.Set(countKey, true)
-		if db.Statement.Schema != nil {
-			tx.Model(newDB.Statement.Model)
-		} else if db.Statement.Table != "" {
-			tx.Table(db.Statement.Table)
-		}
-
-		if db.Statement.Distinct {
-			tx.Distinct(db.Statement.Selects)
-		}
-
-		for _, join := range db.Statement.Joins {
-			args := join.Conds
-			//nolint:exhaustive // other cases not supported
-			switch join.JoinType {
-			case clause.InnerJoin:
-				tx.InnerJoins(join.Name, args...)
-			case clause.LeftJoin:
-				tx.Joins(join.Name, args...)
-			default:
-				continue
-			}
-		}
-
-		if whereClause, existWhere := db.Statement.Clauses["WHERE"]; existWhere {
-			tx.Where(whereClause.Expression)
-		}
-
+		tx = tx.Set(countKey, true)
 		tx.Count(&totalElements)
 
 		if tx.Error != nil {
