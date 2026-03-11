@@ -1,6 +1,8 @@
 package pagorminator
 
 import (
+	"maps"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -39,7 +41,10 @@ func (p PaGorminator) count(db *gorm.DB) {
 		if p.Debug {
 			newDB = newDB.Debug()
 		}
-		newDB.Statement = db.Statement.Statement
+
+		newDB.Statement = clone(db.Statement.Statement)
+		delete(newDB.Statement.Clauses, "LIMIT")
+		delete(newDB.Statement.Clauses, "OFFSET")
 
 		var totalElements int64
 
@@ -94,4 +99,49 @@ func (p PaGorminator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
 	}
 
 	return nil, false
+}
+
+// clone almost identically copied from gorm (only removing copying the scopes because they are not exported).
+func clone(stmt *gorm.Statement) *gorm.Statement {
+	newStmt := &gorm.Statement{
+		TableExpr:            stmt.TableExpr,
+		Table:                stmt.Table,
+		Model:                stmt.Model,
+		Unscoped:             stmt.Unscoped,
+		Dest:                 stmt.Dest,
+		ReflectValue:         stmt.ReflectValue,
+		Clauses:              map[string]clause.Clause{},
+		Distinct:             stmt.Distinct,
+		Selects:              stmt.Selects,
+		Omits:                stmt.Omits,
+		ColumnMapping:        stmt.ColumnMapping,
+		Preloads:             map[string][]any{},
+		ConnPool:             stmt.ConnPool,
+		Schema:               stmt.Schema,
+		Context:              stmt.Context,
+		RaiseErrorOnNotFound: stmt.RaiseErrorOnNotFound,
+		SkipHooks:            stmt.SkipHooks,
+		Result:               stmt.Result,
+	}
+
+	if stmt.SQL.Len() > 0 {
+		newStmt.SQL.WriteString(stmt.SQL.String())
+		newStmt.Vars = make([]any, 0, len(stmt.Vars))
+		newStmt.Vars = append(newStmt.Vars, stmt.Vars...)
+	}
+
+	maps.Copy(newStmt.Clauses, stmt.Clauses)
+
+	maps.Copy(newStmt.Preloads, stmt.Preloads)
+
+	if len(stmt.Joins) > 0 {
+		newStmt.Joins = stmt.Joins
+	}
+
+	stmt.Settings.Range(func(k, v any) bool {
+		newStmt.Settings.Store(k, v)
+		return true
+	})
+
+	return newStmt
 }
