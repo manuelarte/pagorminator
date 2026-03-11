@@ -104,7 +104,7 @@ func TestNoWhere(t *testing.T) {
 
 			db.Clauses(test.pageRequest).Find(&products)
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -191,11 +191,11 @@ func TestSortNoWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.wantPage, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.wantPage, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Fatalf("diff (-want +got):\n%s", diff)
 			}
 
-			if diff := cmp.Diff(products, test.expectedResult, cmpopts.IgnoreFields(TestStruct{}, "Model")); diff != "" {
+			if diff := cmp.Diff(test.expectedResult, products, cmpopts.IgnoreFields(TestStruct{}, "Model")); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -284,7 +284,7 @@ func TestWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -359,11 +359,11 @@ func TestSortWhere(t *testing.T) {
 				t.Fatalf("error querying products: %v", tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.wantPage, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.wantPage, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 
-			if diff := cmp.Diff(products, test.expectedResult, cmpopts.IgnoreFields(TestStruct{}, "Model")); diff != "" {
+			if diff := cmp.Diff(test.expectedResult, products, cmpopts.IgnoreFields(TestStruct{}, "Model")); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -434,7 +434,7 @@ func TestWithPreload(t *testing.T) {
 				t.Fatalf("error querying products: %v", tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -501,7 +501,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -561,7 +561,7 @@ func TestWithJoins(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -640,7 +640,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -722,7 +722,7 @@ func TestTable(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -813,7 +813,7 @@ func TestTableWithWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
@@ -891,7 +891,7 @@ func TestDistinct(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(test.pageRequest, test.want, paginationCmpOpt()); diff != "" {
+			if diff := cmp.Diff(test.want, test.pageRequest, paginationCmpOpt()); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 		})
