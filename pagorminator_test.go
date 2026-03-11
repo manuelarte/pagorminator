@@ -934,6 +934,7 @@ func TestContextCancelledAfterPagorminator(t *testing.T) {
 	var products []*TestStruct
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// cancel after pagorminator:count has run
 	errRegisteringCallback := db.Callback().Query().After("pagorminator:count").Register("cancel:ctx", func(_ *gorm.DB) {
