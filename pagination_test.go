@@ -47,22 +47,22 @@ func TestCalculateTotalPages(t *testing.T) {
 	tests := map[string]struct {
 		totalElements int64
 		size          int
-		expected      int
+		want          int
 	}{
 		"totalElements lower than size": {
 			totalElements: 2,
 			size:          4,
-			expected:      1,
+			want:          1,
 		},
 		"totalElements greater and not divisible by size": {
 			totalElements: 3,
 			size:          2,
-			expected:      2,
+			want:          2,
 		},
 		"totalElements greater and divisible by size": {
 			totalElements: 4,
 			size:          2,
-			expected:      2,
+			want:          2,
 		},
 	}
 
@@ -70,9 +70,9 @@ func TestCalculateTotalPages(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			actual := calculateTotalPages(test.totalElements, test.size)
-			if actual != test.expected {
-				t.Errorf("totalPages expected %v, got %v", test.expected, actual)
+			got := calculateTotalPages(test.totalElements, test.size)
+			if got != test.want {
+				t.Errorf("calculateTotalPages = %v, want %v", got, test.want)
 			}
 		})
 	}
