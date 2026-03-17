@@ -27,7 +27,7 @@ func TestOrderString(t *testing.T) {
 
 			got := test.order.GormString()
 			if got != test.want {
-				t.Errorf("test.order.gormString() = %q, want %q", got, test.want)
+				t.Errorf("test.order.GormString() = %q, want %q", got, test.want)
 			}
 		})
 	}
