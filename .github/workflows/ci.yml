@@ -20,10 +20,12 @@ jobs:
         go: [oldstable, stable]
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: ${{ matrix.go }}
 
@@ -39,7 +41,7 @@ jobs:
 
       - name: check test coverage
         if: matrix.os == 'ubuntu-latest' && matrix.go == 'stable'
-        uses: vladopajic/go-test-coverage@v2
+        uses: vladopajic/go-test-coverage@a93b868a4cbcbf18dc3781650fad241f0020e609 # v2.18.8
         continue-on-error: true
         with:
           config: ./.github/.testcoverage.yml
