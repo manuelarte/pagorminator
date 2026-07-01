@@ -55,7 +55,7 @@ jobs:
           persist-credentials: false
 
       - name: Check spelling of entire workspace
-        uses: crate-ci/typos@7b04f660f4ee4f048d18fd341887cf28dfbedfe2 # v1
+        uses: crate-ci/typos@37bb98842b0d8c4ffebdb75301a13db0267cef89 # v1
   markdownlint:
     name: markdownlint
     runs-on: ubuntu-latest
