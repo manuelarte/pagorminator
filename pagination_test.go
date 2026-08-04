@@ -2,8 +2,26 @@ package pagorminator
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 )
+
+func ExampleNewPageRequest() {
+	page, err := NewPageRequest(1, 10)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
+	// Output: Page: 1, Size: 10
+}
+
+func ExampleMustPageRequest() {
+	page := MustPageRequest(1, 10)
+
+	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
+	// Output: Page: 1, Size: 10
+}
 
 func TestUnPaged(t *testing.T) {
 	t.Parallel()
