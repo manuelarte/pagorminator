@@ -11,12 +11,14 @@ func ExampleNewPageRequest() {
 	if err != nil {
 		panic(err)
 	}
+
 	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
 	// Output: Page: 1, Size: 10
 }
 
 func ExampleMustPageRequest() {
 	page := MustPageRequest(1, 10)
+
 	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
 	// Output: Page: 1, Size: 10
 }
