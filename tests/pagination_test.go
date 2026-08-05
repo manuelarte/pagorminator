@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -10,8 +11,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
-	"gorm.io/driver/mysql"
+	mysqlDriver "gorm.io/driver/mysql"
 	postgresdriver "gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -35,7 +37,7 @@ func TestSQLIsPortableAcrossDialects(t *testing.T) {
 		},
 		"mysql": {
 			dialector: func(db *sql.DB) gorm.Dialector {
-				return mysql.New(mysql.Config{Conn: db, SkipInitializeWithVersion: true})
+				return mysqlDriver.New(mysqlDriver.Config{Conn: db, SkipInitializeWithVersion: true})
 			},
 		},
 		"postgres": {
@@ -86,8 +88,6 @@ func TestSQLIsPortableAcrossDialects(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): Add more tests to cover different engines.
-
 func TestSimplePagination(t *testing.T) {
 	t.Parallel()
 
@@ -134,6 +134,35 @@ func TestSimplePagination(t *testing.T) {
 				}
 				dsn := postgresContainer.MustConnectionString(ctx)
 				db, err := gorm.Open(postgresdriver.Open(dsn), &gorm.Config{})
+				if err != nil {
+					t.Fatalf("failed to open db: %s", err)
+				}
+
+				return db, deferFunc
+			},
+		},
+		"mysql:8.0.36": {
+			dbFunc: func(ctx context.Context) (*gorm.DB, func()) {
+				dbName := "users"
+				dbUser := "user"
+				dbPassword := "password"
+				mysqlContainer, err := mysql.Run(ctx,
+					"mysql:8.0.36",
+					mysql.WithDatabase(dbName),
+					mysql.WithUsername(dbUser),
+					mysql.WithPassword(dbPassword),
+				)
+				if err != nil {
+					t.Fatalf("failed to start container: %s", err)
+				}
+				deferFunc := func() {
+					if errTerminate := testcontainers.TerminateContainer(mysqlContainer); errTerminate != nil {
+						t.Logf("failed to terminate container: %v", errTerminate)
+					}
+				}
+				dsn := mysqlContainer.MustConnectionString(ctx)
+				dsn = fmt.Sprintf("%s?charset=utf8mb4&parseTime=True&loc=Local", dsn)
+				db, err := gorm.Open(mysqlDriver.Open(dsn), &gorm.Config{})
 				if err != nil {
 					t.Fatalf("failed to open db: %s", err)
 				}
