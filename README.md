@@ -16,9 +16,11 @@ Gorm plugin to add **Pagination** to your select queries
 go get -u -v github.com/manuelarte/pagorminator
 ```
 
-## 🎯 How to use it
+## 🚀 Features
 
-### Basic Usage
+### Page Pagination
+
+#### Page Pagination Basic Usage
 
 ```go
 // Initialize GORM with PaGorminator plugin
@@ -29,7 +31,7 @@ if err != nil {
 db.Use(pagorminator.PaGorminator{})
 
 // Create a page request (page 0, size 10)
-pageRequest, err := page.NewPagination(0, 10)
+pageRequest, err := pagepagination.New(0, 10)
 if err != nil {
     // Handle error
 }
@@ -43,74 +45,78 @@ fmt.Printf("Total elements: %d\n", pageRequest.GetTotalElements())
 fmt.Printf("Total pages: %d\n", pageRequest.GetTotalPages())
 ```
 
-### Pagination Parameters
+#### Page Pagination Parameters
 
-The pagination struct contains the following data:
+The pagination needs the following data:
 
 + `page`: page number, e.g. `0` (zero-based indexing)
 + `size`: page size, e.g. `10`
 + `sort`: to apply sorting, e.g. `id desc`
 
-**The plugin will automatically calculate the total amount of elements**.
+**The plugin will automatically calculate the total number of elements**.
 The pagination instance provides `GetTotalElements()` and `GetTotalPages()` methods to retrieve the total counts.
 The pagination starts at index `0`, e.g., if the total pages is `6`, then the pagination index goes from `0` to `5`.
 
-## 🚀 Features
-
-### Sorting
+#### Sorting
 
 You can add sorting to your pagination request:
 
 ```go
 // Single sort criterion
-pageRequest, err := page.NewPagination(0, 10, pagorminator.Desc("id"))
+pageRequest, err := pagepagination.New(0, 10, pagorminator.Desc("id"))
 
 // Multiple sort criteria
 pageRequest, err := page.NewPagination(
-	0, 
-	10, 
-    pagorminator.Asc("name"),
-    pagorminator.Desc("price")
+  0,
+  10,
+  pagorminator.Asc("name"),
+  pagorminator.Desc("price")
 )
 ```
 
-### Unpaged Requests
+##### Unpaged Requests
 
 If you want to retrieve all records without pagination:
 
 ```go
 // Create an unpaged request
-unpaged := pagorminator.UnPaged()
+unpaged := pagepagination.UnPaged()
 db.Clauses(unpaged).Find(&products)
 ```
 
 ### Cursor Pagination
 
-If you prefer keyset/cursor pagination, use the `cursor` package:
+#### Cursor Pagination Basic Usage
 
 ```go
-import (
-    "github.com/manuelarte/pagorminator/cursor"
-)
-
 // first page with cursor ordering
-firstPage := cursor.MustPageRequest(10, cursor.Asc("id"))
+firstPage := cursorpagination.Must(10, cursor.Asc("id"))
 db.Clauses(firstPage).Find(&products)
 
 // next page after id 100
-nextPage := cursor.MustPageRequest(10, cursor.Asc("id", 100))
+nextPage := cursorpagination.Must(10, cursor.Asc("id", 100))
 db.Clauses(nextPage).Find(&products)
 
 // multi-column cursor pagination
-multiColumnPage := cursor.MustPageRequest(
-    10,
-    cursor.Asc("code", "A42"),
-    cursor.Desc("price", 100),
+multiColumnPage := cursorpagination.Must(
+  10,
+  cursor.Asc("code", "A42"),
+  cursor.Desc("price", 100),
 )
 db.Clauses(multiColumnPage).Find(&products)
 ```
 
-#### Debug Mode
+#### Cursor Pagination Parameters
+
+The pagination needs the following data:
+
++ `size`: page size, e.g. `10`
++ `cursors`: the cursor values to apply, the column, value and sort direction.
+
+**The plugin will automatically calculate the total number of elements**.
+The pagination instance provides `GetTotalElements()` method to retrieve the total counts.
+
+### Debug Mode
 
 You can enable debug mode to see the SQL queries:
 
