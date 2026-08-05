@@ -5,7 +5,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/manuelarte/pagorminator/domain"
+	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
 type (
@@ -13,7 +13,7 @@ type (
 	Cursor struct {
 		Column string
 		Value  any
-		order  domain.Order
+		order  pagegeneric.Order
 	}
 
 	// Pagination Clause to apply cursor pagination.
@@ -47,7 +47,7 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 
 	for _, cursor := range cursors {
 		switch cursor.order.(type) {
-		case domain.Asc, domain.Desc:
+		case pagegeneric.Asc, pagegeneric.Desc:
 			// valid
 		default:
 			return nil, ErrOrderNotValid
@@ -93,7 +93,7 @@ func (p *Pagination) GetCursors() []Cursor {
 
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
-		return domain.TotalElementsNotValidError{TotalElements: totalElements}
+		return pagegeneric.TotalElementsNotValidError{TotalElements: totalElements}
 	}
 
 	p.mu.Lock()
@@ -133,21 +133,21 @@ func (p *Pagination) hasCursorValues() bool {
 }
 
 // NewCursor creates a cursor definition for a column, optional value and sort order.
-func NewCursor(column string, value any, order domain.Order) Cursor {
+func NewCursor(column string, value any, order pagegeneric.Order) Cursor {
 	return Cursor{Column: column, Value: value, order: order}
 }
 
 // Asc creates an ascending cursor for a column.
 func Asc(column string, value any) Cursor {
-	return NewCursor(column, value, domain.Asc(column))
+	return NewCursor(column, value, pagegeneric.Asc(column))
 }
 
 // Desc creates a descending cursor for a column.
 func Desc(column string, value any) Cursor {
-	return NewCursor(column, value, domain.Desc(column))
+	return NewCursor(column, value, pagegeneric.Desc(column))
 }
 
 // GetOrder returns the order definition of a cursor.
-func (c Cursor) GetOrder() domain.Order {
+func (c Cursor) GetOrder() pagegeneric.Order {
 	return c.order
 }

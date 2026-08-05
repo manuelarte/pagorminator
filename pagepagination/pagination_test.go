@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/manuelarte/pagorminator/domain"
+	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
 func ExampleNew() {
@@ -113,7 +113,7 @@ func TestSetTotalElements(t *testing.T) {
 		},
 		"negative totalElements": {
 			totalElements: -1,
-			expectedErr:   domain.TotalElementsNotValidError{TotalElements: -1},
+			expectedErr:   pagegeneric.TotalElementsNotValidError{TotalElements: -1},
 		},
 	}
 

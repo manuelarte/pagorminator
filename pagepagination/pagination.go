@@ -5,7 +5,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/manuelarte/pagorminator/domain"
+	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
 // Pagination Clause to apply pagination.
@@ -14,7 +14,7 @@ import (
 type Pagination struct {
 	page int
 	size int
-	sort domain.Sort
+	sort pagegeneric.Sort
 
 	mu               sync.RWMutex
 	totalElements    int64
@@ -23,7 +23,7 @@ type Pagination struct {
 
 // New Create page given page, size and orders.
 // It returns the pagination object and any error encountered.
-func New(page, size int, orders ...domain.Order) (*Pagination, error) {
+func New(page, size int, orders ...pagegeneric.Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -36,14 +36,14 @@ func New(page, size int, orders ...domain.Order) (*Pagination, error) {
 		return nil, ErrSizeNotAllowed
 	}
 
-	sort := domain.NewSort(orders...)
+	sort := pagegeneric.NewSort(orders...)
 
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
 // Must Create page given page, size and orders.
 // It returns the pagination object or panic if any error is encountered.
-func Must(page, size int, orders ...domain.Order) *Pagination {
+func Must(page, size int, orders ...pagegeneric.Order) *Pagination {
 	pagination, err := New(page, size, orders...)
 	if err != nil {
 		panic(err)
@@ -89,7 +89,7 @@ func (p *Pagination) GetTotalElements() int64 {
 // SetTotalElements manually sets the total elements.
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
-		return domain.TotalElementsNotValidError{TotalElements: totalElements}
+		return pagegeneric.TotalElementsNotValidError{TotalElements: totalElements}
 	}
 
 	p.setTotalElements(totalElements)
@@ -98,7 +98,7 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 }
 
 // GetSort Get the sort constraints.
-func (p *Pagination) GetSort() domain.Sort {
+func (p *Pagination) GetSort() pagegeneric.Sort {
 	return slices.Clone(p.sort)
 }
 

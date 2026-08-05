@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator/cursorpagination"
-	"github.com/manuelarte/pagorminator/domain"
+	"github.com/manuelarte/pagorminator/pagegeneric"
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
@@ -40,7 +40,7 @@ type TestPrice struct {
 type expectedPagination struct {
 	page             int
 	size             int
-	sort             []domain.Order
+	sort             []pagegeneric.Order
 	totalElements    int64
 	totalElementsSet bool
 }
@@ -155,11 +155,11 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-			pageRequest: pagepagination.Must(1, 1, domain.Asc("id")),
+			pageRequest: pagepagination.Must(1, 1, pagegeneric.Asc("id")),
 			wantPage: &expectedPagination{
 				page:             1,
 				size:             1,
-				sort:             []domain.Order{domain.Asc("id")},
+				sort:             []pagegeneric.Order{pagegeneric.Asc("id")},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -171,11 +171,11 @@ func TestSortNoWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
-			pageRequest: pagepagination.Must(1, 1, domain.Desc("id")),
+			pageRequest: pagepagination.Must(1, 1, pagegeneric.Desc("id")),
 			wantPage: &expectedPagination{
 				page:             1,
 				size:             1,
-				sort:             []domain.Order{domain.Desc("id")},
+				sort:             []pagegeneric.Order{pagegeneric.Desc("id")},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -189,11 +189,11 @@ func TestSortNoWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
 			},
-			pageRequest: pagepagination.Must(0, 5, domain.Asc("code"), domain.Desc("price")),
+			pageRequest: pagepagination.Must(0, 5, pagegeneric.Asc("code"), pagegeneric.Desc("price")),
 			wantPage: &expectedPagination{
 				page:             0,
 				size:             5,
-				sort:             []domain.Order{domain.Asc("code"), domain.Desc("price")},
+				sort:             []pagegeneric.Order{pagegeneric.Asc("code"), pagegeneric.Desc("price")},
 				totalElements:    3,
 				totalElementsSet: true,
 			},
@@ -351,12 +351,12 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: pagepagination.Must(0, 1, domain.Asc("price")),
+			pageRequest: pagepagination.Must(0, 1, pagegeneric.Asc("price")),
 			where:       "price > 50",
 			wantPage: &expectedPagination{
 				page:             0,
 				size:             1,
-				sort:             []domain.Order{domain.Asc("price")},
+				sort:             []pagegeneric.Order{pagegeneric.Asc("price")},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -371,12 +371,12 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: pagepagination.Must(0, 1, domain.Desc("price")),
+			pageRequest: pagepagination.Must(0, 1, pagegeneric.Desc("price")),
 			where:       "price > 50",
 			wantPage: &expectedPagination{
 				page:             0,
 				size:             1,
-				sort:             []domain.Order{domain.Desc("price")},
+				sort:             []pagegeneric.Order{pagegeneric.Desc("price")},
 				totalElements:    2,
 				totalElementsSet: true,
 			},

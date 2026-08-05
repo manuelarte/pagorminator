@@ -6,8 +6,8 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/manuelarte/pagorminator/domain"
 	"github.com/manuelarte/pagorminator/internal"
+	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
 // ModifyStatement Modify the query clause to apply cursor pagination.
@@ -65,9 +65,9 @@ func (p *Pagination) buildCursorWhere() (string, []any) {
 		whereSQL.WriteString(p.cursors[i].Column)
 
 		switch p.cursors[i].order.(type) {
-		case domain.Asc:
+		case pagegeneric.Asc:
 			whereSQL.WriteString(" > ?")
-		case domain.Desc:
+		case pagegeneric.Desc:
 			whereSQL.WriteString(" < ?")
 		}
 
