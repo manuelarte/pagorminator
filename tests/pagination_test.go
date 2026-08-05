@@ -6,12 +6,11 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/manuelarte/pagorminator/cursorpagination"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"github.com/manuelarte/pagorminator/cursor"
 )
 
 func TestSQLIsPortableAcrossDialects(t *testing.T) {
@@ -59,20 +58,20 @@ func TestSQLIsPortableAcrossDialects(t *testing.T) {
 				t.Fatalf("failed opening db: %v", err)
 			}
 
-			pageRequest := cursor.MustPagination(5, cursor.Asc("code", "A"), cursor.Desc("price", 10))
+			pageRequest := cursorpagination.Must(5, cursorpagination.Asc("code", "A"), cursorpagination.Desc("price", 10))
 			tx := db.Clauses(pageRequest).Model(&TestStruct{}).Find(&[]TestStruct{})
 			if tx.Error != nil {
 				t.Fatalf("unexpected query error: %v", tx.Error)
 			}
 
-			sql := tx.Statement.SQL.String()
-			if !strings.Contains(sql, "ORDER BY") ||
-				!strings.Contains(sql, "LIMIT") ||
-				!strings.Contains(sql, " OR ") ||
-				!strings.Contains(sql, " AND ") ||
-				!strings.Contains(sql, "code") ||
-				!strings.Contains(sql, "price") {
-				t.Fatalf("unexpected generated SQL: %q", sql)
+			sqlString := tx.Statement.SQL.String()
+			if !strings.Contains(sqlString, "ORDER BY") ||
+				!strings.Contains(sqlString, "LIMIT") ||
+				!strings.Contains(sqlString, " OR ") ||
+				!strings.Contains(sqlString, " AND ") ||
+				!strings.Contains(sqlString, "code") ||
+				!strings.Contains(sqlString, "price") {
+				t.Fatalf("unexpected generated SQL: %q", sqlString)
 			}
 		})
 	}

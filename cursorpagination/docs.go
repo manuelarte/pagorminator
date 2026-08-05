@@ -5,4 +5,4 @@
 // The package includes the `Pagination` struct,
 // which allows you to specify the size of the page and
 // the cursors to use for pagination.
-package cursor
+package cursorpagination

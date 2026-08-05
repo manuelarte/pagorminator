@@ -1,4 +1,4 @@
-package page
+package pagepagination
 
 import (
 	"gorm.io/gorm"

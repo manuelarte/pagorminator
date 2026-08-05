@@ -1,4 +1,4 @@
-package page
+package pagepagination
 
 import (
 	"math"
@@ -23,9 +23,9 @@ type Pagination struct {
 	totalElementsSet bool
 }
 
-// NewPagination Create page given page, size and orders.
+// New Create page given page, size and orders.
 // It returns the pagination object and any error encountered.
-func NewPagination(page, size int, orders ...domain.Order) (*Pagination, error) {
+func New(page, size int, orders ...domain.Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -43,10 +43,10 @@ func NewPagination(page, size int, orders ...domain.Order) (*Pagination, error) 
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
-// MustPagination Create page given page, size and orders.
+// Must Create page given page, size and orders.
 // It returns the pagination object or panic if any error is encountered.
-func MustPagination(page, size int, orders ...domain.Order) *Pagination {
-	pagination, err := NewPagination(page, size, orders...)
+func Must(page, size int, orders ...domain.Order) *Pagination {
+	pagination, err := New(page, size, orders...)
 	if err != nil {
 		panic(err)
 	}

@@ -6,7 +6,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/manuelarte/pagorminator/cursor"
+	"github.com/manuelarte/pagorminator/cursorpagination"
 )
 
 type Product struct {
@@ -32,7 +32,7 @@ func main() {
 	db.Create(&Product{Code: "C", Price: 300})
 	db.Create(&Product{Code: "D", Price: 400})
 
-	firstPage := cursor.MustPagination(2, cursor.Asc("id", nil))
+	firstPage := cursorpagination.Must(2, cursorpagination.Asc("id", nil))
 	var firstPageProducts []*Product
 	db.Clauses(firstPage).Find(&firstPageProducts)
 
@@ -42,7 +42,7 @@ func main() {
 	}
 
 	lastID := firstPageProducts[len(firstPageProducts)-1].ID
-	nextPage := cursor.MustPagination(2, cursor.Asc("id", lastID))
+	nextPage := cursorpagination.Must(2, cursorpagination.Asc("id", lastID))
 	var nextPageProducts []*Product
 	db.Clauses(nextPage).Find(&nextPageProducts)
 

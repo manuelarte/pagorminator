@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 
+	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagepagination"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"github.com/manuelarte/pagorminator"
-	"github.com/manuelarte/pagorminator/page"
 )
 
 type Product struct {
@@ -39,7 +38,7 @@ func main() {
 	db.CreateInBatches(&migrateProducts, len(migrateProducts))
 	fmt.Printf("%d products created\n", len(migrateProducts))
 
-	pageRequest, _ := page.NewPagination(0, 1)
+	pageRequest, _ := pagepagination.New(0, 1)
 	var products []*Product
 	db.Clauses(pageRequest).Where("price > 10").Find(&products)
 	fmt.Printf("Query: Products (Page: %d, Size: %d) with '%s'\n", pageRequest.GetPage(), pageRequest.GetSize(), "price > 10")

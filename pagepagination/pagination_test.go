@@ -1,4 +1,4 @@
-package page
+package pagepagination
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"github.com/manuelarte/pagorminator/domain"
 )
 
-func ExampleNewPagination() {
-	page, err := NewPagination(1, 10)
+func ExampleNew() {
+	page, err := New(1, 10)
 	if err != nil {
 		panic(err)
 	}
@@ -18,8 +18,8 @@ func ExampleNewPagination() {
 	// Output: Page: 1, Size: 10
 }
 
-func ExampleMustPagination() {
-	page := MustPagination(1, 10)
+func ExampleMust() {
+	page := Must(1, 10)
 
 	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
 	// Output: Page: 1, Size: 10
@@ -49,7 +49,7 @@ func TestUnPaged(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			page, err := NewPagination(test.page, test.size)
+			page, err := New(test.page, test.size)
 			if err != nil {
 				t.Errorf("NewPagination(%d, %d) = %s, unexpected error", test.page, test.size, err)
 			}

@@ -1,4 +1,4 @@
-package cursor
+package cursorpagination
 
 import (
 	"errors"
@@ -58,7 +58,7 @@ func TestNewPageRequest(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := NewPagination(test.size, test.cursors...)
+			got, err := New(test.size, test.cursors...)
 			if !errors.Is(err, test.expectedErr) {
 				t.Fatalf("expected error %v, got %v", test.expectedErr, err)
 			}
@@ -82,7 +82,7 @@ func TestNewPageRequest(t *testing.T) {
 func TestGetCursorsClone(t *testing.T) {
 	t.Parallel()
 
-	pageRequest := MustPagination(10, Asc("id", 1))
+	pageRequest := Must(10, Asc("id", 1))
 	got := pageRequest.GetCursors()
 	got[0].Column = "changed"
 
@@ -121,7 +121,7 @@ func TestBuildCursorWhere(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			pageRequest := MustPagination(5, test.cursors...)
+			pageRequest := Must(5, test.cursors...)
 			gotSQL, gotVars := pageRequest.buildCursorWhere()
 
 			if gotSQL != test.wantSQL {
@@ -155,7 +155,7 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 		t.Fatal(txCreate.Error)
 	}
 
-	pageRequest := MustPagination(2, Desc("price", 2))
+	pageRequest := Must(2, Desc("price", 2))
 
 	var products []*TestStruct
 	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
@@ -182,7 +182,7 @@ func TestCursorPaginationMultiColumnSort(t *testing.T) {
 		t.Fatal(txCreate.Error)
 	}
 
-	pageRequest := MustPagination(3, Asc("code", "A"), Desc("price", 2))
+	pageRequest := Must(3, Asc("code", "A"), Desc("price", 2))
 
 	var products []*TestStruct
 	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
@@ -213,7 +213,7 @@ func TestCursorPaginationUnPaged(t *testing.T) {
 		t.Fatal(txCreate.Error)
 	}
 
-	pageRequest := MustPagination(0, Asc("id", 0))
+	pageRequest := Must(0, Asc("id", 0))
 
 	var products []*TestStruct
 	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
@@ -239,7 +239,7 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 		t.Fatal(txCreate.Error)
 	}
 
-	pageRequest := MustPagination(2, Desc("price", nil))
+	pageRequest := Must(2, Desc("price", nil))
 
 	var products []*TestStruct
 	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {

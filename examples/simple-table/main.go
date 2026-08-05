@@ -3,11 +3,10 @@ package main
 import (
 	"fmt"
 
+	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagepagination"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-
-	"github.com/manuelarte/pagorminator"
-	"github.com/manuelarte/pagorminator/page"
 )
 
 type Product struct {
@@ -33,7 +32,7 @@ func main() {
 	fmt.Printf("1 product created\n")
 
 	var products map[string]any
-	pagination, _ := page.NewPagination(0, 1)
+	pagination, _ := pagepagination.New(0, 1)
 	db.Clauses(pagination).Table("products").Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",

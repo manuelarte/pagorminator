@@ -1,4 +1,4 @@
-package cursor
+package cursorpagination
 
 import (
 	"slices"
@@ -30,9 +30,9 @@ type (
 	}
 )
 
-// NewPagination Create a cursor page given cursor value, size and order.
+// New Create a cursor page given cursor value, size and order.
 // It returns the pagination object and any error encountered.
-func NewPagination(size int, cursors ...Cursor) (*Pagination, error) {
+func New(size int, cursors ...Cursor) (*Pagination, error) {
 	if size < 0 {
 		return nil, ErrSizeCantBeNegative
 	}
@@ -71,10 +71,10 @@ func NewPagination(size int, cursors ...Cursor) (*Pagination, error) {
 	}, nil
 }
 
-// MustPagination Create cursor page given cursor value, size and order.
+// Must Create a cursor page given cursor value, size and order.
 // It returns the pagination object or panic if any error is encountered.
-func MustPagination(size int, cursors ...Cursor) *Pagination {
-	pagination, err := NewPagination(size, cursors...)
+func Must(size int, cursors ...Cursor) *Pagination {
+	pagination, err := New(size, cursors...)
 	if err != nil {
 		panic(err)
 	}

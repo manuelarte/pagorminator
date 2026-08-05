@@ -8,7 +8,7 @@ import (
 
 	"github.com/manuelarte/pagorminator"
 	"github.com/manuelarte/pagorminator/domain"
-	"github.com/manuelarte/pagorminator/page"
+	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
 type Product struct {
@@ -35,7 +35,7 @@ func main() {
 	fmt.Printf("2 products created\n")
 
 	var products []*Product
-	pageRequest, _ := page.NewPagination(0, 1, domain.Desc("price"))
+	pageRequest, _ := pagepagination.New(0, 1, domain.Desc("price"))
 	db.Clauses(pageRequest).Find(&products)
 
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",

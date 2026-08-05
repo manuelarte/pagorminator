@@ -4,4 +4,4 @@
 // The package includes the `Pagination` struct,
 // which allows you to specify the size of the page and
 // the page number to use for pagination.
-package page
+package pagepagination

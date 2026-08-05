@@ -5,7 +5,7 @@ import (
 
 	"github.com/manuelarte/pagorminator/domain"
 	"github.com/manuelarte/pagorminator/internal"
-	"github.com/manuelarte/pagorminator/page"
+	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
 const (
@@ -45,7 +45,7 @@ func (p PaGorminator) count(db *gorm.DB) {
 			tx = tx.Debug()
 		}
 
-		if _, isPagePagination := pageable.(*page.Pagination); isPagePagination {
+		if _, isPagePagination := pageable.(*pagepagination.Pagination); isPagePagination {
 			delete(tx.Statement.Clauses, "LIMIT")
 			delete(tx.Statement.Clauses, "OFFSET")
 		}
