@@ -49,8 +49,8 @@ func TestNewPageRequest(t *testing.T) {
 			expectedErr: ErrOrderRequired,
 		},
 		"mixed cursor values": {
-			size:        10,
-			cursors:     []Cursor{Asc("id", 3), Desc("price", nil)},
+			size:    10,
+			cursors: []Cursor{Asc("id", 3), Desc("price", nil)},
 			expectedErr: CursorValuesNotValidError{
 				CursorsHaveValues: []string{"id"},
 				CursorsNilValue:   []string{"price"},
