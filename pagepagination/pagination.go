@@ -21,8 +21,13 @@ type Pagination struct {
 	totalElementsSet bool
 }
 
-// New Create page given page, size and orders.
+// New Create page given page, size, and orders.
 // It returns the pagination object and any error encountered.
+//
+// Errors:
+//   - ErrPageCantBeNegative if the page value is below zero.
+//   - ErrSizeCantBeNegative if the size value is below zero.
+//   - ErrSizeNotAllowed if the size is zero and the page is greater than zero.
 func New(page, size int, orders ...pagegeneric.Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
@@ -41,7 +46,7 @@ func New(page, size int, orders ...pagegeneric.Order) (*Pagination, error) {
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
-// Must Create page given page, size and orders.
+// Must Create page given page, size, and orders.
 // It returns the pagination object or panic if any error is encountered.
 func Must(page, size int, orders ...pagegeneric.Order) *Pagination {
 	pagination, err := New(page, size, orders...)
@@ -86,7 +91,10 @@ func (p *Pagination) GetTotalElements() int64 {
 	return p.totalElements
 }
 
-// SetTotalElements manually sets the total elements.
+// SetTotalElements sets the total elements.
+//
+// Errors:
+//   - ErrTotalElementsNotValid if the total elements are below zero.
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
 		return pagegeneric.TotalElementsNotValidError{TotalElements: totalElements}

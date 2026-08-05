@@ -98,6 +98,10 @@ func (p *Pagination) GetCursors() []Cursor {
 	return slices.Clone(p.cursors)
 }
 
+// SetTotalElements sets the total elements.
+//
+// Errors:
+//   - ErrTotalElementsNotValid if the total elements are below zero.
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
 		return pagegeneric.TotalElementsNotValidError{TotalElements: totalElements}

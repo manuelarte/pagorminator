@@ -19,6 +19,10 @@ type (
 	}
 
 	PaginationResponse interface {
+		// SetTotalElements sets the total elements.
+		//
+		// Errors:
+		//   - ErrTotalElementsNotValid if the total elements are below zero.
 		SetTotalElements(totalElements int64) error
 		IsTotalElementsSet() bool
 	}
