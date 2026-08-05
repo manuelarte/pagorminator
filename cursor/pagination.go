@@ -5,18 +5,17 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/manuelarte/pagorminator"
-	"github.com/manuelarte/pagorminator/internal"
+	"github.com/manuelarte/pagorminator/domain"
 )
 
-var _ internal.PaginationResponse = new(Pagination)
+var _ domain.Pagination = new(Pagination)
 
 type (
 	//go:structinit
 	Cursor struct {
 		Column string
 		Value  any
-		order  pagorminator.Order
+		order  domain.Order
 	}
 
 	// Pagination Clause to apply cursor pagination.
@@ -49,7 +48,7 @@ func NewPagination(size int, cursors ...Cursor) (*Pagination, error) {
 
 	for _, cursor := range cursors {
 		switch cursor.order.(type) {
-		case pagorminator.Asc, pagorminator.Desc:
+		case domain.Asc, domain.Desc:
 			// valid
 		default:
 			return nil, ErrOrderNotValid
@@ -95,7 +94,7 @@ func (p *Pagination) GetCursors() []Cursor {
 
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
-		return pagorminator.TotalElementsNotValidError{TotalElements: totalElements}
+		return domain.TotalElementsNotValidError{TotalElements: totalElements}
 	}
 
 	p.mu.Lock()
@@ -105,6 +104,13 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 	p.totalElements = totalElements
 
 	return nil
+}
+
+func (p *Pagination) IsTotalElementsSet() bool {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	return p.totalElementsSet
 }
 
 func (p *Pagination) sortString() string {
@@ -121,21 +127,21 @@ func (p *Pagination) hasCursorValues() bool {
 }
 
 // NewCursor creates a cursor definition for a column, optional value and sort order.
-func NewCursor(column string, value any, order pagorminator.Order) Cursor {
+func NewCursor(column string, value any, order domain.Order) Cursor {
 	return Cursor{Column: column, Value: value, order: order}
 }
 
 // Asc creates an ascending cursor for a column.
 func Asc(column string, value any) Cursor {
-	return NewCursor(column, value, pagorminator.Asc(column))
+	return NewCursor(column, value, domain.Asc(column))
 }
 
 // Desc creates a descending cursor for a column.
 func Desc(column string, value any) Cursor {
-	return NewCursor(column, value, pagorminator.Desc(column))
+	return NewCursor(column, value, domain.Desc(column))
 }
 
 // GetOrder returns the order definition of a cursor.
-func (c Cursor) GetOrder() pagorminator.Order {
+func (c Cursor) GetOrder() domain.Order {
 	return c.order
 }

@@ -1,11 +1,11 @@
-package pagorminator
+package page
 
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-)
 
-const pagorminatorClause = "pagorminator:clause"
+	"github.com/manuelarte/pagorminator/internal"
+)
 
 var (
 	_ clause.Expression      = new(Pagination)
@@ -14,10 +14,9 @@ var (
 
 // ModifyStatement Modify the query clause to apply pagination.
 func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
-	db := stm.DB
-	db.Set(pagorminatorClause, p)
-
 	tx := stm.DB
+	tx.Set(internal.PagorminatorClause, p)
+
 	if !p.IsUnPaged() {
 		tx = tx.Limit(p.size).Offset(p.GetOffset())
 	}

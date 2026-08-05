@@ -2,6 +2,10 @@ package pagorminator
 
 import (
 	"gorm.io/gorm"
+
+	"github.com/manuelarte/pagorminator/domain"
+	"github.com/manuelarte/pagorminator/internal"
+	"github.com/manuelarte/pagorminator/page"
 )
 
 const (
@@ -35,14 +39,17 @@ func (p PaGorminator) count(db *gorm.DB) {
 		return
 	}
 
-	if pageable, ok := p.getPageRequest(db); ok && !pageable.isTotalElementsSet() {
+	if pageable, ok := p.getPageRequest(db); ok && !pageable.IsTotalElementsSet() {
 		tx := db.Session(&gorm.Session{Context: db.Statement.Context})
 		if p.Debug {
 			tx = tx.Debug()
 		}
 
-		delete(tx.Statement.Clauses, "LIMIT")
-		delete(tx.Statement.Clauses, "OFFSET")
+		switch pageable.(type) {
+		case *page.Pagination:
+			delete(tx.Statement.Clauses, "LIMIT")
+			delete(tx.Statement.Clauses, "OFFSET")
+		}
 
 		var totalElements int64
 
@@ -54,13 +61,13 @@ func (p PaGorminator) count(db *gorm.DB) {
 			return
 		}
 
-		pageable.setTotalElements(totalElements)
+		_ = pageable.SetTotalElements(totalElements)
 	}
 }
 
-func (p PaGorminator) getPageRequest(db *gorm.DB) (*Pagination, bool) {
-	if value, ok := db.Get(pagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
-		if paginationClause, okP := value.(*Pagination); okP {
+func (p PaGorminator) getPageRequest(db *gorm.DB) (domain.PaginationResponse, bool) {
+	if value, ok := db.Get(internal.PagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
+		if paginationClause, okP := value.(domain.PaginationResponse); okP {
 			if countValue, okCount := db.Get(countKey); !okCount {
 				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {
 					return paginationClause, true

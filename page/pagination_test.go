@@ -1,9 +1,11 @@
-package pagorminator
+package page
 
 import (
 	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/manuelarte/pagorminator/domain"
 )
 
 func ExampleNewPageRequest() {
@@ -111,7 +113,7 @@ func TestSetTotalElements(t *testing.T) {
 		},
 		"negative totalElements": {
 			totalElements: -1,
-			expectedErr:   TotalElementsNotValidError{TotalElements: -1},
+			expectedErr:   domain.TotalElementsNotValidError{TotalElements: -1},
 		},
 	}
 

@@ -1,14 +1,14 @@
-package pagorminator
+package page
 
 import (
 	"math"
 	"slices"
 	"sync"
 
-	"github.com/manuelarte/pagorminator/internal"
+	"github.com/manuelarte/pagorminator/domain"
 )
 
-var _ internal.PaginationResponse = new(Pagination)
+var _ domain.Pagination = new(Pagination)
 
 // Pagination Clause to apply pagination.
 //
@@ -16,7 +16,7 @@ var _ internal.PaginationResponse = new(Pagination)
 type Pagination struct {
 	page int
 	size int
-	sort Sort
+	sort domain.Sort
 
 	mu               sync.RWMutex
 	totalElements    int64
@@ -25,7 +25,7 @@ type Pagination struct {
 
 // NewPageRequest Create page given page, size and orders.
 // It returns the pagination object and any error encountered.
-func NewPageRequest(page, size int, orders ...Order) (*Pagination, error) {
+func NewPageRequest(page, size int, orders ...domain.Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -38,14 +38,14 @@ func NewPageRequest(page, size int, orders ...Order) (*Pagination, error) {
 		return nil, ErrSizeNotAllowed
 	}
 
-	sort := NewSort(orders...)
+	sort := domain.NewSort(orders...)
 
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
 // MustPageRequest Create page given page, size and orders.
 // It returns the pagination object or panic if any error is encountered.
-func MustPageRequest(page, size int, orders ...Order) *Pagination {
+func MustPageRequest(page, size int, orders ...domain.Order) *Pagination {
 	pagination, err := NewPageRequest(page, size, orders...)
 	if err != nil {
 		panic(err)
@@ -91,7 +91,7 @@ func (p *Pagination) GetTotalElements() int64 {
 // SetTotalElements manually sets the total elements.
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
-		return TotalElementsNotValidError{TotalElements: totalElements}
+		return domain.TotalElementsNotValidError{TotalElements: totalElements}
 	}
 
 	p.setTotalElements(totalElements)
@@ -100,7 +100,7 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 }
 
 // GetSort Get the sort constraints.
-func (p *Pagination) GetSort() Sort {
+func (p *Pagination) GetSort() domain.Sort {
 	return slices.Clone(p.sort)
 }
 
@@ -114,16 +114,19 @@ func (p *Pagination) IsSort() bool {
 	return len(p.sort) > 0
 }
 
+func (p *Pagination) IsTotalElementsSet() bool {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	return p.totalElementsSet
+}
+
 func (p *Pagination) setTotalElements(totalElements int64) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.totalElementsSet = true
 	p.totalElements = totalElements
-}
-
-func (p *Pagination) isTotalElementsSet() bool {
-	return p.totalElementsSet
 }
 
 func calculateTotalPages(totalElements int64, size int) int {

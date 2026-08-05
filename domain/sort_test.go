@@ -1,4 +1,4 @@
-package pagorminator
+package domain
 
 import (
 	"testing"
