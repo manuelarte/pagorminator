@@ -8,8 +8,6 @@ import (
 	"github.com/manuelarte/pagorminator/domain"
 )
 
-var _ domain.Pagination = new(Pagination)
-
 type (
 	//go:structinit
 	Cursor struct {
@@ -19,6 +17,7 @@ type (
 	}
 
 	// Pagination Clause to apply cursor pagination.
+	//
 	//go:structinit
 	Pagination struct {
 		size    int

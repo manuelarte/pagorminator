@@ -3,7 +3,6 @@ package pagorminator
 import (
 	"gorm.io/gorm"
 
-	"github.com/manuelarte/pagorminator/domain"
 	"github.com/manuelarte/pagorminator/internal"
 )
 
@@ -60,13 +59,13 @@ func (p PaGorminator) count(db *gorm.DB) {
 	}
 }
 
-func (p PaGorminator) getPageRequest(db *gorm.DB) (domain.PaginationResponse, bool) {
+func (p PaGorminator) getPageRequest(db *gorm.DB) (PaginationResponse, bool) {
 	value, hasPagorminatorClause := db.Get(internal.PagorminatorClause)
 	if !hasPagorminatorClause {
 		return nil, false
 	}
 
-	paginationClause, okP := value.(domain.PaginationResponse)
+	paginationClause, okP := value.(PaginationResponse)
 	if !okP {
 		return nil, false
 	}

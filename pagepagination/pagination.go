@@ -8,8 +8,6 @@ import (
 	"github.com/manuelarte/pagorminator/domain"
 )
 
-var _ domain.Pagination = new(Pagination)
-
 // Pagination Clause to apply pagination.
 //
 //go:structinit

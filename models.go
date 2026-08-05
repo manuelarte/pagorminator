@@ -1,19 +1,17 @@
-package domain
+package pagorminator
 
 import (
-	"fmt"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/manuelarte/pagorminator/cursorpagination"
+	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
-type TotalElementsNotValidError struct {
-	TotalElements int64
-}
-
-func (e TotalElementsNotValidError) Error() string {
-	return fmt.Sprintf("total elements is not valid: %d", e.TotalElements)
-}
+var (
+	_ Pagination = new(cursorpagination.Pagination)
+	_ Pagination = new(pagepagination.Pagination)
+)
 
 type (
 	PaginationRequest interface {
