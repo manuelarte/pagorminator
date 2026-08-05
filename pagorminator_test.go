@@ -45,6 +45,19 @@ type expectedPagination struct {
 	totalElementsSet bool
 }
 
+type expectedCursorPagination struct {
+	Size             int
+	Cursors          []expectedCursor
+	TotalElements    int64
+	TotalElementsSet bool
+}
+
+type expectedCursor struct {
+	Column string
+	Value  any
+	Order  string
+}
+
 func TestNoWhere(t *testing.T) {
 	t.Parallel()
 
@@ -1042,6 +1055,18 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 	if len(products) != 1 || products[0].Price != 1 {
 		t.Fatalf("unexpected result: %+v", products)
 	}
+
+	wantPage := &expectedCursorPagination{
+		Size: 2,
+		Cursors: []expectedCursor{
+			{Column: "price", Value: 2, Order: "price DESC"},
+		},
+		TotalElements:    1,
+		TotalElementsSet: true,
+	}
+	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+		t.Fatalf("diff (-want +got):\n%s", diff)
+	}
 }
 
 func TestCursorPaginationMultiColumnSort(t *testing.T) {
@@ -1074,6 +1099,19 @@ func TestCursorPaginationMultiColumnSort(t *testing.T) {
 		{code: "B", price: 3},
 	}
 	assertStructs(t, expected, products)
+
+	wantPage := &expectedCursorPagination{
+		Size: 3,
+		Cursors: []expectedCursor{
+			{Column: "code", Value: "A", Order: "code ASC"},
+			{Column: "price", Value: 2, Order: "price DESC"},
+		},
+		TotalElements:    2,
+		TotalElementsSet: true,
+	}
+	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+		t.Fatalf("diff (-want +got):\n%s", diff)
+	}
 }
 
 func TestCursorPaginationUnPaged(t *testing.T) {
@@ -1100,6 +1138,18 @@ func TestCursorPaginationUnPaged(t *testing.T) {
 	if len(products) != 3 {
 		t.Fatalf("unexpected result size: %d", len(products))
 	}
+
+	wantPage := &expectedCursorPagination{
+		Size: 0,
+		Cursors: []expectedCursor{
+			{Column: "id", Value: 0, Order: "id ASC"},
+		},
+		TotalElements:    3,
+		TotalElementsSet: true,
+	}
+	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+		t.Fatalf("diff (-want +got):\n%s", diff)
+	}
 }
 
 func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
@@ -1125,6 +1175,18 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 
 	if len(products) != 2 || products[0].Price != 3 || products[1].Price != 2 {
 		t.Fatalf("unexpected result: %+v", products)
+	}
+
+	wantPage := &expectedCursorPagination{
+		Size: 2,
+		Cursors: []expectedCursor{
+			{Column: "price", Value: nil, Order: "price DESC"},
+		},
+		TotalElements:    3,
+		TotalElementsSet: true,
+	}
+	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+		t.Fatalf("diff (-want +got):\n%s", diff)
 	}
 }
 
@@ -1159,6 +1221,33 @@ func toExpectedPagination(actual *pagepagination.Pagination) *expectedPagination
 		sort:             actual.GetSort(),
 		totalElements:    actual.GetTotalElements(),
 		totalElementsSet: actual.IsTotalElementsSet(),
+	}
+}
+
+func toExpectedCursorPagination(actual *cursorpagination.Pagination) *expectedCursorPagination {
+	if actual == nil {
+		return nil
+	}
+
+	cursors := actual.GetCursors()
+	expectedCursors := make([]expectedCursor, len(cursors))
+	for i, cursor := range cursors {
+		order := ""
+		if cursor.GetOrder() != nil {
+			order = cursor.GetOrder().GormString()
+		}
+		expectedCursors[i] = expectedCursor{
+			Column: cursor.Column,
+			Value:  cursor.Value,
+			Order:  order,
+		}
+	}
+
+	return &expectedCursorPagination{
+		Size:             actual.GetSize(),
+		Cursors:          expectedCursors,
+		TotalElements:    actual.GetTotalElements(),
+		TotalElementsSet: actual.IsTotalElementsSet(),
 	}
 }
 

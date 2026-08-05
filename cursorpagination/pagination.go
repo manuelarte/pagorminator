@@ -106,6 +106,13 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 	return nil
 }
 
+func (p *Pagination) GetTotalElements() int64 {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	return p.totalElements
+}
+
 func (p *Pagination) IsTotalElementsSet() bool {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
