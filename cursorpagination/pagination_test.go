@@ -2,16 +2,27 @@ package cursorpagination
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
-	"gorm.io/gorm"
+	"github.com/manuelarte/pagorminator/domain"
 )
 
-type TestStruct struct {
-	gorm.Model
+func ExampleNew() {
+	cursorPage, err := New(10, Asc("id", nil))
+	if err != nil {
+		panic(err)
+	}
 
-	Code  string
-	Price uint
+	fmt.Printf("Size: %d, Cursors: %d\n", cursorPage.GetSize(), len(cursorPage.GetCursors()))
+	// Output: Size: 10, Cursors: 1
+}
+
+func ExampleMust() {
+	cursorPage := Must(10, Asc("id", nil))
+
+	fmt.Printf("Size: %d, Cursors: %d\n", cursorPage.GetSize(), len(cursorPage.GetCursors()))
+	// Output: Size: 10, Cursors: 1
 }
 
 func TestNewPageRequest(t *testing.T) {
@@ -72,6 +83,40 @@ func TestNewPageRequest(t *testing.T) {
 			gotCursors := got.GetCursors()
 			if len(gotCursors) != len(test.cursors) {
 				t.Fatalf("cursor count expected %d, got %d", len(test.cursors), len(gotCursors))
+			}
+		})
+	}
+}
+
+func TestSetTotalElements(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		totalElements int64
+		expectedErr   error
+	}{
+		"positive totalElements": {
+			totalElements: 2,
+		},
+		"0 totalElements": {
+			totalElements: 0,
+		},
+		"negative totalElements": {
+			totalElements: -1,
+			expectedErr:   domain.TotalElementsNotValidError{TotalElements: -1},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			p := &Pagination{}
+
+			actualErr := p.SetTotalElements(test.totalElements)
+			if !errors.Is(actualErr, test.expectedErr) {
+				t.Errorf("expected: %v, got: %v", test.expectedErr, actualErr)
+				t.Fail()
 			}
 		})
 	}
