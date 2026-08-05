@@ -24,7 +24,6 @@ func (p PaGorminator) Name() string {
 }
 
 // Initialize initializes the plugin and registers the callback for counting total elements.
-// TODO(manuelarte): pending to add the cursor pagination.
 func (p PaGorminator) Initialize(db *gorm.DB) error {
 	err := db.Callback().Query().Before("gorm:query").Register("pagorminator:count", p.count)
 	if err != nil {
