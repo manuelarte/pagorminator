@@ -1230,12 +1230,14 @@ func toExpectedCursorPagination(actual *cursorpagination.Pagination) *expectedCu
 	}
 
 	cursors := actual.GetCursors()
+
 	expectedCursors := make([]expectedCursor, len(cursors))
 	for i, cursor := range cursors {
 		order := ""
 		if cursor.GetOrder() != nil {
 			order = cursor.GetOrder().GormString()
 		}
+
 		expectedCursors[i] = expectedCursor{
 			Column: cursor.Column,
 			Value:  cursor.Value,

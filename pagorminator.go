@@ -5,7 +5,6 @@ import (
 
 	"github.com/manuelarte/pagorminator/domain"
 	"github.com/manuelarte/pagorminator/internal"
-	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
 const (
@@ -14,7 +13,7 @@ const (
 
 var _ gorm.Plugin = new(PaGorminator)
 
-// PaGorminator Gorm plugin to add total elements and total pages to your pagination query.
+// PaGorminator Gorm plugin to add pagination information to your pagination query.
 type PaGorminator struct {
 	Debug bool
 }
@@ -44,10 +43,8 @@ func (p PaGorminator) count(db *gorm.DB) {
 			tx = tx.Debug()
 		}
 
-		if _, isPagePagination := pageable.(*pagepagination.Pagination); isPagePagination {
-			delete(tx.Statement.Clauses, "LIMIT")
-			delete(tx.Statement.Clauses, "OFFSET")
-		}
+		delete(tx.Statement.Clauses, "LIMIT")
+		delete(tx.Statement.Clauses, "OFFSET")
 
 		var totalElements int64
 
@@ -64,15 +61,25 @@ func (p PaGorminator) count(db *gorm.DB) {
 }
 
 func (p PaGorminator) getPageRequest(db *gorm.DB) (domain.PaginationResponse, bool) {
-	if value, ok := db.Get(internal.PagorminatorClause); ok { //nolint:nestif // checking many fields in an if way
-		if paginationClause, okP := value.(domain.PaginationResponse); okP {
-			if countValue, okCount := db.Get(countKey); !okCount {
-				if isCount, hasCount := countValue.(bool); !hasCount || !isCount {
-					return paginationClause, true
-				}
-			}
-		}
+	value, hasPagorminatorClause := db.Get(internal.PagorminatorClause)
+	if !hasPagorminatorClause {
+		return nil, false
 	}
 
-	return nil, false
+	paginationClause, okP := value.(domain.PaginationResponse)
+	if !okP {
+		return nil, false
+	}
+
+	countValue, okCount := db.Get(countKey)
+	if okCount {
+		return nil, false
+	}
+
+	isCount, hasCount := countValue.(bool)
+	if hasCount || isCount {
+		return nil, false
+	}
+
+	return paginationClause, true
 }
