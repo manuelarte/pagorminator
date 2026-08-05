@@ -45,8 +45,7 @@ func (p PaGorminator) count(db *gorm.DB) {
 			tx = tx.Debug()
 		}
 
-		switch pageable.(type) {
-		case *page.Pagination:
+		if _, isPagePagination := pageable.(*page.Pagination); isPagePagination {
 			delete(tx.Statement.Clauses, "LIMIT")
 			delete(tx.Statement.Clauses, "OFFSET")
 		}

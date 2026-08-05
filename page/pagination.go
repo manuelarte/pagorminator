@@ -23,9 +23,9 @@ type Pagination struct {
 	totalElementsSet bool
 }
 
-// NewPageRequest Create page given page, size and orders.
+// NewPagination Create page given page, size and orders.
 // It returns the pagination object and any error encountered.
-func NewPageRequest(page, size int, orders ...domain.Order) (*Pagination, error) {
+func NewPagination(page, size int, orders ...domain.Order) (*Pagination, error) {
 	if page < 0 {
 		return nil, ErrPageCantBeNegative
 	}
@@ -43,10 +43,10 @@ func NewPageRequest(page, size int, orders ...domain.Order) (*Pagination, error)
 	return &Pagination{page: page, size: size, sort: sort}, nil
 }
 
-// MustPageRequest Create page given page, size and orders.
+// MustPagination Create page given page, size and orders.
 // It returns the pagination object or panic if any error is encountered.
-func MustPageRequest(page, size int, orders ...domain.Order) *Pagination {
-	pagination, err := NewPageRequest(page, size, orders...)
+func MustPagination(page, size int, orders ...domain.Order) *Pagination {
+	pagination, err := NewPagination(page, size, orders...)
 	if err != nil {
 		panic(err)
 	}
