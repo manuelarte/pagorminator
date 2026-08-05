@@ -1,4 +1,4 @@
-// Package page contains the implementation of page-based
+// Package pagepagination contains the implementation of page-based
 // pagination for GORM. It provides a way to paginate through
 // database records using pages.
 // The package includes the `Pagination` struct,

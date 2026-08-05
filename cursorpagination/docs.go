@@ -1,4 +1,4 @@
-// Package cursor contains the implementation of cursor-based
+// Package cursorpagination contains the implementation of cursor-based
 // pagination for GORM. It provides a way to paginate through
 // database records using cursors, which can be more efficient
 // than traditional offset-based pagination, especially for large datasets.

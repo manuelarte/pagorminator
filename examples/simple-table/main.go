@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/manuelarte/pagorminator"
-	"github.com/manuelarte/pagorminator/pagepagination"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
 type Product struct {

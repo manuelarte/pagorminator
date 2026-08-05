@@ -6,11 +6,12 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/manuelarte/pagorminator/cursorpagination"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+
+	"github.com/manuelarte/pagorminator/cursorpagination"
 )
 
 func TestSQLIsPortableAcrossDialects(t *testing.T) {
