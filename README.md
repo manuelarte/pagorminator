@@ -84,6 +84,32 @@ unpaged := pagorminator.UnPaged()
 db.Clauses(unpaged).Find(&products)
 ```
 
+### Cursor Pagination
+
+If you prefer keyset/cursor pagination, use the `cursor` package:
+
+```go
+import (
+    "github.com/manuelarte/pagorminator/cursor"
+)
+
+// first page with cursor ordering
+firstPage := cursor.MustPageRequest(10, cursor.Asc("id"))
+db.Clauses(firstPage).Find(&products)
+
+// next page after id 100
+nextPage := cursor.MustPageRequest(10, cursor.Asc("id", 100))
+db.Clauses(nextPage).Find(&products)
+
+// multi-column cursor pagination
+multiColumnPage := cursor.MustPageRequest(
+    10,
+    cursor.Asc("code", "A42"),
+    cursor.Desc("price", 100),
+)
+db.Clauses(multiColumnPage).Find(&products)
+```
+
 #### Debug Mode
 
 You can enable debug mode to see the SQL queries:

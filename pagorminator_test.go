@@ -130,9 +130,9 @@ func TestSortNoWhere(t *testing.T) {
 			wantPage: &Pagination{
 				page:             1,
 				size:             1,
+				sort:             []Order{Asc("id")},
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{Asc("id")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -146,9 +146,9 @@ func TestSortNoWhere(t *testing.T) {
 			wantPage: &Pagination{
 				page:             1,
 				size:             1,
+				sort:             []Order{Desc("id")},
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{Desc("id")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
@@ -164,9 +164,9 @@ func TestSortNoWhere(t *testing.T) {
 			wantPage: &Pagination{
 				page:             0,
 				size:             5,
+				sort:             []Order{Asc("code"), Desc("price")},
 				totalElementsSet: true,
 				totalElements:    3,
-				sort:             []Order{Asc("code"), Desc("price")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
@@ -315,9 +315,9 @@ func TestSortWhere(t *testing.T) {
 			wantPage: &Pagination{
 				page:             0,
 				size:             1,
+				sort:             []Order{Asc("price")},
 				totalElementsSet: true,
 				totalElements:    2,
-				sort:             []Order{Asc("price")},
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
@@ -335,9 +335,9 @@ func TestSortWhere(t *testing.T) {
 			wantPage: &Pagination{
 				page:             0,
 				size:             1,
-				totalElementsSet: true,
-				totalElements:    2,
 				sort:             []Order{Desc("price")},
+				totalElements:    2,
+				totalElementsSet: true,
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},

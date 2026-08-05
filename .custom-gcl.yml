@@ -1,0 +1,11 @@
+version: v2.12.2
+plugins:
+  - module: "github.com/manuelarte/testcomments"
+    import: "github.com/manuelarte/testcomments/plugin"
+    version: "latest"
+  - module: "github.com/manuelarte/godddlint"
+    import: "github.com/manuelarte/godddlint/plugin"
+    version: "latest"
+  - module: "github.com/manuelarte/structinit"
+    import: "github.com/manuelarte/structinit/plugin"
+    version: "latest"

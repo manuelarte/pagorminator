@@ -1,4 +1,6 @@
-default: help
+.PHONY: fmt lint test mocks test_coverage test_ci
+
+GO_PKGS   := $(shell go list -f {{.Dir}} ./...)
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -11,14 +13,14 @@ tidy: ## Run go mod tidy in all directories
 
 t: test
 test: ## Run unit tests, alias: t
-	go test --cover -timeout=300s -parallel=16 ${TEST_DIRECTORIES}
-.PHONY: t test
+	go test --cover -timeout=300s -parallel=16 $(GO_PKGS)
 
 tools:
 	go install golang.org/x/vuln/cmd/govulncheck@latest
-.PHONY: tools
 
-lint: tidy ## Format go code and run the fixer, alias: fmt
+fmt: tidy
 	golangci-lint fmt
-	golangci-lint run --fix ./...
-.PHONY: lint
+
+lint: fmt
+	golangci-lint custom -v
+	./custom-gcl  run --fix ./...

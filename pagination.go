@@ -7,6 +7,8 @@ import (
 )
 
 // Pagination Clause to apply pagination.
+//
+//go:structinit
 type Pagination struct {
 	page int
 	size int

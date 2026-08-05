@@ -49,7 +49,7 @@ func TestUnPaged(t *testing.T) {
 
 			page, err := NewPageRequest(test.page, test.size)
 			if err != nil {
-				t.Errorf("Unexpected error: %s", err)
+				t.Errorf("NewPageRequest(%d, %d) = %s, unexpected error", test.page, test.size, err)
 			}
 
 			if page.IsUnPaged() != test.expected {
