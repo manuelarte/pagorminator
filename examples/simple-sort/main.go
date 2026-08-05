@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagegeneric"
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
