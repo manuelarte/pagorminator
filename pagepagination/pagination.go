@@ -100,7 +100,11 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 		return pagegeneric.TotalElementsNotValidError{TotalElements: totalElements}
 	}
 
-	p.setTotalElements(totalElements)
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.totalElementsSet = true
+	p.totalElements = totalElements
 
 	return nil
 }
@@ -125,14 +129,6 @@ func (p *Pagination) IsTotalElementsSet() bool {
 	defer p.mu.RUnlock()
 
 	return p.totalElementsSet
-}
-
-func (p *Pagination) setTotalElements(totalElements int64) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	p.totalElementsSet = true
-	p.totalElements = totalElements
 }
 
 func calculateTotalPages(totalElements int64, size int) int {
