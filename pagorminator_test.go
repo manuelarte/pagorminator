@@ -11,6 +11,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	"github.com/manuelarte/pagorminator/cursorpagination"
 	"github.com/manuelarte/pagorminator/domain"
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
@@ -1017,6 +1018,116 @@ func TestContextCancelledAfterPagorminator(t *testing.T) {
 	}
 }
 
+func TestCursorPaginationSingleColumn(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+	toMigrate := []*TestStruct{
+		{Code: "A", Price: 2},
+		{Code: "B", Price: 1},
+		{Code: "C", Price: 3},
+	}
+
+	if txCreate := db.CreateInBatches(&toMigrate, len(toMigrate)); txCreate.Error != nil {
+		t.Fatal(txCreate.Error)
+	}
+
+	pageRequest := cursorpagination.Must(2, cursorpagination.Desc("price", 2))
+
+	var products []*TestStruct
+	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+
+	if len(products) != 1 || products[0].Price != 1 {
+		t.Fatalf("unexpected result: %+v", products)
+	}
+}
+
+func TestCursorPaginationMultiColumnSort(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+	toMigrate := []*TestStruct{
+		{Code: "A", Price: 1},
+		{Code: "A", Price: 3},
+		{Code: "A", Price: 2},
+		{Code: "B", Price: 3},
+	}
+
+	if txCreate := db.CreateInBatches(&toMigrate, len(toMigrate)); txCreate.Error != nil {
+		t.Fatal(txCreate.Error)
+	}
+
+	pageRequest := cursorpagination.Must(3, cursorpagination.Asc("code", "A"), cursorpagination.Desc("price", 2))
+
+	var products []*TestStruct
+	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+
+	expected := []struct {
+		code  string
+		price uint
+	}{
+		{code: "A", price: 1},
+		{code: "B", price: 3},
+	}
+	assertStructs(t, expected, products)
+}
+
+func TestCursorPaginationUnPaged(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+	toMigrate := []*TestStruct{
+		{Code: "A", Price: 1},
+		{Code: "B", Price: 2},
+		{Code: "C", Price: 3},
+	}
+
+	if txCreate := db.CreateInBatches(&toMigrate, len(toMigrate)); txCreate.Error != nil {
+		t.Fatal(txCreate.Error)
+	}
+
+	pageRequest := cursorpagination.Must(0, cursorpagination.Asc("id", 0))
+
+	var products []*TestStruct
+	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+
+	if len(products) != 3 {
+		t.Fatalf("unexpected result size: %d", len(products))
+	}
+}
+
+func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+	toMigrate := []*TestStruct{
+		{Code: "A", Price: 1},
+		{Code: "B", Price: 3},
+		{Code: "C", Price: 2},
+	}
+
+	if txCreate := db.CreateInBatches(&toMigrate, len(toMigrate)); txCreate.Error != nil {
+		t.Fatal(txCreate.Error)
+	}
+
+	pageRequest := cursorpagination.Must(2, cursorpagination.Desc("price", nil))
+
+	var products []*TestStruct
+	if tx := db.Clauses(pageRequest).Find(&products); tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+
+	if len(products) != 2 || products[0].Price != 3 || products[1].Price != 2 {
+		t.Fatalf("unexpected result: %+v", products)
+	}
+}
+
 func setupDB(t *testing.T) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
 	if err != nil {
@@ -1048,5 +1159,30 @@ func toExpectedPagination(actual *pagepagination.Pagination) *expectedPagination
 		sort:             actual.GetSort(),
 		totalElements:    actual.GetTotalElements(),
 		totalElementsSet: actual.IsTotalElementsSet(),
+	}
+}
+
+func assertStructs(t *testing.T, expected []struct {
+	code  string
+	price uint
+}, products []*TestStruct,
+) {
+	t.Helper()
+
+	if len(products) != len(expected) {
+		t.Fatalf("unexpected result size: got %d, want %d", len(products), len(expected))
+	}
+
+	for i := range expected {
+		if products[i].Code != expected[i].code || products[i].Price != expected[i].price {
+			t.Fatalf(
+				"unexpected result at %d: got (%s,%d), want (%s,%d)",
+				i,
+				products[i].Code,
+				products[i].Price,
+				expected[i].code,
+				expected[i].price,
+			)
+		}
 	}
 }
