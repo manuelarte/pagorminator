@@ -31,6 +31,12 @@ type (
 
 // New Create a cursor page given cursor value, size and order.
 // It returns the pagination object and any error encountered.
+//
+// Errors:
+//   - ErrSizeCantBeNegative if the size value is below zero.
+//   - ErrOrderRequired if the cursors are empty.
+//   - ErrOrderNotValid if the order is not Asc or Desc
+//   - CursorValuesNotValidError if some cursors have values and some others do not.
 func New(size int, cursors ...Cursor) (*Pagination, error) {
 	if size < 0 {
 		return nil, ErrSizeCantBeNegative
@@ -40,10 +46,8 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 		return nil, ErrOrderRequired
 	}
 
-	var (
-		hasValue    bool
-		hasNilValue bool
-	)
+	hasValue := make([]string, 0, len(cursors))
+	hasNilValue := make([]string, 0, len(cursors))
 
 	for _, cursor := range cursors {
 		switch cursor.order.(type) {
@@ -54,14 +58,17 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 		}
 
 		if cursor.Value == nil {
-			hasNilValue = true
+			hasNilValue = append(hasNilValue, cursor.Column)
 		} else {
-			hasValue = true
+			hasValue = append(hasValue, cursor.Column)
 		}
 	}
 
-	if hasValue && hasNilValue {
-		return nil, ErrCursorValueNotValid
+	if len(hasValue) > 0 && len(hasNilValue) > 0 {
+		return nil, CursorValuesNotValidError{
+			CursorsHaveValues: hasValue,
+			CursorsNilValue:   hasNilValue,
+		}
 	}
 
 	return &Pagination{

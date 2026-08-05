@@ -51,7 +51,10 @@ func TestNewPageRequest(t *testing.T) {
 		"mixed cursor values": {
 			size:        10,
 			cursors:     []Cursor{Asc("id", 3), Desc("price", nil)},
-			expectedErr: ErrCursorValueNotValid,
+			expectedErr: CursorValuesNotValidError{
+				CursorsHaveValues: []string{"id"},
+				CursorsNilValue:   []string{"price"},
+			},
 		},
 		"first page without cursor values": {
 			size:    10,
@@ -69,7 +72,7 @@ func TestNewPageRequest(t *testing.T) {
 
 			got, err := New(test.size, test.cursors...)
 			if !errors.Is(err, test.expectedErr) {
-				t.Fatalf("expected error %v, got %v", test.expectedErr, err)
+				t.Fatalf("New = %v, expected error %v", err, test.expectedErr)
 			}
 
 			if test.expectedErr != nil {
