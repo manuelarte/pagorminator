@@ -49,8 +49,8 @@ func TestNoWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged several items": {
@@ -61,8 +61,8 @@ func TestNoWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -73,8 +73,8 @@ func TestNoWhere(t *testing.T) {
 			want: &Pagination{
 				page:             1,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 0/2 items, size 2": {
@@ -85,8 +85,8 @@ func TestNoWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             2,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -131,8 +131,8 @@ func TestSortNoWhere(t *testing.T) {
 				page:             1,
 				size:             1,
 				sort:             []Order{Asc("id")},
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -147,8 +147,8 @@ func TestSortNoWhere(t *testing.T) {
 				page:             1,
 				size:             1,
 				sort:             []Order{Desc("id")},
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
@@ -165,8 +165,8 @@ func TestSortNoWhere(t *testing.T) {
 				page:             0,
 				size:             5,
 				sort:             []Order{Asc("code"), Desc("price")},
-				totalElementsSet: true,
 				totalElements:    3,
+				totalElementsSet: true,
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
@@ -222,8 +222,8 @@ func TestWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged one item, filtered out": {
@@ -235,8 +235,8 @@ func TestWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    0,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged two items, one filtered out": {
@@ -248,8 +248,8 @@ func TestWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"Paged four items, two filtered out": {
@@ -264,8 +264,8 @@ func TestWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -316,8 +316,8 @@ func TestSortWhere(t *testing.T) {
 				page:             0,
 				size:             1,
 				sort:             []Order{Asc("price")},
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 			expectedResult: []*TestStruct{
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
@@ -388,8 +388,8 @@ func TestWithPreload(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -401,8 +401,8 @@ func TestWithPreload(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 2/2 items": {
@@ -414,8 +414,8 @@ func TestWithPreload(t *testing.T) {
 			want: &Pagination{
 				page:             1,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -463,8 +463,8 @@ func TestWithPreloadAndWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    4,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -479,8 +479,8 @@ func TestWithPreloadAndWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             2,
-				totalElementsSet: true,
 				totalElements:    4,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -526,8 +526,8 @@ func TestWithJoins(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -539,8 +539,8 @@ func TestWithJoins(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -588,8 +588,8 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -602,8 +602,8 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 2/2 items": {
@@ -618,8 +618,8 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             2,
-				totalElementsSet: true,
 				totalElements:    3,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -665,8 +665,8 @@ func TestTable(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged several items": {
@@ -677,8 +677,8 @@ func TestTable(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -689,8 +689,8 @@ func TestTable(t *testing.T) {
 			want: &Pagination{
 				page:             1,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 		"Paged 0/2 items, size 2": {
@@ -701,8 +701,8 @@ func TestTable(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             2,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -749,8 +749,8 @@ func TestTableWithWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged one item, filtered out": {
@@ -762,8 +762,8 @@ func TestTableWithWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    0,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged two items, one filtered out": {
@@ -775,8 +775,8 @@ func TestTableWithWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"Paged four items, two filtered out": {
@@ -791,8 +791,8 @@ func TestTableWithWhere(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             1,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -839,8 +839,8 @@ func TestDistinct(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    1,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged four items, two different prices": {
@@ -854,8 +854,8 @@ func TestDistinct(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    2,
+				totalElementsSet: true,
 			},
 		},
 		"UnPaged four items, four different prices": {
@@ -869,8 +869,8 @@ func TestDistinct(t *testing.T) {
 			want: &Pagination{
 				page:             0,
 				size:             0,
-				totalElementsSet: true,
 				totalElements:    4,
+				totalElementsSet: true,
 			},
 		},
 	}
@@ -920,8 +920,8 @@ func TestContextCancelledAfterPagorminator(t *testing.T) {
 	want := &Pagination{
 		page:             0,
 		size:             0,
-		totalElementsSet: true,
 		totalElements:    2,
+		totalElementsSet: true,
 	}
 
 	db := setupDB(t).Debug()

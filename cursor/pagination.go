@@ -6,7 +6,10 @@ import (
 	"sync"
 
 	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/internal"
 )
+
+var _ internal.PaginationResponse = new(Pagination)
 
 type (
 	//go:structinit
@@ -23,8 +26,8 @@ type (
 		cursors []Cursor
 
 		mu               sync.RWMutex
-		totalElementsSet bool
 		totalElements    int64
+		totalElementsSet bool
 	}
 )
 
@@ -88,6 +91,20 @@ func (p *Pagination) GetSize() int {
 // GetCursors Get the cursor values.
 func (p *Pagination) GetCursors() []Cursor {
 	return slices.Clone(p.cursors)
+}
+
+func (p *Pagination) SetTotalElements(totalElements int64) error {
+	if totalElements < 0 {
+		return pagorminator.TotalElementsNotValidError{TotalElements: totalElements}
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.totalElementsSet = true
+	p.totalElements = totalElements
+
+	return nil
 }
 
 func (p *Pagination) sortString() string {

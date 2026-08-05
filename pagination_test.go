@@ -111,7 +111,7 @@ func TestSetTotalElements(t *testing.T) {
 		},
 		"negative totalElements": {
 			totalElements: -1,
-			expectedErr:   TotalElementsNotValidError{totalElements: -1},
+			expectedErr:   TotalElementsNotValidError{TotalElements: -1},
 		},
 	}
 

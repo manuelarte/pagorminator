@@ -12,9 +12,9 @@ var (
 )
 
 type TotalElementsNotValidError struct {
-	totalElements int64
+	TotalElements int64
 }
 
 func (e TotalElementsNotValidError) Error() string {
-	return fmt.Sprintf("total elements is not valid: %d", e.totalElements)
+	return fmt.Sprintf("total elements is not valid: %d", e.TotalElements)
 }

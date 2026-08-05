@@ -4,7 +4,11 @@ import (
 	"math"
 	"slices"
 	"sync"
+
+	"github.com/manuelarte/pagorminator/internal"
 )
+
+var _ internal.PaginationResponse = new(Pagination)
 
 // Pagination Clause to apply pagination.
 //
@@ -15,8 +19,8 @@ type Pagination struct {
 	sort Sort
 
 	mu               sync.RWMutex
-	totalElementsSet bool
 	totalElements    int64
+	totalElementsSet bool
 }
 
 // NewPageRequest Create page given page, size and orders.
@@ -87,7 +91,7 @@ func (p *Pagination) GetTotalElements() int64 {
 // SetTotalElements manually sets the total elements.
 func (p *Pagination) SetTotalElements(totalElements int64) error {
 	if totalElements < 0 {
-		return TotalElementsNotValidError{totalElements: totalElements}
+		return TotalElementsNotValidError{TotalElements: totalElements}
 	}
 
 	p.setTotalElements(totalElements)
