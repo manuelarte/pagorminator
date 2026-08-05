@@ -1,6 +1,11 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
 
 type TotalElementsNotValidError struct {
 	TotalElements int64
@@ -23,5 +28,7 @@ type (
 	Pagination interface {
 		PaginationRequest
 		PaginationResponse
+		clause.Expression
+		gorm.StatementModifier
 	}
 )

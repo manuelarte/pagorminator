@@ -10,11 +10,6 @@ import (
 	"github.com/manuelarte/pagorminator/internal"
 )
 
-var (
-	_ clause.Expression      = new(Pagination)
-	_ gorm.StatementModifier = new(Pagination)
-)
-
 // ModifyStatement Modify the query clause to apply cursor pagination.
 func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	tx := stm.DB
