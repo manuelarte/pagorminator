@@ -6,14 +6,13 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/manuelarte/pagorminator/internal"
 	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
 // ModifyStatement Modify the query clause to apply cursor pagination.
 func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	tx := stm.DB
-	tx.Set(internal.PagorminatorClause, p)
+	tx.Set(pagegeneric.PagorminatorClause, p)
 
 	if p.hasCursorValues() {
 		cursorWhereSQL, cursorVars := p.buildCursorWhere()

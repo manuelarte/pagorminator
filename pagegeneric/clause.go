@@ -1,3 +1,3 @@
-package internal
+package pagegeneric
 
 const PagorminatorClause = "pagorminator:clause"
