@@ -89,6 +89,13 @@ db.Clauses(unpaged).Find(&products)
 #### Cursor Pagination Basic Usage
 
 ```go
+// Initialize GORM with PaGorminator plugin
+db, err := gorm.Open(sqlite.Open("file:mem?mode=memory&cache=shared"), &gorm.Config{})
+if err != nil {
+panic("failed to connect database")
+}
+db.Use(pagorminator.PaGorminator{})
+
 // first page with cursor ordering
 firstPage := cursorpagination.Must(10, cursor.Asc("id"))
 db.Clauses(firstPage).Find(&products)
