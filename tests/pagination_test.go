@@ -77,6 +77,11 @@ var (
 
 		return db, deferFunc, nil
 	}
+
+	dbEngines = map[string]createGormDBFunc{
+		"postgres:18-alpine": postgres18,
+		"mysql:8.0.36":       mysql8,
+	}
 )
 
 func TestSQLIsPortableAcrossDialects(t *testing.T) {
@@ -164,22 +169,11 @@ func TestSimplePagination(t *testing.T) {
 		{Code: "D", Price: 1},
 	}
 
-	tests := map[string]struct {
-		dbFunc createGormDBFunc
-	}{
-		"postgres:18-alpine": {
-			dbFunc: postgres18,
-		},
-		"mysql:8.0.36": {
-			dbFunc: mysql8,
-		},
-	}
-
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
+	for engine, dbFunc := range dbEngines {
+		t.Run(engine, func(t *testing.T) {
 			t.Parallel()
 
-			db, deferFunc, errStartingContainer := test.dbFunc(t.Context())
+			db, deferFunc, errStartingContainer := dbFunc(t.Context())
 			if errStartingContainer != nil {
 				t.Fatalf("failed to start container: %v", errStartingContainer)
 			}
@@ -252,49 +246,44 @@ func TestCursorPaginationSQLInjection(t *testing.T) {
 		}
 	}
 
-	// TODO: do table driven inside table driven
-	engines := map[string]createGormDBFunc{
-		"postgres:18-alpine": postgres18,
-		"mysql:8.0.36":       mysql8,
-	}
+	for engine, dbFunc := range dbEngines {
+		t.Run(engine, func(t *testing.T) {
+			tests := map[string]struct {
+				cursors []cursorpagination.Cursor
+			}{
+				"delete inside value": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", "1); DELETE FROM test_structs; --"),
+					},
+				},
+			}
+			for name, test := range tests {
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
 
-	tests := map[string]struct {
-		cursors []cursorpagination.Cursor
-	}{
-		"delete inside value": {
-			cursors: []cursorpagination.Cursor{
-				cursorpagination.Asc("id", "1); DELETE FROM test_structs; --"),
-			},
-		},
-	}
+					db, deferFunc, errStartingContainer := dbFunc(t.Context())
+					if errStartingContainer != nil {
+						t.Fatalf("failed to start container %s: %v", engine, errStartingContainer)
+					}
+					defer deferFunc()
+					setupDB(t, db)
+					if err := db.CreateInBatches(testData(), 2).Error; err != nil {
+						t.Fatalf("failed to create test data: %v", err)
+					}
 
-	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+					cursorRequest := cursorpagination.Must(2, test.cursors...)
+					_ = db.Clauses(cursorRequest).Find(&[]*TestStruct{})
 
-			for engine, createContainerFn := range engines {
-				db, deferFunc, errStartingContainer := createContainerFn(t.Context())
-				if errStartingContainer != nil {
-					t.Fatalf("failed to start container %s: %v", engine, errStartingContainer)
-				}
-				defer deferFunc()
-				setupDB(t, db)
-				if err := db.CreateInBatches(testData(), 2).Error; err != nil {
-					t.Fatalf("failed to create test data: %v", err)
-				}
+					// TODO(manuelarte): not only do count, but check that the values are all the same
+					var got int64
+					if err := db.Model(&TestStruct{}).Count(&got).Error; err != nil {
+						t.Fatalf("failed to count records: %v", err)
+					}
 
-				cursorRequest := cursorpagination.Must(2, test.cursors...)
-				_ = db.Clauses(cursorRequest).Find(&[]*TestStruct{})
-
-				// TODO(manuelarte): not only do count, but check that the values are all the same
-				var got int64
-				if err := db.Model(&TestStruct{}).Count(&got).Error; err != nil {
-					t.Fatalf("failed to count records: %v", err)
-				}
-
-				if got != 4 {
-					t.Errorf("unexpected count of records: got=%d, want=%d", got, 4)
-				}
+					if got != 4 {
+						t.Errorf("unexpected count of records: got=%d, want=%d", got, 4)
+					}
+				})
 			}
 		})
 	}
