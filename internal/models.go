@@ -1,16 +1,8 @@
-package pagorminator
+package internal
 
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-
-	"github.com/manuelarte/pagorminator/cursorpagination"
-	"github.com/manuelarte/pagorminator/pagepagination"
-)
-
-var (
-	_ Pagination = new(cursorpagination.Pagination)
-	_ Pagination = new(pagepagination.Pagination)
 )
 
 type (

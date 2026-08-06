@@ -5,8 +5,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/manuelarte/pagorminator/internal"
 	"github.com/manuelarte/pagorminator/pagegeneric"
 )
+
+var _ internal.Pagination = new(Pagination)
 
 type (
 	//go:structinit
