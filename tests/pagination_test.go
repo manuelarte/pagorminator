@@ -248,6 +248,8 @@ func TestCursorPaginationSQLInjection(t *testing.T) {
 
 	for engine, dbFunc := range dbEngines {
 		t.Run(engine, func(t *testing.T) {
+			t.Parallel()
+
 			tests := map[string]struct {
 				cursors []cursorpagination.Cursor
 			}{
