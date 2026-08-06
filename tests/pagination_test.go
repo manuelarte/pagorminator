@@ -24,6 +24,61 @@ import (
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
+type createGormDBFunc func(ctx context.Context) (*gorm.DB, func(), error)
+
+var (
+	postgres18 = func(ctx context.Context) (*gorm.DB, func(), error) {
+		dbName := "users"
+		dbUser := "user"
+		dbPassword := "password"
+		postgresContainer, err := postgres.Run(ctx,
+			"postgres:18-alpine",
+			postgres.WithDatabase(dbName),
+			postgres.WithUsername(dbUser),
+			postgres.WithPassword(dbPassword),
+			postgres.BasicWaitStrategies(),
+		)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to start container: %w", err)
+		}
+		deferFunc := func() {
+			_ = testcontainers.TerminateContainer(postgresContainer)
+		}
+		dsn := postgresContainer.MustConnectionString(ctx)
+		db, err := gorm.Open(postgresdriver.Open(dsn), &gorm.Config{})
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to open db: %w", err)
+		}
+
+		return db, deferFunc, nil
+	}
+	mysql8 = func(ctx context.Context) (*gorm.DB, func(), error) {
+		dbName := "users"
+		dbUser := "user"
+		dbPassword := "password"
+		mysqlContainer, err := mysql.Run(ctx,
+			"mysql:8.0.36",
+			mysql.WithDatabase(dbName),
+			mysql.WithUsername(dbUser),
+			mysql.WithPassword(dbPassword),
+		)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to start container: %w", err)
+		}
+		deferFunc := func() {
+			_ = testcontainers.TerminateContainer(mysqlContainer)
+		}
+		dsn := mysqlContainer.MustConnectionString(ctx)
+		dsn = fmt.Sprintf("%s?charset=utf8mb4&parseTime=True&loc=Local", dsn)
+		db, err := gorm.Open(mysqlDriver.Open(dsn), &gorm.Config{})
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to open db: %w", err)
+		}
+
+		return db, deferFunc, nil
+	}
+)
+
 func TestSQLIsPortableAcrossDialects(t *testing.T) {
 	t.Parallel()
 
@@ -110,65 +165,13 @@ func TestSimplePagination(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		dbFunc func(context.Context) (*gorm.DB, func())
+		dbFunc createGormDBFunc
 	}{
 		"postgres:18-alpine": {
-			dbFunc: func(ctx context.Context) (*gorm.DB, func()) {
-				dbName := "users"
-				dbUser := "user"
-				dbPassword := "password"
-				postgresContainer, err := postgres.Run(ctx,
-					"postgres:18-alpine",
-					postgres.WithDatabase(dbName),
-					postgres.WithUsername(dbUser),
-					postgres.WithPassword(dbPassword),
-					postgres.BasicWaitStrategies(),
-				)
-				if err != nil {
-					t.Fatalf("failed to start container: %s", err)
-				}
-				deferFunc := func() {
-					if errTerminating := testcontainers.TerminateContainer(postgresContainer); errTerminating != nil {
-						t.Logf("failed to terminate container: %s", err)
-					}
-				}
-				dsn := postgresContainer.MustConnectionString(ctx)
-				db, err := gorm.Open(postgresdriver.Open(dsn), &gorm.Config{})
-				if err != nil {
-					t.Fatalf("failed to open db: %s", err)
-				}
-
-				return db, deferFunc
-			},
+			dbFunc: postgres18,
 		},
 		"mysql:8.0.36": {
-			dbFunc: func(ctx context.Context) (*gorm.DB, func()) {
-				dbName := "users"
-				dbUser := "user"
-				dbPassword := "password"
-				mysqlContainer, err := mysql.Run(ctx,
-					"mysql:8.0.36",
-					mysql.WithDatabase(dbName),
-					mysql.WithUsername(dbUser),
-					mysql.WithPassword(dbPassword),
-				)
-				if err != nil {
-					t.Fatalf("failed to start container: %s", err)
-				}
-				deferFunc := func() {
-					if errTerminate := testcontainers.TerminateContainer(mysqlContainer); errTerminate != nil {
-						t.Logf("failed to terminate container: %v", errTerminate)
-					}
-				}
-				dsn := mysqlContainer.MustConnectionString(ctx)
-				dsn = fmt.Sprintf("%s?charset=utf8mb4&parseTime=True&loc=Local", dsn)
-				db, err := gorm.Open(mysqlDriver.Open(dsn), &gorm.Config{})
-				if err != nil {
-					t.Fatalf("failed to open db: %s", err)
-				}
-
-				return db, deferFunc
-			},
+			dbFunc: mysql8,
 		},
 	}
 
@@ -176,14 +179,12 @@ func TestSimplePagination(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			db, deferFunc := test.dbFunc(t.Context())
+			db, deferFunc, errStartingContainer := test.dbFunc(t.Context())
+			if errStartingContainer != nil {
+				t.Fatalf("failed to start container: %v", errStartingContainer)
+			}
 			defer deferFunc()
-			if err := db.Use(pagorminator.PaGorminator{}); err != nil {
-				t.Fatalf("failed to use paginator: %v", err)
-			}
-			if err := db.AutoMigrate(&TestStruct{}); err != nil {
-				t.Fatalf("failed to migrate db: %v", err)
-			}
+			setupDB(t, db)
 			if err := db.CreateInBatches(testData(), 2).Error; err != nil {
 				t.Fatalf("failed to create test data: %v", err)
 			}
@@ -239,3 +240,71 @@ func TestSimplePagination(t *testing.T) {
 }
 
 // TODO: add more tests, including SQL injection tests.
+func TestCursorPaginationSQLInjection(t *testing.T) {
+	t.Parallel()
+
+	testData := func() []*TestStruct {
+		return []*TestStruct{
+			{Code: "A", Price: 2},
+			{Code: "B", Price: 1},
+			{Code: "C", Price: 3},
+			{Code: "D", Price: 1},
+		}
+	}
+
+	// TODO: do table driven inside table driven
+	engines := map[string]createGormDBFunc{
+		"postgres:18-alpine": postgres18,
+		"mysql:8.0.36":       mysql8,
+	}
+
+	tests := map[string]struct {
+		cursors []cursorpagination.Cursor
+	}{
+		"delete inside value": {
+			cursors: []cursorpagination.Cursor{
+				cursorpagination.Asc("id", "1); DELETE FROM test_structs; --"),
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			for engine, createContainerFn := range engines {
+				db, deferFunc, errStartingContainer := createContainerFn(t.Context())
+				if errStartingContainer != nil {
+					t.Fatalf("failed to start container %s: %v", engine, errStartingContainer)
+				}
+				defer deferFunc()
+				setupDB(t, db)
+				if err := db.CreateInBatches(testData(), 2).Error; err != nil {
+					t.Fatalf("failed to create test data: %v", err)
+				}
+
+				cursorRequest := cursorpagination.Must(2, test.cursors...)
+				_ = db.Clauses(cursorRequest).Find(&[]*TestStruct{})
+
+				// TODO(manuelarte): not only do count, but check that the values are all the same
+				var got int64
+				if err := db.Model(&TestStruct{}).Count(&got).Error; err != nil {
+					t.Fatalf("failed to count records: %v", err)
+				}
+
+				if got != 4 {
+					t.Errorf("unexpected count of records: got=%d, want=%d", got, 4)
+				}
+			}
+		})
+	}
+}
+
+func setupDB(t *testing.T, db *gorm.DB) {
+	if err := db.Use(pagorminator.PaGorminator{Debug: true}); err != nil {
+		t.Fatalf("failed to use paginator: %v", err)
+	}
+	if err := db.AutoMigrate(&TestStruct{}); err != nil {
+		t.Fatalf("failed to migrate db: %v", err)
+	}
+}
