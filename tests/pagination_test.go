@@ -237,3 +237,5 @@ func TestSimplePagination(t *testing.T) {
 		})
 	}
 }
+
+// TODO: add more tests, including SQL injection tests.
