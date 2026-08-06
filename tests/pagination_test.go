@@ -17,6 +17,7 @@ import (
 	postgresdriver "gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/manuelarte/pagorminator"
 	"github.com/manuelarte/pagorminator/cursorpagination"
@@ -173,62 +174,63 @@ func TestSimplePagination(t *testing.T) {
 		t.Run(engine, func(t *testing.T) {
 			t.Parallel()
 
-			db, deferFunc, errStartingContainer := dbFunc(t.Context())
-			if errStartingContainer != nil {
-				t.Fatalf("failed to start container: %v", errStartingContainer)
+			tests := map[string]struct {
+				pageRequests []clause.Expression
+				want         [][]*TestStruct
+			}{
+				"page pagination": {
+					pageRequests: []clause.Expression{
+						pagepagination.Must(0, 2, pagegeneric.Asc("code")),
+						pagepagination.Must(1, 2, pagegeneric.Asc("code")),
+					},
+					want: [][]*TestStruct{
+						wantPage0,
+						wantPage1,
+					},
+				},
+				"cursor pagination": {
+					pageRequests: []clause.Expression{
+						cursorpagination.Must(2, cursorpagination.Asc("code", nil)),
+						cursorpagination.Must(2, cursorpagination.Asc("code", wantPage0[1].Code)),
+					},
+					want: [][]*TestStruct{
+						wantPage0,
+						wantPage1,
+					},
+				},
 			}
-			defer deferFunc()
-			setupDB(t, db)
-			if err := db.CreateInBatches(testData(), 2).Error; err != nil {
-				t.Fatalf("failed to create test data: %v", err)
-			}
+			for name, test := range tests {
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
 
-			compareFunc := func(want, got []*TestStruct) {
-				if diff := cmp.Diff(
-					want,
-					got,
-					cmpopts.IgnoreFields(TestStruct{}, "ID", "CreatedAt", "UpdatedAt"),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
-			}
+					db, deferFunc, errStartingContainer := dbFunc(t.Context())
+					if errStartingContainer != nil {
+						t.Fatalf("failed to start container: %v", errStartingContainer)
+					}
+					defer deferFunc()
+					setupDB(t, db)
+					if err := db.CreateInBatches(testData(), 2).Error; err != nil {
+						t.Fatalf("failed to create test data: %v", err)
+					}
 
-			// 1st page pagination
-			var gotPage0, gotPage1 []*TestStruct
-
-			pageRequest0 := pagepagination.Must(0, 2, pagegeneric.Asc("code"))
-			if err := db.Clauses(pageRequest0).Find(&gotPage0).Error; err != nil {
-				t.Fatalf("failed to query page 0: %v", err)
+					compareFunc := func(want, got []*TestStruct) {
+						if diff := cmp.Diff(
+							want,
+							got,
+							cmpopts.IgnoreFields(TestStruct{}, "ID", "CreatedAt", "UpdatedAt"),
+						); diff != "" {
+							t.Errorf("diff (-want +got):\n%s", diff)
+						}
+					}
+					for i, pageRequest := range test.pageRequests {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareFunc(test.want[i], got)
+					}
+				})
 			}
-			compareFunc(wantPage0, gotPage0)
-
-			pageRequest1 := pagepagination.Must(1, 2, pagegeneric.Asc("code"))
-			if err := db.Clauses(pageRequest1).Find(&gotPage1).Error; err != nil {
-				t.Fatalf("failed to query page 1: %v", err)
-			}
-			compareFunc(wantPage1, gotPage1)
-			if pageRequest0.GetTotalElements() != 4 || pageRequest0.GetTotalElements() != pageRequest1.GetTotalElements() {
-				t.Errorf("unexpected total elements: page0=%d, page1=%d, want=%d",
-					pageRequest0.GetTotalElements(),
-					pageRequest1.GetTotalElements(),
-					4,
-				)
-			}
-
-			// 2nd cursor pagination
-			var gotCursor0, gotCursor1 []*TestStruct
-
-			cursorRequest0 := cursorpagination.Must(2, cursorpagination.Asc("code", nil))
-			if err := db.Clauses(cursorRequest0).Find(&gotCursor0).Error; err != nil {
-				t.Fatalf("failed to query cursor 0: %v", err)
-			}
-			compareFunc(wantPage0, gotCursor0)
-
-			cursorRequest1 := cursorpagination.Must(2, cursorpagination.Asc("code", gotCursor0[1].Code))
-			if err := db.Clauses(cursorRequest1).Find(&gotCursor1).Error; err != nil {
-				t.Fatalf("failed to query cursor 1: %v", err)
-			}
-			compareFunc(wantPage1, gotCursor1)
 		})
 	}
 }

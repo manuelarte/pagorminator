@@ -45,7 +45,7 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 		return nil, ErrSizeCantBeNegative
 	}
 
-	if len(cursors) == 0 {
+	if size > 0 && len(cursors) == 0 {
 		return nil, ErrOrderRequired
 	}
 
@@ -89,6 +89,11 @@ func Must(size int, cursors ...Cursor) *Pagination {
 	}
 
 	return pagination
+}
+
+// UnPaged Create an unpaged request (no pagination is applied).
+func UnPaged() *Pagination {
+	return &Pagination{size: 0}
 }
 
 // GetSize Get the page size.

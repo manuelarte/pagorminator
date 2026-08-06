@@ -241,6 +241,7 @@ func TestSortNoWhere(t *testing.T) {
 	}
 }
 
+// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWhere(t *testing.T) {
 	t.Parallel()
 
