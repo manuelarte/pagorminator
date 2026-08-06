@@ -233,7 +233,6 @@ func TestSimplePagination(t *testing.T) {
 	}
 }
 
-// TODO: add more tests, including SQL injection tests.
 func TestCursorPaginationSQLInjection(t *testing.T) {
 	t.Parallel()
 
@@ -253,9 +252,55 @@ func TestCursorPaginationSQLInjection(t *testing.T) {
 			tests := map[string]struct {
 				cursors []cursorpagination.Cursor
 			}{
-				"delete inside value": {
+				"delete statement": {
 					cursors: []cursorpagination.Cursor{
 						cursorpagination.Asc("id", "1); DELETE FROM test_structs; --"),
+					},
+				},
+				"update statement": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", "1); UPDATE test_structs SET code = 'hacked'; --"),
+					},
+				},
+				"insert statement": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", "1); INSERT INTO test_structs (code, price) VALUES ('X', 99); --"),
+					},
+				},
+				"drop table statement": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", "1); DROP TABLE test_structs; --"),
+					},
+				},
+				"truncate statement": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", "1); TRUNCATE TABLE test_structs; --"),
+					},
+				},
+				"alter table statement": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", "1); ALTER TABLE test_structs ADD COLUMN injected INT; --"),
+					},
+				},
+				"boolean tautology": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("code", "' OR 1=1 --"),
+					},
+				},
+				"union select": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("code", "' UNION SELECT 'HACK', 999 --"),
+					},
+				},
+				"stacked comments": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("code", "A'/**/;DELETE FROM test_structs;--"),
+					},
+				},
+				"multi cursor with malicious values": {
+					cursors: []cursorpagination.Cursor{
+						cursorpagination.Asc("code", "B'; UPDATE test_structs SET price = 0; --"),
+						cursorpagination.Desc("price", "999); DELETE FROM test_structs; --"),
 					},
 				},
 			}
@@ -276,7 +321,6 @@ func TestCursorPaginationSQLInjection(t *testing.T) {
 					cursorRequest := cursorpagination.Must(2, test.cursors...)
 					_ = db.Clauses(cursorRequest).Find(&[]*TestStruct{})
 
-					// TODO(manuelarte): not only do count, but check that the values are all the same
 					var got int64
 					if err := db.Model(&TestStruct{}).Count(&got).Error; err != nil {
 						t.Fatalf("failed to count records: %v", err)
@@ -285,7 +329,93 @@ func TestCursorPaginationSQLInjection(t *testing.T) {
 					if got != 4 {
 						t.Errorf("unexpected count of records: got=%d, want=%d", got, 4)
 					}
+
+					wantRows := testData()
+					var gotRows []*TestStruct
+					if err := db.Order("code ASC").Find(&gotRows).Error; err != nil {
+						t.Fatalf("failed to read records: %v", err)
+					}
+
+					if diff := cmp.Diff(
+						wantRows,
+						gotRows,
+						cmpopts.IgnoreFields(TestStruct{}, "ID", "CreatedAt", "UpdatedAt", "DeletedAt"),
+					); diff != "" {
+						t.Errorf("records changed unexpectedly (-want +got):\n%s", diff)
+					}
 				})
+			}
+		})
+	}
+}
+
+func TestParametrizedSQLQueriesCursorPagination(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		payload string
+	}{
+		"delete statement": {
+			payload: "1); DELETE FROM test_structs; --",
+		},
+		"update statement": {
+			payload: "1); UPDATE test_structs SET code = 'hacked'; --",
+		},
+		"insert statement": {
+			payload: "1); INSERT INTO test_structs (code, price) VALUES ('X', 99); --",
+		},
+		"drop table statement": {
+			payload: "1); DROP TABLE test_structs; --",
+		},
+		"truncate statement": {
+			payload: "1); TRUNCATE TABLE test_structs; --",
+		},
+		"alter table statement": {
+			payload: "1); ALTER TABLE test_structs ADD COLUMN injected INT; --",
+		},
+		"boolean tautology": {
+			payload: "' OR 1=1 --",
+		},
+		"union select": {
+			payload: "' UNION SELECT 1 --",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			payload := test.payload
+			db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{DryRun: true})
+			if err != nil {
+				t.Fatalf("failed to open dry-run db: %v", err)
+			}
+
+			cursorRequest := cursorpagination.Must(2, cursorpagination.Asc("code", payload))
+			tx := db.Clauses(cursorRequest).Model(&TestStruct{}).Find(&[]*TestStruct{})
+			if tx.Error != nil {
+				t.Fatalf("failed to build query for payload %q: %v", payload, tx.Error)
+			}
+
+			querySQL := tx.Statement.SQL.String()
+			if strings.Contains(querySQL, payload) {
+				t.Fatalf("payload leaked into SQL for %q: %q", payload, querySQL)
+			}
+
+			if !strings.Contains(querySQL, "code > ?") {
+				t.Fatalf("expected placeholder comparison in SQL, got: %q", querySQL)
+			}
+
+			foundPayloadInVars := false
+			for _, v := range tx.Statement.Vars {
+				if s, ok := v.(string); ok && s == payload {
+					foundPayloadInVars = true
+					break
+				}
+			}
+
+			if !foundPayloadInVars {
+				t.Fatalf("payload was not passed as bind variable: %q", payload)
 			}
 		})
 	}
