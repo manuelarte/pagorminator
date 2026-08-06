@@ -1,9 +1,8 @@
 package pagegeneric
 
-import (
-	"fmt"
-)
+import "fmt"
 
+// TotalElementsNotValidError is an error type that represents an invalid total elements value.
 type TotalElementsNotValidError struct {
 	TotalElements int64
 }

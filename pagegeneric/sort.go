@@ -11,6 +11,7 @@ var (
 )
 
 type (
+	// Order represents a sort order.
 	Order interface {
 		GormString() string
 		order()
@@ -18,8 +19,10 @@ type (
 
 	Sort []Order
 
+	// Asc is ascending order.
 	Asc string
 
+	// Desc is descending order.
 	Desc string
 )
 

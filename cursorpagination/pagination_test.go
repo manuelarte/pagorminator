@@ -85,7 +85,7 @@ func TestNewPageRequest(t *testing.T) {
 
 			gotCursors := got.GetCursors()
 			if len(gotCursors) != len(test.cursors) {
-				t.Fatalf("cursor count expected %d, got %d", len(test.cursors), len(gotCursors))
+				t.Errorf("cursor count expected %d, got %d", len(test.cursors), len(gotCursors))
 			}
 		})
 	}
@@ -96,7 +96,7 @@ func TestSetTotalElements(t *testing.T) {
 
 	tests := map[string]struct {
 		totalElements int64
-		expectedErr   error
+		wantErr       error
 	}{
 		"positive totalElements": {
 			totalElements: 2,
@@ -106,7 +106,7 @@ func TestSetTotalElements(t *testing.T) {
 		},
 		"negative totalElements": {
 			totalElements: -1,
-			expectedErr:   pagegeneric.TotalElementsNotValidError{TotalElements: -1},
+			wantErr:       pagegeneric.TotalElementsNotValidError{TotalElements: -1},
 		},
 	}
 
@@ -116,10 +116,9 @@ func TestSetTotalElements(t *testing.T) {
 
 			p := &Pagination{}
 
-			actualErr := p.SetTotalElements(test.totalElements)
-			if !errors.Is(actualErr, test.expectedErr) {
-				t.Errorf("expected: %v, got: %v", test.expectedErr, actualErr)
-				t.Fail()
+			gotErr := p.SetTotalElements(test.totalElements)
+			if !errors.Is(gotErr, test.wantErr) {
+				t.Errorf("p.SetTotalElements(%d) = %v, got: %v", test.totalElements, gotErr, test.wantErr)
 			}
 		})
 	}
@@ -134,7 +133,7 @@ func TestGetCursorsClone(t *testing.T) {
 
 	again := pageRequest.GetCursors()
 	if again[0].Column != "id" {
-		t.Fatalf("expected cloned cursors, got %q", again[0].Column)
+		t.Errorf("expected cloned cursors, got %q", again[0].Column)
 	}
 }
 
@@ -180,7 +179,7 @@ func TestBuildCursorWhere(t *testing.T) {
 
 			for i := range test.wantVars {
 				if gotVars[i] != test.wantVars[i] {
-					t.Fatalf("var[%d] expected %v, got %v", i, test.wantVars[i], gotVars[i])
+					t.Errorf("var[%d] = %v, want %v", i, gotVars[i], test.wantVars[i])
 				}
 			}
 		})
