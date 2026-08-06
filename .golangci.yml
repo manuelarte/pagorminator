@@ -42,6 +42,7 @@ linters:
     - intrange
     - ireturn
     - maintidx
+    - noinlineerr # I prefer inlined errors.
     - nlreturn
     - prealloc
     - promlinter  # Related to prometheus.

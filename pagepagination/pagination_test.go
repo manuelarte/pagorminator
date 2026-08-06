@@ -131,3 +131,78 @@ func TestSetTotalElements(t *testing.T) {
 		})
 	}
 }
+
+func TestNext(t *testing.T) {
+	t.Parallel()
+
+	t.Run("fails when total elements are not set", func(t *testing.T) {
+		t.Parallel()
+
+		p := Must(0, 2, pagegeneric.Asc("id"))
+
+		next, err := p.Next()
+		if !errors.Is(err, pagegeneric.ErrTotalElementsNotSet) {
+			t.Errorf("expected error %v, got %v", pagegeneric.ErrTotalElementsNotSet, err)
+		}
+
+		if next != nil {
+			t.Errorf("expected nil next page, got %#v", next)
+		}
+	})
+
+	t.Run("fails when already at the last page", func(t *testing.T) {
+		t.Parallel()
+
+		p := Must(2, 2)
+		if err := p.SetTotalElements(5); err != nil {
+			t.Errorf("unexpected error setting total elements: %v", err)
+		}
+
+		next, err := p.Next()
+		if !errors.Is(err, ErrNoNextPage) {
+			t.Errorf("expected error %v, got %v", ErrNoNextPage, err)
+		}
+
+		if next != nil {
+			t.Errorf("expected nil next page, got %#v", next)
+		}
+	})
+
+	t.Run("returns next page and preserves configuration", func(t *testing.T) {
+		t.Parallel()
+
+		p := Must(0, 2, pagegeneric.Asc("id"), pagegeneric.Desc("price"))
+		if err := p.SetTotalElements(5); err != nil {
+			t.Errorf("unexpected error setting total elements: %v", err)
+		}
+
+		next, err := p.Next()
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+		}
+
+		if next.GetPage() != 1 {
+			t.Errorf("expected page 1, got %d", next.GetPage())
+		}
+
+		if next.GetSize() != 2 {
+			t.Errorf("expected size 2, got %d", next.GetSize())
+		}
+
+		if !next.IsSort() {
+			t.Errorf("expected next page to keep sort")
+		}
+
+		if got, want := len(next.GetSort()), 2; got != want {
+			t.Errorf("expected %d sort constraints, got %d", want, got)
+		}
+
+		if next.IsTotalElementsSet() {
+			t.Errorf("expected next page total elements to not be set")
+		}
+
+		if got := next.GetTotalElements(); got != 0 {
+			t.Errorf("next.GetTotalElements() = %d, expected total elements to not to be set", got)
+		}
+	})
+}

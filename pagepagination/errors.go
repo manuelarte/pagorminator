@@ -6,4 +6,5 @@ var (
 	ErrPageCantBeNegative = errors.New("page number can't be negative")
 	ErrSizeCantBeNegative = errors.New("size can't be negative")
 	ErrSizeNotAllowed     = errors.New("size is not allowed")
+	ErrNoNextPage         = errors.New("next page not available")
 )
