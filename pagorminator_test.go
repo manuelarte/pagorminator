@@ -1240,8 +1240,8 @@ func toExpectedCursorPagination(actual *cursorpagination.Pagination) *expectedCu
 		}
 
 		expectedCursors[i] = expectedCursor{
-			Column: cursor.Column,
-			Value:  cursor.Value,
+			Column: cursor.GetColumn(),
+			Value:  cursor.GetValue(),
 			Order:  order,
 		}
 	}

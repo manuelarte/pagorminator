@@ -14,8 +14,8 @@ var _ internal.Pagination = new(Pagination)
 type (
 	//go:structinit
 	Cursor struct {
-		Column string
-		Value  any
+		column string
+		value  any
 		order  pagegeneric.Order
 	}
 
@@ -29,6 +29,8 @@ type (
 		mu               sync.RWMutex
 		totalElements    int64
 		totalElementsSet bool
+
+		latestCursorValues map[string]any
 	}
 )
 
@@ -60,10 +62,10 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 			return nil, ErrOrderNotValid
 		}
 
-		if cursor.Value == nil {
-			hasNilValue = append(hasNilValue, cursor.Column)
+		if cursor.value == nil {
+			hasNilValue = append(hasNilValue, cursor.column)
 		} else {
-			hasValue = append(hasValue, cursor.Column)
+			hasValue = append(hasValue, cursor.column)
 		}
 	}
 
@@ -114,6 +116,7 @@ func (p *Pagination) GetTotalElements() int64 {
 }
 
 // SetTotalElements sets the total elements.
+// Method to be used by the plugin callbacks.
 //
 // Errors:
 //   - ErrTotalElementsNotValid if the total elements are below zero.
@@ -143,6 +146,22 @@ func (p *Pagination) IsTotalElementsSet() bool {
 	return p.totalElementsSet
 }
 
+func (p *Pagination) GetLatestCursorValues() map[string]any {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	return p.latestCursorValues
+}
+
+// SetLatestCursorValues sets the latest cursor values.
+// Method to be used by the plugin callbacks.
+func (p *Pagination) SetLatestCursorValues(latestCursorValues map[string]any) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.latestCursorValues = latestCursorValues
+}
+
 func (p *Pagination) sortString() string {
 	orderStrings := make([]string, len(p.cursors))
 	for i, cursor := range p.cursors {
@@ -153,12 +172,12 @@ func (p *Pagination) sortString() string {
 }
 
 func (p *Pagination) hasCursorValues() bool {
-	return len(p.cursors) > 0 && p.cursors[0].Value != nil
+	return len(p.cursors) > 0 && p.cursors[0].value != nil
 }
 
 // NewCursor creates a cursor definition for a column, optional value and sort order.
 func NewCursor(column string, value any, order pagegeneric.Order) Cursor {
-	return Cursor{Column: column, Value: value, order: order}
+	return Cursor{column: column, value: value, order: order}
 }
 
 // Asc creates an ascending cursor for a column.
@@ -169,6 +188,14 @@ func Asc(column string, value any) Cursor {
 // Desc creates a descending cursor for a column.
 func Desc(column string, value any) Cursor {
 	return NewCursor(column, value, pagegeneric.Desc(column))
+}
+
+func (c Cursor) GetColumn() string {
+	return c.column
+}
+
+func (c Cursor) GetValue() any {
+	return c.value
 }
 
 // GetOrder returns the order definition of a cursor.
