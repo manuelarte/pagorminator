@@ -161,41 +161,72 @@ func TestSimplePagination(t *testing.T) {
 		}
 	}
 
-	wantPage0 := []*TestStruct{
-		{Code: "A", Price: 2},
-		{Code: "B", Price: 1},
-	}
-	wantPage1 := []*TestStruct{
-		{Code: "C", Price: 3},
-		{Code: "D", Price: 1},
-	}
-
 	for engine, dbFunc := range dbEngines {
 		t.Run(engine, func(t *testing.T) {
 			t.Parallel()
 
 			tests := map[string]struct {
-				pageRequests []clause.Expression
-				want         [][]*TestStruct
+				pageRequests   []clause.Expression
+				cursorRequests []clause.Expression
+				want           [][]*TestStruct
 			}{
-				"page pagination": {
+				"unpaged": {
+					pageRequests: []clause.Expression{
+						pagepagination.UnPaged(),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.UnPaged(),
+					},
+					want: [][]*TestStruct{
+						testData(),
+					},
+				},
+				"simple pagination": {
 					pageRequests: []clause.Expression{
 						pagepagination.Must(0, 2, pagegeneric.Asc("code")),
 						pagepagination.Must(1, 2, pagegeneric.Asc("code")),
 					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.Must(2, cursorpagination.Asc("code", nil)),
+						cursorpagination.Must(2, cursorpagination.Asc("code", "B")),
+					},
 					want: [][]*TestStruct{
-						wantPage0,
-						wantPage1,
+						{
+							{Code: "A", Price: 2},
+							{Code: "B", Price: 1},
+						},
+						{
+							{Code: "C", Price: 3},
+							{Code: "D", Price: 1},
+						},
 					},
 				},
-				"cursor pagination": {
+				"Paged 1/2 items, sort by id asc": {
 					pageRequests: []clause.Expression{
-						cursorpagination.Must(2, cursorpagination.Asc("code", nil)),
-						cursorpagination.Must(2, cursorpagination.Asc("code", wantPage0[1].Code)),
+						pagepagination.Must(0, 2, pagegeneric.Asc("id")),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.Must(2, cursorpagination.Asc("id", nil)),
 					},
 					want: [][]*TestStruct{
-						wantPage0,
-						wantPage1,
+						{
+							{Code: "A", Price: 2},
+							{Code: "B", Price: 1},
+						},
+					},
+				},
+				"Paged 1/2 items, sort by id desc": {
+					pageRequests: []clause.Expression{
+						pagepagination.Must(0, 2, pagegeneric.Desc("id")),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.Must(2, cursorpagination.Desc("id", nil)),
+					},
+					want: [][]*TestStruct{
+						{
+							{Code: "D", Price: 1},
+							{Code: "C", Price: 3},
+						},
 					},
 				},
 			}
@@ -214,6 +245,14 @@ func TestSimplePagination(t *testing.T) {
 					}
 
 					for i, pageRequest := range test.pageRequests {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[i], got)
+					}
+
+					for i, pageRequest := range test.cursorRequests {
 						var got []*TestStruct
 						if err := db.Clauses(pageRequest).Find(&got).Error; err != nil {
 							t.Fatalf("failed to query page 0: %v", err)
