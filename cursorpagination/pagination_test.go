@@ -25,6 +25,47 @@ func ExampleMust() {
 	// Output: Size: 10, Cursors: 1
 }
 
+func TestUnPaged(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		size     int
+		cursors  []Cursor
+		expected bool
+	}{
+		"size zero cursor nil": {
+			size:     0,
+			cursors:  nil,
+			expected: true,
+		},
+		"size zero, cursor empty": {
+			size:     0,
+			cursors:  []Cursor{},
+			expected: true,
+		},
+		"size not zero": {
+			size:     1,
+			cursors:  []Cursor{Asc("id", nil)},
+			expected: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			page, err := New(test.size, test.cursors...)
+			if err != nil {
+				t.Fatalf("NewPagination(%d, %v) = %s, unexpected error", test.size, test.cursors, err)
+			}
+
+			if page.IsUnPaged() != test.expected {
+				t.Errorf("IsUnPaged() expected %v, got %v", test.expected, page.IsUnPaged())
+			}
+		})
+	}
+}
+
 func TestNewPageRequest(t *testing.T) {
 	t.Parallel()
 

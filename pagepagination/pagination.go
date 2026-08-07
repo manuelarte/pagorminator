@@ -75,6 +75,11 @@ func (p *Pagination) GetSize() int {
 	return p.size
 }
 
+// GetSort Get the sort constraints.
+func (p *Pagination) GetSort() pagegeneric.Sort {
+	return slices.Clone(p.sort)
+}
+
 // GetOffset Get the offset.
 func (p *Pagination) GetOffset() int {
 	return p.page * p.size
@@ -110,11 +115,6 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 	p.totalElements = totalElements
 
 	return nil
-}
-
-// GetSort Get the sort constraints.
-func (p *Pagination) GetSort() pagegeneric.Sort {
-	return slices.Clone(p.sort)
 }
 
 // IsUnPaged Check whether the pagination is applicable.

@@ -106,6 +106,13 @@ func (p *Pagination) GetCursors() []Cursor {
 	return slices.Clone(p.cursors)
 }
 
+func (p *Pagination) GetTotalElements() int64 {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
+	return p.totalElements
+}
+
 // SetTotalElements sets the total elements.
 //
 // Errors:
@@ -124,11 +131,9 @@ func (p *Pagination) SetTotalElements(totalElements int64) error {
 	return nil
 }
 
-func (p *Pagination) GetTotalElements() int64 {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-
-	return p.totalElements
+// IsUnPaged Check whether the pagination is applicable.
+func (p *Pagination) IsUnPaged() bool {
+	return p.size == 0 && len(p.cursors) == 0
 }
 
 func (p *Pagination) IsTotalElementsSet() bool {

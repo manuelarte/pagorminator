@@ -37,7 +37,7 @@ func TestUnPaged(t *testing.T) {
 		size     int
 		expected bool
 	}{
-		"page 0 size 0": {
+		"page zero size zero": {
 			page:     0,
 			size:     0,
 			expected: true,
@@ -55,7 +55,7 @@ func TestUnPaged(t *testing.T) {
 
 			page, err := New(test.page, test.size)
 			if err != nil {
-				t.Errorf("NewPagination(%d, %d) = %s, unexpected error", test.page, test.size, err)
+				t.Fatalf("NewPagination(%d, %d) = %s, unexpected error", test.page, test.size, err)
 			}
 
 			if page.IsUnPaged() != test.expected {
