@@ -132,6 +132,20 @@ You can enable debug mode to see the SQL queries:
 db.Use(pagorminator.PaGorminator{Debug: true})
 ```
 
-## Examples
+## 🎓Examples
 
 Check the examples in the [./examples](./examples) folder for more detailed usage patterns.
+
+## ❓FAQ
+
+### Is it protected against SQL injection?
+
+Yes, or at least as protected as the GORM framework protects. The plugin/library uses GORM's parameterized
+queries to prevent SQL injection. There are several tests that cover this scenario,
+including the `TestSQLInjection` test in the `pagorminator_test.go` file.
+
+### Does it work for my database?
+
+The plugin is using internal GORM methods to generate the SQL queries. So in theory, it is supported
+if there is a GORM dialect for your database. Nevertheless, we have tests in [./tests/pagination.test](./tests/pagination_test.go)
+to ensure that the plugin/library works for certain databases.
