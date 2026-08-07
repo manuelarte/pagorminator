@@ -134,7 +134,7 @@ func (p *Pagination) IsTotalElementsSet() bool {
 	return p.totalElementsSet
 }
 
-// Next Get the next page.
+// Next Get the next page pagination request.
 //
 // Errors:
 //   - pagegeneric.ErrTotalElementsNotSet if the total elements are not set.

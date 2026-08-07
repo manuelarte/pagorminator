@@ -166,9 +166,19 @@ func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[
 	p.latestCursorValues = latestCursorValues
 }
 
+// Next Get the next cursor pagination request.
+//
+// Errors:
+//   - pagegeneric.ErrTotalElementsNotSet if the total elements are not set.
+//   - pagegeneric.ErrNoNextPage if there is no next page.
+//   - ErrLatestCursorValuesNotSet if the latest values from the query were not set.
 func (p *Pagination) Next() (*Pagination, error) {
 	if len(p.latestCursorValues) == 0 {
 		return nil, ErrLatestCursorValuesNotSet
+	}
+
+	if !p.totalElementsSet {
+		return nil, pagegeneric.ErrTotalElementsNotSet
 	}
 
 	if p.latestLen < p.size {
