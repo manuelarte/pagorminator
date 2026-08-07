@@ -7,10 +7,14 @@ import (
 
 type (
 	PaginationRequest interface {
+		// GetSize returns the pagination size, a.k.a. limit
 		GetSize() int
+		// IsUnPaged returns true if the pagination is unpaged, meaning no pagination is applied.
+		IsUnPaged() bool
 	}
 
 	PaginationResponse interface {
+		GetTotalElements() int64
 		// SetTotalElements sets the total elements.
 		//
 		// Errors:

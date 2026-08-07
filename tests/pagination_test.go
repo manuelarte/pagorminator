@@ -213,21 +213,12 @@ func TestSimplePagination(t *testing.T) {
 						t.Fatalf("failed to create test data: %v", err)
 					}
 
-					compareFunc := func(want, got []*TestStruct) {
-						if diff := cmp.Diff(
-							want,
-							got,
-							cmpopts.IgnoreFields(TestStruct{}, "ID", "CreatedAt", "UpdatedAt"),
-						); diff != "" {
-							t.Errorf("diff (-want +got):\n%s", diff)
-						}
-					}
 					for i, pageRequest := range test.pageRequests {
 						var got []*TestStruct
 						if err := db.Clauses(pageRequest).Find(&got).Error; err != nil {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
-						compareFunc(test.want[i], got)
+						compareTestStructs(t, test.want[i], got)
 					}
 				})
 			}
