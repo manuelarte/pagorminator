@@ -154,7 +154,7 @@ func TestNext(t *testing.T) {
 
 				return p
 			},
-			wantErr: ErrNoNextPage,
+			wantErr: pagegeneric.ErrNoNextPage,
 		},
 	}
 	for name, test := range tests {

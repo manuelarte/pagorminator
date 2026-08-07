@@ -30,6 +30,9 @@ type (
 		totalElements    int64
 		totalElementsSet bool
 
+		// latestLen represents the number of rows returned in the latest query using this pagination.
+		latestLen int
+		// latestCursorValues represents the cursor latest values of the latest query using this pagination.
 		latestCursorValues map[string]any
 	}
 )
@@ -146,20 +149,33 @@ func (p *Pagination) IsTotalElementsSet() bool {
 	return p.totalElementsSet
 }
 
-func (p *Pagination) GetLatestCursorValues() map[string]any {
+func (p *Pagination) GetLatestQueryValues() (int, map[string]any) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
-	return p.latestCursorValues
+	return p.latestLen, p.latestCursorValues
 }
 
-// SetLatestCursorValues sets the latest cursor values.
+// SetLatestQueryValues sets the latest query values.
 // Method to be used by the plugin callbacks.
-func (p *Pagination) SetLatestCursorValues(latestCursorValues map[string]any) {
+func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[string]any) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	p.latestLen = latestLen
 	p.latestCursorValues = latestCursorValues
+}
+
+func (p *Pagination) Next() (*Pagination, error) {
+	if len(p.latestCursorValues) == 0 {
+		return nil, ErrLatestCursorValuesNotSet
+	}
+
+	if p.latestLen < p.size {
+		return nil, pagegeneric.ErrNoNextPage
+	}
+
+	return New(p.size, p.cursors...)
 }
 
 func (p *Pagination) sortString() string {

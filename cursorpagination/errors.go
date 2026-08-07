@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	ErrSizeCantBeNegative       = errors.New("size can't be negative")
-	ErrOrderRequired            = errors.New("order is required")
-	ErrOrderNotValid            = errors.New("order is not valid")
-	_                     error = new(CursorValuesNotValidError)
+	ErrSizeCantBeNegative             = errors.New("size can't be negative")
+	ErrOrderRequired                  = errors.New("order is required")
+	ErrOrderNotValid                  = errors.New("order is not valid")
+	ErrLatestCursorValuesNotSet       = errors.New("latest cursor values are not set")
+	_                           error = new(CursorValuesNotValidError)
 )
 
 type CursorValuesNotValidError struct {
