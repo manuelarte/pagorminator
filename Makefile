@@ -10,7 +10,7 @@ tidy: ## Run go mod tidy in all directories
 	go mod tidy
 
 t: test
-test: ## Run unit tests, alias: t
+test: tidy ## Run unit tests, alias: t
 	go test --cover -timeout=300s -parallel=16 $(GO_PKGS) && \
 	cd tests && go test --cover -timeout=300s -parallel=16 ./...
 
