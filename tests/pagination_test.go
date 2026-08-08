@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -260,6 +261,123 @@ func TestSimplePagination(t *testing.T) {
 						compareTestStructs(t, test.want[i], got)
 					}
 				})
+			}
+		})
+	}
+}
+
+func TestSimplePaginationUsingNext(t *testing.T) {
+	t.Parallel()
+
+	testData := func() []*TestStruct {
+		return []*TestStruct{
+			{Code: "A", Price: 2},
+			{Code: "B", Price: 1},
+			{Code: "C", Price: 3},
+			{Code: "D", Price: 1},
+			{Code: "E", Price: 5},
+		}
+	}
+
+	for engine, dbFunc := range dbEngines {
+		t.Run(engine, func(t *testing.T) {
+			t.Parallel()
+
+			tests := map[string]struct {
+				size          int
+				cursorValues  []cursorpagination.Cursor
+				sort          pagegeneric.Sort
+				wantNextTimes int
+				want          [][]*TestStruct
+			}{
+				"size 2": {
+					size: 2,
+					cursorValues: []cursorpagination.Cursor{
+						cursorpagination.Asc("id", nil),
+					},
+					sort: pagegeneric.Sort{
+						pagegeneric.Asc("code"),
+					},
+					wantNextTimes: 2,
+					want: [][]*TestStruct{
+						{
+							{Code: "A", Price: 2},
+							{Code: "B", Price: 1},
+						},
+						{
+							{Code: "C", Price: 3},
+							{Code: "D", Price: 1},
+						},
+						{
+							{Code: "E", Price: 5},
+						},
+					},
+				},
+			}
+			for name, test := range tests {
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
+
+					db, deferFunc, errStartingContainer := dbFunc(t.Context())
+					if errStartingContainer != nil {
+						t.Fatalf("failed to start container: %v", errStartingContainer)
+					}
+					defer deferFunc()
+					setupDB(t, db)
+					testdata := testData()
+					if err := db.CreateInBatches(testdata, len(testdata)).Error; err != nil {
+						t.Fatalf("failed to create test data: %v", err)
+					}
+					// page pagination
+					hasPageNext := true
+					gotPageNextTimes := 0
+					pageRequest := pagepagination.Must(0, test.size, test.sort...)
+					for hasPageNext {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[gotPageNextTimes], got)
+						var errNext error
+						pageRequest, errNext = pageRequest.Next()
+						if errNext != nil {
+							if errors.Is(errNext, pagegeneric.ErrNoNextPage) {
+								hasPageNext = false
+								continue
+							}
+							t.Fatalf("failed to get next page: %v", errNext)
+						}
+						gotPageNextTimes++
+					}
+					if len(test.want) != gotPageNextTimes+1 {
+						t.Errorf("expected %d pages, got %d", len(test.want), gotPageNextTimes+1)
+					}
+					// cursor pagination
+					hasCursorNext := true
+					gotCursorNextTimes := 0
+					cursorRequest := cursorpagination.Must(test.size, test.cursorValues...)
+					for hasCursorNext {
+						var got []*TestStruct
+						if err := db.Clauses(cursorRequest).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[gotCursorNextTimes], got)
+						var errNext error
+						cursorRequest, errNext = cursorRequest.Next()
+						if errNext != nil {
+							if errors.Is(errNext, pagegeneric.ErrNoNextPage) {
+								hasCursorNext = false
+								continue
+							}
+							t.Fatalf("failed to get next page: %v", errNext)
+						}
+						gotCursorNextTimes++
+					}
+					if len(test.want) != gotCursorNextTimes+1 {
+						t.Errorf("expected %d pages, got %d", len(test.want), gotCursorNextTimes+1)
+					}
+				})
+
 			}
 		})
 	}
