@@ -10,6 +10,7 @@ import (
 )
 
 var _ internal.Pagination = new(Pagination)
+var _ internal.Nextable[*Pagination] = new(Pagination)
 
 type (
 	//go:structinit

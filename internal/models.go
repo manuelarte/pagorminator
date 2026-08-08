@@ -13,6 +13,10 @@ type (
 		IsUnPaged() bool
 	}
 
+	Nextable[P PaginationRequest] interface {
+		Next() (P, error)
+	}
+
 	PaginationResponse interface {
 		// GetTotalElements returns the total elements.
 		// It also returns if the total element was set.
