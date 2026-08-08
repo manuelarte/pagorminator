@@ -231,18 +231,18 @@ func TestNext(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		page    *Pagination
-		wantErr error
+		page *Pagination
+		want pagegeneric.NextPossible
 	}{
 		"no latest cursor values": {
-			page:    &Pagination{},
-			wantErr: ErrLatestCursorValuesNotSet,
+			page: &Pagination{},
+			want: pagegeneric.PreviousCursorValuesNotSet,
 		},
 		"total elements not set": {
 			page: &Pagination{
 				latestCursorValues: map[string]any{"id": 1},
 			},
-			wantErr: pagegeneric.ErrTotalElementsNotSet,
+			want: pagegeneric.NoTotalElements,
 		},
 		"no next page": {
 			page: &Pagination{
@@ -251,7 +251,7 @@ func TestNext(t *testing.T) {
 				latestLen:          5,
 				latestCursorValues: map[string]any{"id": 1},
 			},
-			wantErr: pagegeneric.ErrNoNextPage,
+			want: pagegeneric.NoNextPage,
 		},
 		"success": {
 			page: &Pagination{
@@ -261,6 +261,7 @@ func TestNext(t *testing.T) {
 				latestLen:          10,
 				latestCursorValues: map[string]any{"id": 1},
 			},
+			want: true,
 		},
 	}
 
@@ -268,9 +269,9 @@ func TestNext(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, err := test.page.Next()
-			if !errors.Is(err, test.wantErr) {
-				t.Errorf("Next() error = %v, wantErr %v", err, test.wantErr)
+			_, hasNext := test.page.Next()
+			if hasNext != test.want {
+				t.Errorf("Next() = _, %v, want %v", hasNext, test.want)
 			}
 		})
 	}

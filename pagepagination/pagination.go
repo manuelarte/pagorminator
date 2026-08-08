@@ -142,17 +142,17 @@ func (p *Pagination) IsTotalElementsSet() bool {
 
 // Next Get the next page pagination request.
 //
-// Errors:
-//   - pagegeneric.ErrTotalElementsNotSet if the total elements are not set.
-//   - pagegeneric.ErrNoNextPage if there is no next page.
-func (p *Pagination) Next() (*Pagination, error) {
+// Cases in which the next page could not be retrieved:
+//   - pagegeneric.NoTotalElements if the total elements are not set.
+//   - pagegeneric.NoNextPage if there is no next page.
+func (p *Pagination) Next() (*Pagination, pagegeneric.NextPossible) {
 	p.mu.RLock()
 	totalElementsSet := p.totalElementsSet
 	totalElements := p.totalElements
 	p.mu.RUnlock()
 
 	if !totalElementsSet {
-		return nil, pagegeneric.ErrTotalElementsNotSet
+		return nil, pagegeneric.NoTotalElements
 	}
 
 	totalPages := 1
@@ -162,10 +162,10 @@ func (p *Pagination) Next() (*Pagination, error) {
 
 	nextPage := p.page + 1
 	if nextPage >= totalPages {
-		return nil, pagegeneric.ErrNoNextPage
+		return nil, pagegeneric.NoNextPage
 	}
 
-	return New(nextPage, p.size, p.GetSort()...)
+	return Must(nextPage, p.size, p.GetSort()...), true
 }
 
 func calculateTotalPages(totalElements int64, size int) int {

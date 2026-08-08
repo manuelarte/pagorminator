@@ -31,7 +31,7 @@ func main() {
 	_ = db.Use(pagorminator.PaGorminator{})
 	_ = db.AutoMigrate(&Product{})
 	length := 10
-	for i := 0; i < length; i++ {
+	for i := range length {
 		db.Create(&Product{Code: strconv.Itoa(i), Price: uint(i)})
 	}
 
@@ -48,7 +48,7 @@ func main() {
 		fmt.Printf("\t Product: %s\n", product)
 	}
 
-	pageRequest, _ = pagepagination.New(1, 5)
+	pageRequest, _ = pageRequest.Next()
 	db.Clauses(pageRequest).Find(&products)
 	totalElements2, _ := pageRequest.GetTotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",

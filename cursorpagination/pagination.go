@@ -172,23 +172,23 @@ func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[
 // Next Get the next cursor pagination request.
 //
 // Errors:
-//   - pagegeneric.ErrTotalElementsNotSet if the total elements are not set.
-//   - pagegeneric.ErrNoNextPage if there is no next page.
-//   - ErrLatestCursorValuesNotSet if the latest values from the query were not set.
-func (p *Pagination) Next() (*Pagination, error) {
+//   - pagegeneric.NoTotalElements if the total elements are not set.
+//   - pagegeneric.NoNextPage if there is no next page.
+//   - pagegeneric.PreviousCursorValuesNotSet if the latest values from the query were not set.
+func (p *Pagination) Next() (*Pagination, pagegeneric.NextPossible) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
 	if len(p.latestCursorValues) == 0 {
-		return nil, ErrLatestCursorValuesNotSet
+		return nil, pagegeneric.PreviousCursorValuesNotSet
 	}
 
 	if !p.totalElementsSet {
-		return nil, pagegeneric.ErrTotalElementsNotSet
+		return nil, pagegeneric.NoTotalElements
 	}
 
 	if p.latestLen < p.size {
-		return nil, pagegeneric.ErrNoNextPage
+		return nil, pagegeneric.NoNextPage
 	}
 
 	newCursors := make([]Cursor, len(p.cursors))
@@ -200,7 +200,7 @@ func (p *Pagination) Next() (*Pagination, error) {
 		}
 	}
 
-	return New(p.size, newCursors...)
+	return Must(p.size, newCursors...), true
 }
 
 func (p *Pagination) sortString() string {

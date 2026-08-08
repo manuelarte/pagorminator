@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -344,31 +343,23 @@ func TestSimplePaginationUsingNext(t *testing.T) {
 func testPaginationSequence(t *testing.T, db *gorm.DB, request any, want [][]*TestStruct) {
 	t.Helper()
 
-	hasNext := true
-	gotTimes := 0
+	hasNext := pagegeneric.NextPossible(true)
+	gotTimes := -1
 	for hasNext {
+		gotTimes++
 		var got []*TestStruct
 		if err := db.Clauses(request.(clause.Expression)).Find(&got).Error; err != nil {
 			t.Fatalf("failed to query page: %v", err)
 		}
 		compareTestStructs(t, want[gotTimes], got)
-		var errNext error
 		switch r := request.(type) {
 		case *pagepagination.Pagination:
-			request, errNext = r.Next()
+			request, hasNext = r.Next()
 		case *cursorpagination.Pagination:
-			request, errNext = r.Next()
+			request, hasNext = r.Next()
 		default:
 			t.Fatalf("unknown pagination type: %T", r)
 		}
-		if errNext != nil {
-			if errors.Is(errNext, pagegeneric.ErrNoNextPage) {
-				hasNext = false
-				continue
-			}
-			t.Fatalf("failed to get next page: %v", errNext)
-		}
-		gotTimes++
 	}
 	if len(want) != gotTimes+1 {
 		t.Errorf("expected %d pages, got %d", len(want), gotTimes+1)

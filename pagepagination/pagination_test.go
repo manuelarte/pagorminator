@@ -141,11 +141,11 @@ func TestNext(t *testing.T) {
 
 	tests := map[string]struct {
 		original func() *Pagination
-		wantErr  error
+		want     pagegeneric.NextPossible
 	}{
 		"fails when total elements are not set": {
 			original: func() *Pagination { return Must(0, 2, pagegeneric.Asc("id")) },
-			wantErr:  pagegeneric.ErrTotalElementsNotSet,
+			want:     pagegeneric.NoTotalElements,
 		},
 		"fails when already at the last page": {
 			original: func() *Pagination {
@@ -154,16 +154,16 @@ func TestNext(t *testing.T) {
 
 				return p
 			},
-			wantErr: pagegeneric.ErrNoNextPage,
+			want: pagegeneric.NoNextPage,
 		},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			next, err := test.original().Next()
-			if !errors.Is(err, test.wantErr) {
-				t.Errorf("Next() = _, %v, want %v", err, test.wantErr)
+			next, got := test.original().Next()
+			if test.want != got {
+				t.Errorf("Next() = _, %v, want %v", got, test.want)
 			}
 
 			if next != nil {
@@ -180,9 +180,9 @@ func TestNext(t *testing.T) {
 			t.Errorf("unexpected error setting total elements: %v", err)
 		}
 
-		next, err := p.Next()
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+		next, hasNext := p.Next()
+		if hasNext != true {
+			t.Errorf("Next() = %v, want true", hasNext)
 		}
 
 		want := &Pagination{

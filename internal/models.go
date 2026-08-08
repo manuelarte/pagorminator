@@ -3,6 +3,8 @@ package internal
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
 type (
@@ -14,7 +16,12 @@ type (
 	}
 
 	Nextable[P PaginationRequest] interface {
-		Next() (P, error)
+		// Next returns the next page and whether the next page could be retrieved.
+		// If the next page could not be retrieved, the second return value is false.
+		// Examples of cases can't be retrieved:
+		//   - No next page
+		//   - The total elements are not set
+		Next() (P, pagegeneric.NextPossible)
 	}
 
 	PaginationResponse interface {
