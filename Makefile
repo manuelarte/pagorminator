@@ -1,15 +1,13 @@
-.PHONY: fmt lint test mocks test_coverage test_ci
+.PHONY: help tidy t test fmt lint tools
 
 GO_PKGS   := $(shell go list -f {{.Dir}} ./...)
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z\._-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-.PHONY: help
 
 tidy: ## Run go mod tidy in all directories
 	go mod tidy
-.PHONY: tidy
 
 t: test
 test: ## Run unit tests, alias: t
