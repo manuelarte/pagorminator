@@ -279,7 +279,7 @@ func TestPaginationWithWhere(t *testing.T) {
 				cursorRequests []clause.Expression
 				want           [][]*TestStruct
 			}{
-				"unpaged": {
+				"unPaged, one item and filtered out": {
 					toMigrate: []*TestStruct{
 						{Code: "1", Price: 1},
 					},
@@ -292,6 +292,65 @@ func TestPaginationWithWhere(t *testing.T) {
 					},
 					want: [][]*TestStruct{
 						{},
+					},
+				},
+				"unPaged, one item and not filtered": {
+					toMigrate: []*TestStruct{
+						{Code: "1", Price: 1},
+					},
+					where: "price <= 100",
+					pageRequests: []clause.Expression{
+						pagepagination.UnPaged(),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.UnPaged(),
+					},
+					want: [][]*TestStruct{
+						{
+							{Code: "1", Price: 1},
+						},
+					},
+				},
+				"UnPaged two items, one filtered out": {
+					toMigrate: []*TestStruct{
+						{Code: "1", Price: 1}, {Code: "100", Price: 100},
+					},
+					where: "price < 50",
+					pageRequests: []clause.Expression{
+						pagepagination.UnPaged(),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.UnPaged(),
+					},
+					want: [][]*TestStruct{
+						{
+							{Code: "1", Price: 1},
+						},
+					},
+				},
+				"Paged four items, two filtered out": {
+					toMigrate: []*TestStruct{
+						{Code: "1", Price: 1},
+						{Code: "2", Price: 2},
+						{Code: "3", Price: 100},
+						{Code: "4", Price: 200},
+					},
+					where: "price > 50",
+					pageRequests: []clause.Expression{
+						pagepagination.Must(0, 1, pagegeneric.Asc("code")),
+						pagepagination.Must(1, 1, pagegeneric.Asc("code")),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.Must(1, cursorpagination.Asc("code", nil)),
+						cursorpagination.Must(1, cursorpagination.Asc("code", "3")),
+					},
+					want: [][]*TestStruct{
+						{
+							{Code: "3", Price: 100},
+						},
+						{
+							{Code: "4", Price: 200},
+						},
 					},
 				},
 			}
@@ -329,6 +388,8 @@ func TestPaginationWithWhere(t *testing.T) {
 		})
 	}
 }
+
+// TODO: migrate test sort
 
 func TestSimplePaginationUsingNext(t *testing.T) {
 	t.Parallel()
