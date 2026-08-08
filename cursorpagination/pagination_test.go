@@ -226,3 +226,52 @@ func TestBuildCursorWhere(t *testing.T) {
 		})
 	}
 }
+
+func TestNext(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		page    *Pagination
+		wantErr error
+	}{
+		"no latest cursor values": {
+			page:    &Pagination{},
+			wantErr: ErrLatestCursorValuesNotSet,
+		},
+		"total elements not set": {
+			page: &Pagination{
+				latestCursorValues: map[string]any{"id": 1},
+			},
+			wantErr: pagegeneric.ErrTotalElementsNotSet,
+		},
+		"no next page": {
+			page: &Pagination{
+				size:               10,
+				latestCursorValues: map[string]any{"id": 1},
+				totalElementsSet:   true,
+				latestLen:          5,
+			},
+			wantErr: pagegeneric.ErrNoNextPage,
+		},
+		"success": {
+			page: &Pagination{
+				size:               10,
+				cursors:            []Cursor{Asc("id", 1)},
+				latestCursorValues: map[string]any{"id": 1},
+				totalElementsSet:   true,
+				latestLen:          10,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := test.page.Next()
+			if !errors.Is(err, test.wantErr) {
+				t.Errorf("Next() error = %v, wantErr %v", err, test.wantErr)
+			}
+		})
+	}
+}
