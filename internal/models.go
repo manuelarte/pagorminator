@@ -14,7 +14,9 @@ type (
 	}
 
 	PaginationResponse interface {
-		GetTotalElements() int64
+		// GetTotalElements returns the total elements.
+		// It also returns if the total element was set.
+		GetTotalElements() (int64, bool)
 		// SetTotalElements sets the total elements.
 		//
 		// Errors:

@@ -111,11 +111,11 @@ func (p *Pagination) GetCursors() []Cursor {
 	return slices.Clone(p.cursors)
 }
 
-func (p *Pagination) GetTotalElements() int64 {
+func (p *Pagination) GetTotalElements() (int64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
-	return p.totalElements
+	return p.totalElements, p.totalElementsSet
 }
 
 // SetTotalElements sets the total elements.
@@ -124,12 +124,12 @@ func (p *Pagination) GetTotalElements() int64 {
 // Errors:
 //   - ErrTotalElementsNotValid if the total elements are below zero.
 func (p *Pagination) SetTotalElements(totalElements int64) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	if totalElements < 0 {
 		return pagegeneric.TotalElementsNotValidError{TotalElements: totalElements}
 	}
-
-	p.mu.Lock()
-	defer p.mu.Unlock()
 
 	p.totalElementsSet = true
 	p.totalElements = totalElements

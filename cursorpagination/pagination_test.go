@@ -247,9 +247,9 @@ func TestNext(t *testing.T) {
 		"no next page": {
 			page: &Pagination{
 				size:               10,
-				latestCursorValues: map[string]any{"id": 1},
 				totalElementsSet:   true,
 				latestLen:          5,
+				latestCursorValues: map[string]any{"id": 1},
 			},
 			wantErr: pagegeneric.ErrNoNextPage,
 		},
@@ -257,9 +257,9 @@ func TestNext(t *testing.T) {
 			page: &Pagination{
 				size:               10,
 				cursors:            []Cursor{Asc("id", 1)},
-				latestCursorValues: map[string]any{"id": 1},
 				totalElementsSet:   true,
 				latestLen:          10,
+				latestCursorValues: map[string]any{"id": 1},
 			},
 		},
 	}

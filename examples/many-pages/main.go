@@ -41,16 +41,18 @@ func main() {
 	pageRequest, _ := pagepagination.New(0, 5)
 	db.Clauses(pageRequest).Find(&products)
 
+	totalElements1, _ := pageRequest.GetTotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.GetPage(), pageRequest.GetSize(), totalElements1, pageRequest.GetTotalPages())
 	for _, product := range products {
 		fmt.Printf("\t Product: %s\n", product)
 	}
 
 	pageRequest, _ = pagepagination.New(1, 5)
 	db.Clauses(pageRequest).Find(&products)
+	totalElements2, _ := pageRequest.GetTotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.GetPage(), pageRequest.GetSize(), totalElements2, pageRequest.GetTotalPages())
 	for _, product := range products {
 		fmt.Printf("\t Product: %s\n", product)
 	}

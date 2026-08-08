@@ -44,6 +44,7 @@ func main() {
 	db.Clauses(pageRequest).Where("price > 10").Find(&products)
 	fmt.Printf("Query: Products (Page: %d, Size: %d) with '%s'\n", pageRequest.GetPage(), pageRequest.GetSize(), "price > 10")
 
+	totalElements, _ := pageRequest.GetTotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.GetPage(), pageRequest.GetSize(), totalElements, pageRequest.GetTotalPages())
 }

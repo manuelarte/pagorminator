@@ -1216,12 +1216,14 @@ func toExpectedPagination(actual *pagepagination.Pagination) *expectedPagination
 		return nil
 	}
 
+	totalElements, totalElementsSet := actual.GetTotalElements()
+
 	return &expectedPagination{
 		page:             actual.GetPage(),
 		size:             actual.GetSize(),
 		sort:             actual.GetSort(),
-		totalElements:    actual.GetTotalElements(),
-		totalElementsSet: actual.IsTotalElementsSet(),
+		totalElements:    totalElements,
+		totalElementsSet: totalElementsSet,
 	}
 }
 
@@ -1246,11 +1248,13 @@ func toExpectedCursorPagination(actual *cursorpagination.Pagination) *expectedCu
 		}
 	}
 
+	totalElements, totalElementsSet := actual.GetTotalElements()
+
 	return &expectedCursorPagination{
 		Size:             actual.GetSize(),
 		Cursors:          expectedCursors,
-		TotalElements:    actual.GetTotalElements(),
-		TotalElementsSet: actual.IsTotalElementsSet(),
+		TotalElements:    totalElements,
+		TotalElementsSet: totalElementsSet,
 	}
 }
 
