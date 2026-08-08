@@ -329,57 +329,49 @@ func TestSimplePaginationUsingNext(t *testing.T) {
 						t.Fatalf("failed to create test data: %v", err)
 					}
 					// page pagination
-					hasPageNext := true
-					gotPageNextTimes := 0
 					pageRequest := pagepagination.Must(0, test.size, test.sort...)
-					for hasPageNext {
-						var got []*TestStruct
-						if err := db.Clauses(pageRequest).Find(&got).Error; err != nil {
-							t.Fatalf("failed to query page 0: %v", err)
-						}
-						compareTestStructs(t, test.want[gotPageNextTimes], got)
-						var errNext error
-						pageRequest, errNext = pageRequest.Next()
-						if errNext != nil {
-							if errors.Is(errNext, pagegeneric.ErrNoNextPage) {
-								hasPageNext = false
-								continue
-							}
-							t.Fatalf("failed to get next page: %v", errNext)
-						}
-						gotPageNextTimes++
-					}
-					if len(test.want) != gotPageNextTimes+1 {
-						t.Errorf("expected %d pages, got %d", len(test.want), gotPageNextTimes+1)
-					}
-					// cursor pagination
-					hasCursorNext := true
-					gotCursorNextTimes := 0
-					cursorRequest := cursorpagination.Must(test.size, test.cursorValues...)
-					for hasCursorNext {
-						var got []*TestStruct
-						if err := db.Clauses(cursorRequest).Find(&got).Error; err != nil {
-							t.Fatalf("failed to query page 0: %v", err)
-						}
-						compareTestStructs(t, test.want[gotCursorNextTimes], got)
-						var errNext error
-						cursorRequest, errNext = cursorRequest.Next()
-						if errNext != nil {
-							if errors.Is(errNext, pagegeneric.ErrNoNextPage) {
-								hasCursorNext = false
-								continue
-							}
-							t.Fatalf("failed to get next page: %v", errNext)
-						}
-						gotCursorNextTimes++
-					}
-					if len(test.want) != gotCursorNextTimes+1 {
-						t.Errorf("expected %d pages, got %d", len(test.want), gotCursorNextTimes+1)
-					}
-				})
+					testPaginationSequence(t, db, pageRequest, test.want)
 
+					// cursor pagination
+					cursorRequest := cursorpagination.Must(test.size, test.cursorValues...)
+					testPaginationSequence(t, db, cursorRequest, test.want)
+				})
 			}
 		})
+	}
+}
+
+func testPaginationSequence(t *testing.T, db *gorm.DB, request any, want [][]*TestStruct) {
+	t.Helper()
+
+	hasNext := true
+	gotTimes := 0
+	for hasNext {
+		var got []*TestStruct
+		if err := db.Clauses(request.(clause.Expression)).Find(&got).Error; err != nil {
+			t.Fatalf("failed to query page: %v", err)
+		}
+		compareTestStructs(t, want[gotTimes], got)
+		var errNext error
+		switch r := request.(type) {
+		case *pagepagination.Pagination:
+			request, errNext = r.Next()
+		case *cursorpagination.Pagination:
+			request, errNext = r.Next()
+		default:
+			t.Fatalf("unknown pagination type: %T", r)
+		}
+		if errNext != nil {
+			if errors.Is(errNext, pagegeneric.ErrNoNextPage) {
+				hasNext = false
+				continue
+			}
+			t.Fatalf("failed to get next page: %v", errNext)
+		}
+		gotTimes++
+	}
+	if len(want) != gotTimes+1 {
+		t.Errorf("expected %d pages, got %d", len(want), gotTimes+1)
 	}
 }
 

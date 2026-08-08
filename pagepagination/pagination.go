@@ -9,8 +9,10 @@ import (
 	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
-var _ internal.Pagination = new(Pagination)
-var _ internal.Nextable[*Pagination] = new(Pagination)
+var (
+	_ internal.Pagination            = new(Pagination)
+	_ internal.Nextable[*Pagination] = new(Pagination)
+)
 
 // Pagination Clause to apply pagination.
 //
