@@ -173,6 +173,9 @@ func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[
 //   - pagegeneric.ErrNoNextPage if there is no next page.
 //   - ErrLatestCursorValuesNotSet if the latest values from the query were not set.
 func (p *Pagination) Next() (*Pagination, error) {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
 	if len(p.latestCursorValues) == 0 {
 		return nil, ErrLatestCursorValuesNotSet
 	}
@@ -185,7 +188,16 @@ func (p *Pagination) Next() (*Pagination, error) {
 		return nil, pagegeneric.ErrNoNextPage
 	}
 
-	return New(p.size, p.cursors...)
+	newCursors := make([]Cursor, len(p.cursors))
+	for i, c := range p.cursors {
+		newCursors[i] = Cursor{
+			column: c.column,
+			order:  c.order,
+			value:  p.latestCursorValues[c.column],
+		}
+	}
+
+	return New(p.size, newCursors...)
 }
 
 func (p *Pagination) sortString() string {
