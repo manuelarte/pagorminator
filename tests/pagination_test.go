@@ -340,7 +340,7 @@ func TestSimplePaginationUsingNext(t *testing.T) {
 	}
 }
 
-func testPaginationSequence(t *testing.T, db *gorm.DB, request any, want [][]*TestStruct) {
+func testPaginationSequence(t *testing.T, db *gorm.DB, request clause.Expression, want [][]*TestStruct) {
 	t.Helper()
 
 	hasNext := pagegeneric.NextPossible(true)
@@ -348,7 +348,7 @@ func testPaginationSequence(t *testing.T, db *gorm.DB, request any, want [][]*Te
 	for hasNext {
 		gotTimes++
 		var got []*TestStruct
-		if err := db.Clauses(request.(clause.Expression)).Find(&got).Error; err != nil {
+		if err := db.Clauses(request).Find(&got).Error; err != nil {
 			t.Fatalf("failed to query page: %v", err)
 		}
 		compareTestStructs(t, want[gotTimes], got)
