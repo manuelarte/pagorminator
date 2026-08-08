@@ -235,31 +235,29 @@ func TestNext(t *testing.T) {
 		want pagegeneric.NextPossible
 	}{
 		"no latest cursor values": {
-			page: &Pagination{},
-			want: pagegeneric.PreviousCursorValuesNotSet,
-		},
-		"total elements not set": {
 			page: &Pagination{
-				latestCursorValues: map[string]any{"id": 1},
+				latestCursorValuesSet: false,
 			},
-			want: pagegeneric.NoTotalElements,
+			want: pagegeneric.PreviousCursorValuesNotSet,
 		},
 		"no next page": {
 			page: &Pagination{
-				size:               10,
-				totalElementsSet:   true,
-				latestLen:          5,
-				latestCursorValues: map[string]any{"id": 1},
+				size:                  10,
+				totalElementsSet:      true,
+				latestCursorValuesSet: true,
+				latestLen:             5,
+				latestCursorValues:    map[string]any{"id": 1},
 			},
 			want: pagegeneric.NoNextPage,
 		},
 		"success": {
 			page: &Pagination{
-				size:               10,
-				cursors:            []Cursor{Asc("id", 1)},
-				totalElementsSet:   true,
-				latestLen:          10,
-				latestCursorValues: map[string]any{"id": 1},
+				size:                  10,
+				cursors:               []Cursor{Asc("id", 1)},
+				totalElementsSet:      true,
+				latestCursorValuesSet: true,
+				latestLen:             10,
+				latestCursorValues:    map[string]any{"id": 1},
 			},
 			want: true,
 		},

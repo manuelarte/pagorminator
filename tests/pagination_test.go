@@ -265,6 +265,71 @@ func TestSimplePagination(t *testing.T) {
 	}
 }
 
+func TestPaginationWithWhere(t *testing.T) {
+	t.Parallel()
+
+	for engine, dbFunc := range dbEngines {
+		t.Run(engine, func(t *testing.T) {
+			t.Parallel()
+
+			tests := map[string]struct {
+				toMigrate      []*TestStruct
+				where          string
+				pageRequests   []clause.Expression
+				cursorRequests []clause.Expression
+				want           [][]*TestStruct
+			}{
+				"unpaged": {
+					toMigrate: []*TestStruct{
+						{Code: "1", Price: 1},
+					},
+					where: "price > 100",
+					pageRequests: []clause.Expression{
+						pagepagination.UnPaged(),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.UnPaged(),
+					},
+					want: [][]*TestStruct{
+						{},
+					},
+				},
+			}
+			for name, test := range tests {
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
+
+					db, deferFunc, errStartingContainer := dbFunc(t.Context())
+					if errStartingContainer != nil {
+						t.Fatalf("failed to start container: %v", errStartingContainer)
+					}
+					defer deferFunc()
+					setupDB(t, db)
+					if err := db.CreateInBatches(test.toMigrate, 2).Error; err != nil {
+						t.Fatalf("failed to create test data: %v", err)
+					}
+
+					for i, pageRequest := range test.pageRequests {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Where(test.where).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[i], got)
+					}
+
+					for i, pageRequest := range test.cursorRequests {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Where(test.where).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[i], got)
+					}
+				})
+			}
+		})
+	}
+}
+
 func TestSimplePaginationUsingNext(t *testing.T) {
 	t.Parallel()
 

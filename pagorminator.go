@@ -99,6 +99,10 @@ func (p PaGorminator) cursorNext(db *gorm.DB) {
 	}
 
 	latestLen := destValue.Len()
+	if latestLen == 0 {
+		cursorPagination.SetLatestQueryValues(latestLen, nil)
+		return
+	}
 
 	destValue = destValue.Index(latestLen - 1)
 	if destValue.Kind() == reflect.Pointer {

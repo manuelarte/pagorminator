@@ -30,9 +30,10 @@ type (
 		cursors []Cursor
 
 		mu               sync.RWMutex
-		totalElements    int64
 		totalElementsSet bool
+		totalElements    int64
 
+		latestCursorValuesSet bool
 		// latestLen represents the number of rows returned in the latest query using this pagination.
 		latestLen int
 		// latestCursorValues represents the cursor latest values of the latest query using this pagination.
@@ -152,19 +153,13 @@ func (p *Pagination) IsTotalElementsSet() bool {
 	return p.totalElementsSet
 }
 
-func (p *Pagination) GetLatestQueryValues() (int, map[string]any) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-
-	return p.latestLen, p.latestCursorValues
-}
-
 // SetLatestQueryValues sets the latest query values.
 // Method to be used by the plugin callbacks.
 func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[string]any) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	p.latestCursorValuesSet = true
 	p.latestLen = latestLen
 	p.latestCursorValues = latestCursorValues
 }
@@ -172,19 +167,14 @@ func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[
 // Next Get the next cursor pagination request.
 //
 // Errors:
-//   - pagegeneric.NoTotalElements if the total elements are not set.
-//   - pagegeneric.NoNextPage if there is no next page.
 //   - pagegeneric.PreviousCursorValuesNotSet if the latest values from the query were not set.
+//   - pagegeneric.NoNextPage if there is no next page.
 func (p *Pagination) Next() (*Pagination, pagegeneric.NextPossible) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
-	if len(p.latestCursorValues) == 0 {
+	if !p.latestCursorValuesSet {
 		return nil, pagegeneric.PreviousCursorValuesNotSet
-	}
-
-	if !p.totalElementsSet {
-		return nil, pagegeneric.NoTotalElements
 	}
 
 	if p.latestLen < p.size {
