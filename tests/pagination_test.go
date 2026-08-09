@@ -279,7 +279,7 @@ func TestPaginationWithWhere(t *testing.T) {
 				cursorRequests []clause.Expression
 				want           [][]*TestStruct
 			}{
-				"unPaged, one item and filtered out": {
+				"UnPaged, one item and filtered out": {
 					toMigrate: []*TestStruct{
 						{Code: "1", Price: 1},
 					},
@@ -294,7 +294,7 @@ func TestPaginationWithWhere(t *testing.T) {
 						{},
 					},
 				},
-				"unPaged, one item and not filtered": {
+				"UnPaged, one item and not filtered": {
 					toMigrate: []*TestStruct{
 						{Code: "1", Price: 1},
 					},
@@ -337,12 +337,12 @@ func TestPaginationWithWhere(t *testing.T) {
 					},
 					where: "price > 50",
 					pageRequests: []clause.Expression{
-						pagepagination.Must(0, 1, pagegeneric.Asc("code")),
-						pagepagination.Must(1, 1, pagegeneric.Asc("code")),
+						pagepagination.Must(0, 1),
+						pagepagination.Must(1, 1),
 					},
 					cursorRequests: []clause.Expression{
-						cursorpagination.Must(1, cursorpagination.Asc("code", nil)),
-						cursorpagination.Must(1, cursorpagination.Asc("code", "3")),
+						cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+						cursorpagination.Must(1, cursorpagination.Asc("id", 3)),
 					},
 					want: [][]*TestStruct{
 						{
@@ -389,7 +389,76 @@ func TestPaginationWithWhere(t *testing.T) {
 	}
 }
 
-// TODO: migrate test sort
+func TestPaginationWithWhereAndSort(t *testing.T) {
+	t.Parallel()
+
+	for engine, dbFunc := range dbEngines {
+		t.Run(engine, func(t *testing.T) {
+			t.Parallel()
+
+			tests := map[string]struct {
+				toMigrate      []*TestStruct
+				where          string
+				pageRequests   []clause.Expression
+				cursorRequests []clause.Expression
+				want           [][]*TestStruct
+			}{
+				"Paged 0 1/2 items, two items filtered out, sort by price asc": {
+					toMigrate: []*TestStruct{
+						{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
+						{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
+						{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
+						{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+					},
+					where: "price > 50",
+					pageRequests: []clause.Expression{
+						pagepagination.Must(0, 1, pagegeneric.Asc("price")),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.Must(1, cursorpagination.Asc("price", nil)),
+					},
+					want: [][]*TestStruct{
+						{
+							{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
+						},
+					},
+				},
+				// TODO: migrate test TestSortWhere
+			}
+			for name, test := range tests {
+				t.Run(name, func(t *testing.T) {
+					t.Parallel()
+
+					db, deferFunc, errStartingContainer := dbFunc(t.Context())
+					if errStartingContainer != nil {
+						t.Fatalf("failed to start container: %v", errStartingContainer)
+					}
+					defer deferFunc()
+					setupDB(t, db)
+					if err := db.CreateInBatches(test.toMigrate, 2).Error; err != nil {
+						t.Fatalf("failed to create test data: %v", err)
+					}
+
+					for i, pageRequest := range test.pageRequests {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Where(test.where).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[i], got)
+					}
+
+					for i, pageRequest := range test.cursorRequests {
+						var got []*TestStruct
+						if err := db.Clauses(pageRequest).Where(test.where).Find(&got).Error; err != nil {
+							t.Fatalf("failed to query page 0: %v", err)
+						}
+						compareTestStructs(t, test.want[i], got)
+					}
+				})
+			}
+		})
+	}
+}
 
 func TestSimplePaginationUsingNext(t *testing.T) {
 	t.Parallel()

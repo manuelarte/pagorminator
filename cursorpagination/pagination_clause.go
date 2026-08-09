@@ -34,8 +34,6 @@ func (p *Pagination) Build(_ clause.Builder) {
 }
 
 func (p *Pagination) buildCursorWhere() (string, []any) {
-	// TODO(manuelarte): this is not good, do not use string concatenating,
-	// and use Where gorm clauses.
 	var (
 		whereSQL strings.Builder
 		vars     = make([]any, 0, len(p.cursors)*len(p.cursors))
