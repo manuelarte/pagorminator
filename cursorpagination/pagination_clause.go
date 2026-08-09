@@ -16,6 +16,8 @@ func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 
 	if p.hasCursorValues() {
 		cursorWhereSQL, cursorVars := p.buildCursorWhere()
+		tx.Set(pagegeneric.PagorminatorCursorWhereSQL, cursorWhereSQL)
+		tx.Set(pagegeneric.PagorminatorCursorWhereVars, cursorVars)
 		tx = tx.Where(cursorWhereSQL, cursorVars...)
 	}
 

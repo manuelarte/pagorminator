@@ -175,6 +175,7 @@ linters:
       - linters:
           - errcheck
           - funlen
+          - gocognit
           - goconst
           - gosec
         path: _test\.go

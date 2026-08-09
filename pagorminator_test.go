@@ -76,10 +76,10 @@ func TestNoWhere(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", 1)),
 			wantCursor: &wantCursorPagination{
 				size:             1,
-				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", 1)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -139,17 +139,16 @@ func TestNoWhere(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): migrate all these tests to test also cursor pagination.
 func TestSortNoWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate      []*TestStruct
-		pageRequest    *pagepagination.Pagination
-		wantPage       *wantPagePagination
-		cursorRequest  *cursorpagination.Pagination
-		wantCursor     *wantCursorPagination
-		expectedResult []*TestStruct
+		toMigrate     []*TestStruct
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
+		wantResult    []*TestStruct
 	}{
 		"Paged 1/2 items, sort by id asc": {
 			toMigrate: []*TestStruct{
@@ -165,18 +164,16 @@ func TestSortNoWhere(t *testing.T) {
 			},
 			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", 1)),
 			wantCursor: &wantCursorPagination{
-				size:    1,
-				cursors: []cursorpagination.Cursor{cursorpagination.Asc("id", 1)},
-				// TODO(manuelarte): there is a bug, because it's detecting that totalElements is only
-				// 1, because it's doing the select count using the WHERE of the cursor pagination.
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", 1)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-			expectedResult: []*TestStruct{
+			wantResult: []*TestStruct{
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
 		},
-		/*"Paged 1/2 items, sort by id desc": {
+		"Paged 1/2 items, sort by id desc": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
@@ -188,7 +185,14 @@ func TestSortNoWhere(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-			expectedResult: []*TestStruct{
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Desc("id", 2)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Desc("id", 2)},
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			wantResult: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 			},
 		},
@@ -206,12 +210,19 @@ func TestSortNoWhere(t *testing.T) {
 				totalElements:    3,
 				totalElementsSet: true,
 			},
-			expectedResult: []*TestStruct{
+			cursorRequest: cursorpagination.Must(5, cursorpagination.Asc("code", nil), cursorpagination.Desc("price", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             5,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("code", nil), cursorpagination.Desc("price", nil)},
+				totalElements:    3,
+				totalElementsSet: true,
+			},
+			wantResult: []*TestStruct{
 				{Model: gorm.Model{ID: 11}, Code: "1", Price: 11},
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
-		},*/
+		},
 	}
 
 	for name, test := range tests {
@@ -240,7 +251,7 @@ func TestSortNoWhere(t *testing.T) {
 				}
 
 				if diff := cmp.Diff(
-					test.expectedResult,
+					test.wantResult,
 					productsPageRequest,
 					cmpopts.IgnoreFields(TestStruct{}, "Model"),
 				); diff != "" {
@@ -262,7 +273,7 @@ func TestSortNoWhere(t *testing.T) {
 				}
 
 				if diff := cmp.Diff(
-					test.expectedResult,
+					test.wantResult,
 					productsCursorRequest,
 					cmpopts.IgnoreFields(TestStruct{}, "Model"),
 				); diff != "" {
@@ -279,16 +290,16 @@ func TestWhere(t *testing.T) {
 
 	tests := map[string]struct {
 		toMigrate   []*TestStruct
-		pageRequest *pagepagination.Pagination
 		where       string
+		pageRequest *pagepagination.Pagination
 		want        *wantPagePagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "price < 100",
+			pageRequest: pagepagination.UnPaged(),
 			want: &wantPagePagination{
 				page:             0,
 				size:             0,
@@ -300,8 +311,8 @@ func TestWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "price > 100",
+			pageRequest: pagepagination.UnPaged(),
 			want: &wantPagePagination{
 				page:             0,
 				size:             0,
@@ -313,8 +324,8 @@ func TestWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "100", Price: 100},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "price > 50",
+			pageRequest: pagepagination.UnPaged(),
 			want: &wantPagePagination{
 				page:             0,
 				size:             0,
@@ -329,8 +340,8 @@ func TestWhere(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: pagepagination.Must(0, 1),
 			where:       "price > 50",
+			pageRequest: pagepagination.Must(0, 1),
 			want: &wantPagePagination{
 				page:             0,
 				size:             1,
@@ -372,8 +383,8 @@ func TestSortWhere(t *testing.T) {
 
 	tests := map[string]struct {
 		toMigrate      []*TestStruct
-		pageRequest    *pagepagination.Pagination
 		where          string
+		pageRequest    *pagepagination.Pagination
 		wantPage       *wantPagePagination
 		expectedResult []*TestStruct
 	}{
@@ -384,8 +395,8 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: pagepagination.Must(0, 1, pagegeneric.Asc("price")),
 			where:       "price > 50",
+			pageRequest: pagepagination.Must(0, 1, pagegeneric.Asc("price")),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
@@ -404,8 +415,8 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
-			pageRequest: pagepagination.Must(0, 1, pagegeneric.Desc("price")),
 			where:       "price > 50",
+			pageRequest: pagepagination.Must(0, 1, pagegeneric.Desc("price")),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
@@ -1094,7 +1105,7 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 		cursors: []cursorpagination.Cursor{
 			cursorpagination.Desc("price", 2),
 		},
-		totalElements:    1,
+		totalElements:    3,
 		totalElementsSet: true,
 	}
 	if diff := cmp.Diff(
@@ -1144,7 +1155,7 @@ func TestCursorPaginationMultiColumnSort(t *testing.T) {
 			cursorpagination.Asc("code", "A"),
 			cursorpagination.Desc("price", 2),
 		},
-		totalElements:    2,
+		totalElements:    4,
 		totalElementsSet: true,
 	}
 	if diff := cmp.Diff(
@@ -1231,6 +1242,50 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 			cursorpagination.Desc("price", nil),
 		},
 		totalElements:    3,
+		totalElementsSet: true,
+	}
+	if diff := cmp.Diff(
+		wantPage,
+		toExpectedPagination(pageRequest),
+		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+		cmpopts.EquateEmpty(),
+	); diff != "" {
+		t.Errorf("diff (-want +got):\n%s", diff)
+	}
+}
+
+func TestCursorPaginationTotalElementsIgnoreCursorWhere(t *testing.T) {
+	t.Parallel()
+
+	db := setupDB(t)
+	toMigrate := []*TestStruct{
+		{Model: gorm.Model{ID: 1}, Code: "A", Price: 1},
+		{Model: gorm.Model{ID: 2}, Code: "B", Price: 2},
+		{Model: gorm.Model{ID: 3}, Code: "C", Price: 100},
+		{Model: gorm.Model{ID: 4}, Code: "D", Price: 200},
+	}
+
+	if txCreate := db.CreateInBatches(&toMigrate, len(toMigrate)); txCreate.Error != nil {
+		t.Fatal(txCreate.Error)
+	}
+
+	pageRequest := cursorpagination.Must(1, cursorpagination.Asc("id", 3))
+
+	var products []*TestStruct
+	if tx := db.Clauses(pageRequest).Where("price > 50").Find(&products); tx.Error != nil {
+		t.Fatal(tx.Error)
+	}
+
+	if len(products) != 1 || products[0].Code != "D" {
+		t.Errorf("unexpected result: %+v", products)
+	}
+
+	wantPage := &wantCursorPagination{
+		size: 1,
+		cursors: []cursorpagination.Cursor{
+			cursorpagination.Asc("id", 3),
+		},
+		totalElements:    2,
 		totalElementsSet: true,
 	}
 	if diff := cmp.Diff(

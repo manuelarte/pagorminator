@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/manuelarte/pagorminator/cursorpagination"
 	"github.com/manuelarte/pagorminator/internal"
@@ -54,6 +55,7 @@ func (p PaGorminator) count(db *gorm.DB) {
 
 		delete(tx.Statement.Clauses, "LIMIT")
 		delete(tx.Statement.Clauses, "OFFSET")
+		p.removeCursorWhereClause(tx)
 
 		var totalElements int64
 
@@ -67,6 +69,128 @@ func (p PaGorminator) count(db *gorm.DB) {
 
 		_ = pageable.SetTotalElements(totalElements)
 	}
+}
+
+func (p PaGorminator) removeCursorWhereClause(tx *gorm.DB) {
+	cursorWhereSQLRaw, hasCursorWhereSQL := tx.Get(pagegeneric.PagorminatorCursorWhereSQL)
+	if !hasCursorWhereSQL {
+		return
+	}
+
+	cursorWhereSQL, ok := cursorWhereSQLRaw.(string)
+	if !ok || cursorWhereSQL == "" {
+		return
+	}
+
+	cursorWhereVarsRaw, hasCursorWhereVars := tx.Get(pagegeneric.PagorminatorCursorWhereVars)
+	if !hasCursorWhereVars {
+		return
+	}
+
+	cursorWhereVars, ok := cursorWhereVarsRaw.([]any)
+	if !ok {
+		return
+	}
+
+	whereClause, hasWhere := tx.Statement.Clauses["WHERE"]
+	if !hasWhere {
+		return
+	}
+
+	where, ok := whereClause.Expression.(clause.Where)
+	if !ok {
+		return
+	}
+
+	filteredExpressions, removed := removeCursorWhereExpr(where.Exprs, cursorWhereSQL, cursorWhereVars)
+	if !removed {
+		return
+	}
+
+	if len(filteredExpressions) == 0 {
+		delete(tx.Statement.Clauses, "WHERE")
+		return
+	}
+
+	where.Exprs = filteredExpressions
+	whereClause.Expression = where
+	tx.Statement.Clauses["WHERE"] = whereClause
+}
+
+func removeCursorWhereExpr(
+	expressions []clause.Expression,
+	cursorWhereSQL string,
+	cursorWhereVars []any,
+) ([]clause.Expression, bool) {
+	filteredExpressions := make([]clause.Expression, 0, len(expressions))
+	removedAny := false
+
+	for _, expression := range expressions {
+		filteredExpression, removed, keep := removeExpression(expression, cursorWhereSQL, cursorWhereVars)
+		if removed {
+			removedAny = true
+		}
+
+		if keep {
+			filteredExpressions = append(filteredExpressions, filteredExpression)
+		}
+	}
+
+	return filteredExpressions, removedAny
+}
+
+func removeExpression(
+	expression clause.Expression,
+	cursorWhereSQL string,
+	cursorWhereVars []any,
+) (clause.Expression, bool, bool) {
+	switch expressionTyped := expression.(type) {
+	case clause.Expr:
+		if expressionTyped.SQL == cursorWhereSQL && reflect.DeepEqual(expressionTyped.Vars, cursorWhereVars) {
+			return nil, true, false
+		}
+	case clause.AndConditions:
+		filteredExpressions, removed := removeCursorWhereExpr(expressionTyped.Exprs, cursorWhereSQL, cursorWhereVars)
+		if !removed {
+			return expressionTyped, false, true
+		}
+
+		if len(filteredExpressions) == 0 {
+			return nil, true, false
+		}
+
+		expressionTyped.Exprs = filteredExpressions
+
+		return expressionTyped, true, true
+	case clause.OrConditions:
+		filteredExpressions, removed := removeCursorWhereExpr(expressionTyped.Exprs, cursorWhereSQL, cursorWhereVars)
+		if !removed {
+			return expressionTyped, false, true
+		}
+
+		if len(filteredExpressions) == 0 {
+			return nil, true, false
+		}
+
+		expressionTyped.Exprs = filteredExpressions
+
+		return expressionTyped, true, true
+	case clause.NotConditions:
+		filteredExpressions, removed := removeCursorWhereExpr(expressionTyped.Exprs, cursorWhereSQL, cursorWhereVars)
+		if !removed {
+			return expressionTyped, false, true
+		}
+
+		if len(filteredExpressions) == 0 {
+			return nil, true, false
+		}
+
+		expressionTyped.Exprs = filteredExpressions
+
+		return expressionTyped, true, true
+	}
+
+	return expression, false, true
 }
 
 func (p PaGorminator) cursorNext(db *gorm.DB) {
