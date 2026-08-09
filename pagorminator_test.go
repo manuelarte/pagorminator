@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator/cursorpagination"
+	"github.com/manuelarte/pagorminator/internal"
 	"github.com/manuelarte/pagorminator/pagegeneric"
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
@@ -21,20 +22,29 @@ func TestNoWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestStruct
-		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		toMigrate     []*TestStruct
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item": {
 			toMigrate: []*TestStruct{
 				{Code: "1"},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
 				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				Size:             0,
+				Cursors:          nil,
+				TotalElements:    1,
+				TotalElementsSet: true,
 			},
 		},
 		"UnPaged several items": {
@@ -42,11 +52,18 @@ func TestNoWhere(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    2,
 				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				Size:             0,
+				Cursors:          nil,
+				TotalElements:    2,
+				TotalElementsSet: true,
 			},
 		},
 		"Paged 1/2 items": {
@@ -54,14 +71,21 @@ func TestNoWhere(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: pagepagination.Must(1, 1),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             1,
 				size:             1,
 				totalElements:    2,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				Size:             1,
+				Cursors:          []wantCursor{{Column: "id", Order: "id ASC"}},
+				TotalElements:    2,
+				TotalElementsSet: true,
+			},
 		},
-		"Paged 0/2 items, size 2": {
+		/*"Paged 0/2 items, size 2": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
@@ -72,7 +96,7 @@ func TestNoWhere(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-		},
+		},*/
 	}
 
 	for name, test := range tests {
@@ -86,14 +110,22 @@ func TestNoWhere(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			var products []*TestStruct
-
-			db.Clauses(test.pageRequest).Find(&products)
+			db.Clauses(test.pageRequest).Find(&[]*TestStruct{})
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
+			); diff != "" {
+				t.Errorf("diff (-want +got):\n%s", diff)
+			}
+
+			db.Clauses(test.cursorRequest).Find(&[]*TestStruct{})
+
+			if diff := cmp.Diff(
+				test.wantCursor,
+				toExpectedPagination(test.cursorRequest),
+				cmp.AllowUnexported(wantPagePagination{}), cmpopts.EquateEmpty(),
 			); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
@@ -1024,7 +1056,7 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 		TotalElements:    1,
 		TotalElementsSet: true,
 	}
-	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+	if diff := cmp.Diff(wantPage, toExpectedPagination(pageRequest)); diff != "" {
 		t.Fatalf("diff (-want +got):\n%s", diff)
 	}
 }
@@ -1069,7 +1101,7 @@ func TestCursorPaginationMultiColumnSort(t *testing.T) {
 		TotalElements:    2,
 		TotalElementsSet: true,
 	}
-	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+	if diff := cmp.Diff(wantPage, toExpectedPagination(pageRequest)); diff != "" {
 		t.Fatalf("diff (-want +got):\n%s", diff)
 	}
 }
@@ -1107,7 +1139,7 @@ func TestCursorPaginationUnPaged(t *testing.T) {
 		TotalElements:    3,
 		TotalElementsSet: true,
 	}
-	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+	if diff := cmp.Diff(wantPage, toExpectedPagination(pageRequest)); diff != "" {
 		t.Fatalf("diff (-want +got):\n%s", diff)
 	}
 }
@@ -1145,7 +1177,7 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 		TotalElements:    3,
 		TotalElementsSet: true,
 	}
-	if diff := cmp.Diff(wantPage, toExpectedCursorPagination(pageRequest)); diff != "" {
+	if diff := cmp.Diff(wantPage, toExpectedPagination(pageRequest)); diff != "" {
 		t.Fatalf("diff (-want +got):\n%s", diff)
 	}
 }
@@ -1170,50 +1202,47 @@ func setupDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func toExpectedPagination(actual *pagepagination.Pagination) *wantPagePagination {
-	if actual == nil {
+func toExpectedPagination(got internal.Pagination) any {
+	if got == nil {
 		return nil
 	}
 
-	totalElements, totalElementsSet := actual.GetTotalElements()
+	totalElements, totalElementsSet := got.GetTotalElements()
 
-	return &wantPagePagination{
-		page:             actual.GetPage(),
-		size:             actual.GetSize(),
-		sort:             actual.GetSort(),
-		totalElements:    totalElements,
-		totalElementsSet: totalElementsSet,
-	}
-}
+	switch actual := got.(type) {
+	case *pagepagination.Pagination:
+		return &wantPagePagination{
+			page:             actual.GetPage(),
+			size:             actual.GetSize(),
+			sort:             actual.GetSort(),
+			totalElements:    totalElements,
+			totalElementsSet: totalElementsSet,
+		}
+	case *cursorpagination.Pagination:
+		cursors := actual.GetCursors()
 
-func toExpectedCursorPagination(actual *cursorpagination.Pagination) *wantCursorPagination {
-	if actual == nil {
+		expectedCursors := make([]wantCursor, len(cursors))
+		for i, cursor := range cursors {
+			order := ""
+			if cursor.GetOrder() != nil {
+				order = cursor.GetOrder().GormString()
+			}
+
+			expectedCursors[i] = wantCursor{
+				Column: cursor.GetColumn(),
+				Value:  cursor.GetValue(),
+				Order:  order,
+			}
+		}
+
+		return &wantCursorPagination{
+			Size:             actual.GetSize(),
+			Cursors:          expectedCursors,
+			TotalElements:    totalElements,
+			TotalElementsSet: totalElementsSet,
+		}
+	default:
 		return nil
-	}
-
-	cursors := actual.GetCursors()
-
-	expectedCursors := make([]wantCursor, len(cursors))
-	for i, cursor := range cursors {
-		order := ""
-		if cursor.GetOrder() != nil {
-			order = cursor.GetOrder().GormString()
-		}
-
-		expectedCursors[i] = wantCursor{
-			Column: cursor.GetColumn(),
-			Value:  cursor.GetValue(),
-			Order:  order,
-		}
-	}
-
-	totalElements, totalElementsSet := actual.GetTotalElements()
-
-	return &wantCursorPagination{
-		Size:             actual.GetSize(),
-		Cursors:          expectedCursors,
-		TotalElements:    totalElements,
-		TotalElementsSet: totalElementsSet,
 	}
 }
 

@@ -45,7 +45,7 @@ type (
 //
 // Errors:
 //   - ErrSizeCantBeNegative if the size value is below zero.
-//   - ErrOrderRequired if the cursors are empty.
+//   - ErrCursorsRequired if the cursors are empty.
 //   - ErrOrderNotValid if the order is not Asc or Desc
 //   - CursorValuesNotValidError if some cursors have values and some others do not.
 func New(size int, cursors ...Cursor) (*Pagination, error) {
@@ -53,8 +53,9 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 		return nil, ErrSizeCantBeNegative
 	}
 
+	// if size is not zero, but no cursors are provided, we don't assume to uso the primary key as cursor.
 	if size > 0 && len(cursors) == 0 {
-		return nil, ErrOrderRequired
+		return nil, ErrCursorsRequired
 	}
 
 	hasValue := make([]string, 0, len(cursors))
@@ -101,7 +102,7 @@ func Must(size int, cursors ...Cursor) *Pagination {
 
 // UnPaged Create an unpaged request (no pagination is applied).
 func UnPaged() *Pagination {
-	return &Pagination{size: 0}
+	return &Pagination{}
 }
 
 // GetSize Get the page size.

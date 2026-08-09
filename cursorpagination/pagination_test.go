@@ -87,7 +87,7 @@ func TestNewPageRequest(t *testing.T) {
 		"missing order": {
 			size:        10,
 			cursors:     nil,
-			expectedErr: ErrOrderRequired,
+			expectedErr: ErrCursorsRequired,
 		},
 		"mixed cursor values": {
 			size:    10,
