@@ -65,7 +65,26 @@ func TestNoWhere(t *testing.T) {
 				totalElementsSet: true,
 			},
 		},
-		"Paged 1/2 items": {
+		"Page 0/1, size 1": {
+			toMigrate: []*TestStruct{
+				{Code: "1", Price: 1}, {Code: "2", Price: 2},
+			},
+			pageRequest: pagepagination.Must(0, 1),
+			wantPage: &wantPagePagination{
+				page:             0,
+				size:             1,
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+		},
+		"Page 1/1, size 1": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
@@ -84,7 +103,7 @@ func TestNoWhere(t *testing.T) {
 				totalElementsSet: true,
 			},
 		},
-		"Paged 0/2 items, size 2": {
+		"Page 0/0, Size 2": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
@@ -150,7 +169,7 @@ func TestSortNoWhere(t *testing.T) {
 		wantCursor    *wantCursorPagination
 		wantResult    []*TestStruct
 	}{
-		"Paged 1/2 items, sort by id asc": {
+		"Page 1/1, size 1, sort by id asc": {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1}, {Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
@@ -173,7 +192,7 @@ func TestSortNoWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
 			},
 		},
-		"Paged 1/2 items, sort by id desc": {
+		"Page 1/1, size 1, sort by id desc": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
@@ -196,7 +215,7 @@ func TestSortNoWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 			},
 		},
-		"Paged 1/2 items, sort by code asc, and price desc": {
+		"Page 0/0, size 5, sort by code asc, and price desc": {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -355,7 +374,7 @@ func TestWhere(t *testing.T) {
 				totalElementsSet: true,
 			},
 		},
-		"Paged four items, two filtered out": {
+		"Page 0/2, size 1, two filtered out": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 				{Code: "2", Price: 2},
@@ -435,7 +454,7 @@ func TestSortWhere(t *testing.T) {
 		wantPage    *wantPagePagination
 		wantResult  []*TestStruct
 	}{
-		"Paged 0 1/2 items, two items filtered out, sort by price asc": {
+		"Page 0/1, size 1, two items filtered out, sort by price asc": {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -455,7 +474,7 @@ func TestSortWhere(t *testing.T) {
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 			},
 		},
-		"Paged 0 1/2 items, two items filtered out, sort by price desc": {
+		"Page 0/1, size 1, two items filtered out, sort by price desc": {
 			toMigrate: []*TestStruct{
 				{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 				{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -545,7 +564,7 @@ func TestWithPreload(t *testing.T) {
 				totalElementsSet: true,
 			},
 		},
-		"Paged 2/2 items": {
+		"Page 1/1, size 1": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},

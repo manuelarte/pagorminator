@@ -170,7 +170,7 @@ func TestSimplePagination(t *testing.T) {
 				cursorRequests []clause.Expression
 				want           [][]*TestStruct
 			}{
-				"unpaged": {
+				"UnPaged": {
 					pageRequests: []clause.Expression{
 						pagepagination.UnPaged(),
 					},
@@ -181,7 +181,7 @@ func TestSimplePagination(t *testing.T) {
 						testData(),
 					},
 				},
-				"simple pagination": {
+				"Simple pagination": {
 					pageRequests: []clause.Expression{
 						pagepagination.Must(0, 2, pagegeneric.Asc("code")),
 						pagepagination.Must(1, 2, pagegeneric.Asc("code")),
@@ -201,7 +201,7 @@ func TestSimplePagination(t *testing.T) {
 						},
 					},
 				},
-				"Paged 1/2 items, sort by id asc": {
+				"Page 0/1, size 2, sort by id asc": {
 					pageRequests: []clause.Expression{
 						pagepagination.Must(0, 2, pagegeneric.Asc("id")),
 					},
@@ -215,7 +215,21 @@ func TestSimplePagination(t *testing.T) {
 						},
 					},
 				},
-				"Paged 1/2 items, sort by id desc": {
+				"Page 1/1, size 2, sort by id asc": {
+					pageRequests: []clause.Expression{
+						pagepagination.Must(1, 2, pagegeneric.Asc("id")),
+					},
+					cursorRequests: []clause.Expression{
+						cursorpagination.Must(2, cursorpagination.Asc("id", 2)),
+					},
+					want: [][]*TestStruct{
+						{
+							{Code: "C", Price: 3},
+							{Code: "D", Price: 1},
+						},
+					},
+				},
+				"Page 0/1, size 2, sort by id desc": {
 					pageRequests: []clause.Expression{
 						pagepagination.Must(0, 2, pagegeneric.Desc("id")),
 					},
