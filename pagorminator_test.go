@@ -284,15 +284,16 @@ func TestSortNoWhere(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestStruct
-		where       string
-		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		toMigrate     []*TestStruct
+		where         string
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
@@ -300,9 +301,16 @@ func TestWhere(t *testing.T) {
 			},
 			where:       "price < 100",
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -313,9 +321,16 @@ func TestWhere(t *testing.T) {
 			},
 			where:       "price > 100",
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    0,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    0,
 				totalElementsSet: true,
 			},
@@ -326,9 +341,16 @@ func TestWhere(t *testing.T) {
 			},
 			where:       "price > 50",
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -342,9 +364,16 @@ func TestWhere(t *testing.T) {
 			},
 			where:       "price > 50",
 			pageRequest: pagepagination.Must(0, 1),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -361,23 +390,42 @@ func TestWhere(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			var products []*TestStruct
+			{
+				var products []*TestStruct
 
-			if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
-				t.Fatal(tx.Error)
+				if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
+
+				if diff := cmp.Diff(
+					test.wantPage,
+					toExpectedPagination(test.pageRequest),
+					cmp.AllowUnexported(wantPagePagination{}),
+				); diff != "" {
+					t.Errorf("diff (-want +got):\n%s", diff)
+				}
+			}
+			{
+				var products []*TestStruct
+
+				if tx := db.Clauses(test.cursorRequest).Where(test.where).Find(&products); tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
+
+				if diff := cmp.Diff(
+					test.wantCursor,
+					toExpectedPagination(test.cursorRequest),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+				); diff != "" {
+					t.Errorf("diff (-want +got):\n%s", diff)
+				}
 			}
 
-			if diff := cmp.Diff(
-				test.want,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
 		})
 	}
 }
 
+// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestSortWhere(t *testing.T) {
 	t.Parallel()
 
