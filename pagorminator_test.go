@@ -17,7 +17,6 @@ import (
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
-// TODO(manuelarte): migrate all these tests to test also cursor pagination.
 func TestNoWhere(t *testing.T) {
 	t.Parallel()
 
@@ -85,18 +84,25 @@ func TestNoWhere(t *testing.T) {
 				totalElementsSet: true,
 			},
 		},
-		/*"Paged 0/2 items, size 2": {
+		"Paged 0/2 items, size 2": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: pagepagination.Must(0, 2),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             2,
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-		},*/
+			cursorRequest: cursorpagination.Must(2, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             2,
+				cursors:          []wantCursor{{column: "id", order: "id ASC"}},
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -133,6 +139,7 @@ func TestNoWhere(t *testing.T) {
 	}
 }
 
+// TODO(manuelarte): migrate all these tests to test also cursor pagination.
 func TestSortNoWhere(t *testing.T) {
 	t.Parallel()
 
