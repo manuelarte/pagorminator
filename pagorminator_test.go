@@ -1069,7 +1069,7 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
 		cmpopts.EquateEmpty(),
 	); diff != "" {
-		t.Fatalf("diff (-want +got):\n%s", diff)
+		t.Errorf("diff (-want +got):\n%s", diff)
 	}
 }
 
@@ -1119,7 +1119,7 @@ func TestCursorPaginationMultiColumnSort(t *testing.T) {
 		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
 		cmpopts.EquateEmpty(),
 	); diff != "" {
-		t.Fatalf("diff (-want +got):\n%s", diff)
+		t.Errorf("diff (-want +got):\n%s", diff)
 	}
 }
 
@@ -1162,7 +1162,7 @@ func TestCursorPaginationUnPaged(t *testing.T) {
 		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
 		cmpopts.EquateEmpty(),
 	); diff != "" {
-		t.Fatalf("diff (-want +got):\n%s", diff)
+		t.Errorf("diff (-want +got):\n%s", diff)
 	}
 }
 
@@ -1205,7 +1205,7 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
 		cmpopts.EquateEmpty(),
 	); diff != "" {
-		t.Fatalf("diff (-want +got):\n%s", diff)
+		t.Errorf("diff (-want +got):\n%s", diff)
 	}
 }
 
@@ -1265,12 +1265,12 @@ func assertStructs(t *testing.T, expected []struct {
 	t.Helper()
 
 	if len(products) != len(expected) {
-		t.Fatalf("unexpected result size: got %d, want %d", len(products), len(expected))
+		t.Errorf("unexpected result size: got %d, want %d", len(products), len(expected))
 	}
 
 	for i := range expected {
 		if products[i].Code != expected[i].code || products[i].Price != expected[i].price {
-			t.Fatalf(
+			t.Errorf(
 				"unexpected result at %d: got (%s,%d), want (%s,%d)",
 				i,
 				products[i].Code,
