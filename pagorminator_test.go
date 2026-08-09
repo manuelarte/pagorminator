@@ -225,7 +225,7 @@ func TestSortNoWhere(t *testing.T) {
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
-				t.Fatalf("diff (-want +got):\n%s", diff)
+				t.Errorf("diff (-want +got):\n%s", diff)
 			}
 
 			if diff := cmp.Diff(
@@ -1052,7 +1052,7 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 	}
 
 	if len(products) != 1 || products[0].Price != 1 {
-		t.Fatalf("unexpected result: %+v", products)
+		t.Errorf("unexpected result: %+v", products)
 	}
 
 	wantPage := &wantCursorPagination{
@@ -1145,7 +1145,7 @@ func TestCursorPaginationUnPaged(t *testing.T) {
 	}
 
 	if len(products) != 3 {
-		t.Fatalf("unexpected result size: %d", len(products))
+		t.Errorf("unexpected result size: %d", len(products))
 	}
 
 	wantPage := &wantCursorPagination{
@@ -1188,7 +1188,7 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 	}
 
 	if len(products) != 2 || products[0].Price != 3 || products[1].Price != 2 {
-		t.Fatalf("unexpected result: %+v", products)
+		t.Errorf("unexpected result: %+v", products)
 	}
 
 	wantPage := &wantCursorPagination{
