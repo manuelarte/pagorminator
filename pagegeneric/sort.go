@@ -13,6 +13,7 @@ var (
 type (
 	// Order represents a sort order.
 	Order interface {
+		Column() string
 		GormString() string
 		order()
 	}
@@ -26,11 +27,19 @@ type (
 	Desc string
 )
 
+func (a Asc) Column() string {
+	return string(a)
+}
+
 func (a Asc) GormString() string {
 	return fmt.Sprintf("%s ASC", a)
 }
 
 func (a Asc) order() {}
+
+func (d Desc) Column() string {
+	return string(d)
+}
 
 func (d Desc) GormString() string {
 	return fmt.Sprintf("%s DESC", d)

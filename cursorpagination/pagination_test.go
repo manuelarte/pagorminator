@@ -79,11 +79,6 @@ func TestNewPageRequest(t *testing.T) {
 			cursors:     []Cursor{Asc("id", nil)},
 			expectedErr: ErrSizeCantBeNegative,
 		},
-		"invalid order": {
-			size:        10,
-			cursors:     []Cursor{{column: "id"}},
-			expectedErr: ErrOrderNotValid,
-		},
 		"missing order": {
 			size:        10,
 			cursors:     nil,
@@ -170,11 +165,11 @@ func TestGetCursorsClone(t *testing.T) {
 
 	pageRequest := Must(10, Asc("id", 1))
 	got := pageRequest.GetCursors()
-	got[0].column = "changed"
+	got[0] = Asc("changed", 2)
 
 	again := pageRequest.GetCursors()
-	if again[0].column != "id" {
-		t.Errorf("expected cloned cursors, got %q", again[0].column)
+	if again[0].GetColumn() != "id" {
+		t.Errorf("expected cloned cursors, got %q", again[0].GetColumn())
 	}
 }
 

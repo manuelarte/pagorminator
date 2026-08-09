@@ -16,9 +16,8 @@ var (
 type (
 	//go:structinit
 	Cursor struct {
-		column string
-		value  any
-		order  pagegeneric.Order
+		order pagegeneric.Order
+		value any
 	}
 
 	// Pagination Clause to apply cursor pagination.
@@ -64,15 +63,14 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 	for _, cursor := range cursors {
 		switch cursor.order.(type) {
 		case pagegeneric.Asc, pagegeneric.Desc:
-			// valid
+			column := cursor.GetColumn()
+			if cursor.value == nil {
+				hasNilValue = append(hasNilValue, column)
+			} else {
+				hasValue = append(hasValue, column)
+			}
 		default:
 			return nil, ErrOrderNotValid
-		}
-
-		if cursor.value == nil {
-			hasNilValue = append(hasNilValue, cursor.column)
-		} else {
-			hasValue = append(hasValue, cursor.column)
 		}
 	}
 
@@ -184,34 +182,33 @@ func (p *Pagination) Next() (*Pagination, pagegeneric.NextPossible) {
 	newCursors := make([]Cursor, len(p.cursors))
 	for i, c := range p.cursors {
 		newCursors[i] = Cursor{
-			column: c.column,
-			order:  c.order,
-			value:  p.latestCursorValues[c.column],
+			order: c.order,
+			value: p.latestCursorValues[c.GetColumn()],
 		}
 	}
 
 	return Must(p.size, newCursors...), true
 }
 
-// NewCursor creates a cursor definition for a column, optional value and sort order.
-func NewCursor(column string, value any, order pagegeneric.Order) Cursor {
-	return Cursor{column: column, value: value, order: order}
-}
-
 // Asc creates an ascending cursor for a column.
 func Asc(column string, value any) Cursor {
-	return NewCursor(column, value, pagegeneric.Asc(column))
+	return newCursor(pagegeneric.Asc(column), value)
 }
 
 // Desc creates a descending cursor for a column.
 func Desc(column string, value any) Cursor {
-	return NewCursor(column, value, pagegeneric.Desc(column))
+	return newCursor(pagegeneric.Desc(column), value)
+}
+
+func newCursor(order pagegeneric.Order, value any) Cursor {
+	return Cursor{order: order, value: value}
 }
 
 func (c Cursor) GetColumn() string {
-	return c.column
+	return c.order.Column()
 }
 
+// GetValue returns the cursor value.
 func (c Cursor) GetValue() any {
 	return c.value
 }
