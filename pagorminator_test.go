@@ -420,7 +420,6 @@ func TestWhere(t *testing.T) {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
 			}
-
 		})
 	}
 }
