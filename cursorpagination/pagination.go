@@ -2,7 +2,6 @@ package cursorpagination
 
 import (
 	"slices"
-	"strings"
 	"sync"
 
 	"github.com/manuelarte/pagorminator/internal"
@@ -191,19 +190,6 @@ func (p *Pagination) Next() (*Pagination, pagegeneric.NextPossible) {
 	}
 
 	return Must(p.size, newCursors...), true
-}
-
-func (p *Pagination) sortString() string {
-	orderStrings := make([]string, len(p.cursors))
-	for i, cursor := range p.cursors {
-		orderStrings[i] = cursor.order.GormString()
-	}
-
-	return strings.Join(orderStrings, ", ")
-}
-
-func (p *Pagination) hasCursorValues() bool {
-	return len(p.cursors) > 0 && p.cursors[0].value != nil
 }
 
 // NewCursor creates a cursor definition for a column, optional value and sort order.

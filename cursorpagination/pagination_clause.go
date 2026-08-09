@@ -77,3 +77,16 @@ func (p *Pagination) buildCursorWhere() (string, []any) {
 
 	return whereSQL.String(), vars
 }
+
+func (p *Pagination) hasCursorValues() bool {
+	return len(p.cursors) > 0 && p.cursors[0].value != nil
+}
+
+func (p *Pagination) sortString() string {
+	orderStrings := make([]string, len(p.cursors))
+	for i, cursor := range p.cursors {
+		orderStrings[i] = cursor.order.GormString()
+	}
+
+	return strings.Join(orderStrings, ", ")
+}
