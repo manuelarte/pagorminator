@@ -430,11 +430,11 @@ func TestSortWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate      []*TestStruct
-		where          string
-		pageRequest    *pagepagination.Pagination
-		wantPage       *wantPagePagination
-		expectedResult []*TestStruct
+		toMigrate   []*TestStruct
+		where       string
+		pageRequest *pagepagination.Pagination
+		wantPage    *wantPagePagination
+		wantResult  []*TestStruct
 	}{
 		"Paged 0 1/2 items, two items filtered out, sort by price asc": {
 			toMigrate: []*TestStruct{
@@ -452,7 +452,7 @@ func TestSortWhere(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-			expectedResult: []*TestStruct{
+			wantResult: []*TestStruct{
 				{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 			},
 		},
@@ -472,7 +472,7 @@ func TestSortWhere(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
-			expectedResult: []*TestStruct{
+			wantResult: []*TestStruct{
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
 		},
@@ -503,7 +503,7 @@ func TestSortWhere(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.expectedResult,
+				test.wantResult,
 				products,
 				cmpopts.IgnoreFields(TestStruct{}, "Model"),
 			); diff != "" {
@@ -519,14 +519,14 @@ func TestWithPreload(t *testing.T) {
 	tests := map[string]struct {
 		toMigrate   []*TestProduct
 		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -539,7 +539,7 @@ func TestWithPreload(t *testing.T) {
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.Must(0, 1),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
 				totalElements:    2,
@@ -552,7 +552,7 @@ func TestWithPreload(t *testing.T) {
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.Must(1, 1),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             1,
 				size:             1,
 				totalElements:    2,
@@ -578,7 +578,7 @@ func TestWithPreload(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
@@ -594,7 +594,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 	tests := map[string]struct {
 		toMigrate   []*TestProduct
 		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
@@ -605,7 +605,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				{Code: "5", Price: TestPrice{Amount: 5, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    4,
@@ -621,7 +621,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				{Code: "5", Price: TestPrice{Amount: 5, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.Must(0, 2),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             2,
 				totalElements:    4,
@@ -649,7 +649,7 @@ func TestWithPreloadAndWhere(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
@@ -665,14 +665,14 @@ func TestWithJoins(t *testing.T) {
 	tests := map[string]struct {
 		toMigrate   []*TestProduct
 		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -685,7 +685,7 @@ func TestWithJoins(t *testing.T) {
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
 			pageRequest: pagepagination.Must(0, 1),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
 				totalElements:    2,
@@ -713,7 +713,7 @@ func TestWithJoins(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
@@ -730,7 +730,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 		toMigrate   []*TestProduct
 		pageRequest *pagepagination.Pagination
 		where       any
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
@@ -738,7 +738,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			},
 			pageRequest: pagepagination.UnPaged(),
 			where:       "1=1",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -752,7 +752,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			},
 			pageRequest: pagepagination.Must(0, 1),
 			where:       "Price.amount > 1",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
 				totalElements:    1,
@@ -768,7 +768,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			},
 			pageRequest: pagepagination.Must(0, 2),
 			where:       "Price.amount >= 2",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             2,
 				totalElements:    3,
@@ -796,7 +796,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
@@ -812,14 +812,14 @@ func TestTable(t *testing.T) {
 	tests := map[string]struct {
 		toMigrate   []*TestStruct
 		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged one item": {
 			toMigrate: []*TestStruct{
 				{Code: "1"},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -831,7 +831,7 @@ func TestTable(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    2,
@@ -843,7 +843,7 @@ func TestTable(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: pagepagination.Must(1, 1),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             1,
 				size:             1,
 				totalElements:    2,
@@ -855,7 +855,7 @@ func TestTable(t *testing.T) {
 				{Code: "1", Price: 1}, {Code: "2", Price: 2},
 			},
 			pageRequest: pagepagination.Must(0, 2),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             2,
 				totalElements:    2,
@@ -882,7 +882,7 @@ func TestTable(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
@@ -899,7 +899,7 @@ func TestTableWithWhere(t *testing.T) {
 		toMigrate   []*TestStruct
 		pageRequest *pagepagination.Pagination
 		where       string
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
@@ -907,7 +907,7 @@ func TestTableWithWhere(t *testing.T) {
 			},
 			pageRequest: pagepagination.UnPaged(),
 			where:       "price < 100",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -920,7 +920,7 @@ func TestTableWithWhere(t *testing.T) {
 			},
 			pageRequest: pagepagination.UnPaged(),
 			where:       "price > 100",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    0,
@@ -933,7 +933,7 @@ func TestTableWithWhere(t *testing.T) {
 			},
 			pageRequest: pagepagination.UnPaged(),
 			where:       "price > 50",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -949,7 +949,7 @@ func TestTableWithWhere(t *testing.T) {
 			},
 			pageRequest: pagepagination.Must(0, 1),
 			where:       "price > 50",
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
 				totalElements:    2,
@@ -977,7 +977,7 @@ func TestTableWithWhere(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
@@ -993,7 +993,7 @@ func TestDistinct(t *testing.T) {
 	tests := map[string]struct {
 		toMigrate   []*TestStruct
 		pageRequest *pagepagination.Pagination
-		want        *wantPagePagination
+		wantPage    *wantPagePagination
 	}{
 		"UnPaged two items, same price": {
 			toMigrate: []*TestStruct{
@@ -1001,7 +1001,7 @@ func TestDistinct(t *testing.T) {
 				{Code: "2", Price: 1},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    1,
@@ -1016,7 +1016,7 @@ func TestDistinct(t *testing.T) {
 				{Code: "4", Price: 2},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    2,
@@ -1031,7 +1031,7 @@ func TestDistinct(t *testing.T) {
 				{Code: "4", Price: 4},
 			},
 			pageRequest: pagepagination.UnPaged(),
-			want: &wantPagePagination{
+			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
 				totalElements:    4,
@@ -1059,7 +1059,7 @@ func TestDistinct(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(
-				test.want,
+				test.wantPage,
 				toExpectedPagination(test.pageRequest),
 				cmp.AllowUnexported(wantPagePagination{}),
 			); diff != "" {
