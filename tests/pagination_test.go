@@ -553,32 +553,6 @@ func TestSimplePaginationUsingNext(t *testing.T) {
 	}
 }
 
-func testPaginationSequence(t *testing.T, db *gorm.DB, request pagorminator.Pagination, want [][]*TestStruct) {
-	t.Helper()
-
-	hasNext := pagegeneric.NextPossible(true)
-	gotTimes := -1
-	for hasNext {
-		gotTimes++
-		var got []*TestStruct
-		if err := db.Clauses(request).Find(&got).Error; err != nil {
-			t.Fatalf("failed to query page: %v", err)
-		}
-		compareTestStructs(t, want[gotTimes], got)
-		switch r := request.(type) {
-		case *pagepagination.Pagination:
-			request, hasNext = r.Next()
-		case *cursorpagination.Pagination:
-			request, hasNext = r.Next()
-		default:
-			t.Fatalf("unknown pagination type: %T", r)
-		}
-	}
-	if len(want) != gotTimes+1 {
-		t.Errorf("expected %d pages, got %d", len(want), gotTimes+1)
-	}
-}
-
 func TestCursorPaginationSQLInjection(t *testing.T) {
 	t.Parallel()
 
@@ -764,6 +738,32 @@ func TestParametrizedSQLQueriesCursorPagination(t *testing.T) {
 				t.Fatalf("payload was not passed as bind variable: %q", payload)
 			}
 		})
+	}
+}
+
+func testPaginationSequence(t *testing.T, db *gorm.DB, request pagorminator.Pagination, want [][]*TestStruct) {
+	t.Helper()
+
+	hasNext := pagegeneric.NextPossible(true)
+	gotTimes := -1
+	for hasNext {
+		gotTimes++
+		var got []*TestStruct
+		if err := db.Clauses(request).Find(&got).Error; err != nil {
+			t.Fatalf("failed to query page: %v", err)
+		}
+		compareTestStructs(t, want[gotTimes], got)
+		switch r := request.(type) {
+		case *pagepagination.Pagination:
+			request, hasNext = r.Next()
+		case *cursorpagination.Pagination:
+			request, hasNext = r.Next()
+		default:
+			t.Fatalf("unknown pagination type: %T", r)
+		}
+	}
+	if len(want) != gotTimes+1 {
+		t.Errorf("expected %d pages, got %d", len(want), gotTimes+1)
 	}
 }
 

@@ -255,8 +255,8 @@ func TestSortNoWhere(t *testing.T) {
 			}
 
 			{
-				var productsPageRequest []*TestStruct
-				if tx := db.Clauses(test.pageRequest).Find(&productsPageRequest); tx.Error != nil {
+				var gotResult []*TestStruct
+				if tx := db.Clauses(test.pageRequest).Find(&gotResult); tx.Error != nil {
 					t.Fatal(tx.Error)
 				}
 
@@ -268,17 +268,11 @@ func TestSortNoWhere(t *testing.T) {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
 
-				if diff := cmp.Diff(
-					test.wantResult,
-					productsPageRequest,
-					cmpopts.IgnoreFields(TestStruct{}, "Model"),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
+				compareTestStructs(t, gotResult, test.wantResult)
 			}
 			{
-				var productsCursorRequest []*TestStruct
-				if tx := db.Clauses(test.cursorRequest).Find(&productsCursorRequest); tx.Error != nil {
+				var gotResult []*TestStruct
+				if tx := db.Clauses(test.cursorRequest).Find(&gotResult); tx.Error != nil {
 					t.Fatal(tx.Error)
 				}
 
@@ -290,13 +284,7 @@ func TestSortNoWhere(t *testing.T) {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
 
-				if diff := cmp.Diff(
-					test.wantResult,
-					productsCursorRequest,
-					cmpopts.IgnoreFields(TestStruct{}, "Model"),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
+				compareTestStructs(t, gotResult, test.wantResult)
 			}
 		})
 	}
@@ -521,9 +509,9 @@ func TestSortWhere(t *testing.T) {
 			}
 
 			{
-				var products []*TestStruct
+				var gotResult []*TestStruct
 
-				if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
+				if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&gotResult); tx.Error != nil {
 					t.Fatalf("error querying products: %v", tx.Error)
 				}
 
@@ -535,18 +523,12 @@ func TestSortWhere(t *testing.T) {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
 
-				if diff := cmp.Diff(
-					test.wantResult,
-					products,
-					cmpopts.IgnoreFields(TestStruct{}, "Model"),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
+				compareTestStructs(t, gotResult, test.wantResult)
 			}
 			{
-				var products []*TestStruct
+				var gotResult []*TestStruct
 
-				if tx := db.Clauses(test.cursorRequest).Where(test.where).Find(&products); tx.Error != nil {
+				if tx := db.Clauses(test.cursorRequest).Where(test.where).Find(&gotResult); tx.Error != nil {
 					t.Fatalf("error querying products: %v", tx.Error)
 				}
 
@@ -558,13 +540,7 @@ func TestSortWhere(t *testing.T) {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
 
-				if diff := cmp.Diff(
-					test.wantResult,
-					products,
-					cmpopts.IgnoreFields(TestStruct{}, "Model"),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
+				compareTestStructs(t, gotResult, test.wantResult)
 			}
 		})
 	}
@@ -1515,3 +1491,15 @@ type (
 		totalElementsSet bool
 	}
 )
+
+func compareTestStructs(t *testing.T, got, want []*TestStruct) {
+	t.Helper()
+
+	if diff := cmp.Diff(
+		want,
+		got,
+		cmpopts.IgnoreFields(TestStruct{}, "Model"),
+	); diff != "" {
+		t.Errorf("diff (-want +got):\n%s", diff)
+	}
+}
