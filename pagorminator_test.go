@@ -149,7 +149,8 @@ func TestNoWhere(t *testing.T) {
 			if diff := cmp.Diff(
 				test.wantCursor,
 				toExpectedPagination(test.cursorRequest),
-				cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}), cmpopts.EquateEmpty(),
+				cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+				cmpopts.EquateEmpty(),
 			); diff != "" {
 				t.Errorf("diff (-want +got):\n%s", diff)
 			}
@@ -279,7 +280,8 @@ func TestSortNoWhere(t *testing.T) {
 				if diff := cmp.Diff(
 					test.wantCursor,
 					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}, cmpopts.EquateEmpty()),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+					cmpopts.EquateEmpty(),
 				); diff != "" {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
@@ -421,7 +423,8 @@ func TestWhere(t *testing.T) {
 				if diff := cmp.Diff(
 					test.wantCursor,
 					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}, cmpopts.EquateEmpty()),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+					cmpopts.EquateEmpty(),
 				); diff != "" {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
@@ -535,7 +538,8 @@ func TestSortWhere(t *testing.T) {
 				if diff := cmp.Diff(
 					test.wantCursor,
 					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}, cmpopts.EquateEmpty()),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+					cmpopts.EquateEmpty(),
 				); diff != "" {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
