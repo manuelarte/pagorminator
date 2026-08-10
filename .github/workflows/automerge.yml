@@ -5,16 +5,8 @@
 # documentation.
 name: Dependabot auto-merge
 on:
-  pull_request_target:
-    branches: [main]
-  # Also listen to pull_request events (opened/reopened/synchronize) so
-  # we can detect PRs created/updated by Dependabot that might not trigger
-  # pull_request_target in some repository settings. Add workflow_dispatch
-  # to allow manual testing.
   pull_request:
     branches: [main]
-    types: [opened, reopened, synchronize]
-  workflow_dispatch: {}
 
 permissions:
   contents: write
