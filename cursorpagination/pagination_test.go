@@ -227,7 +227,7 @@ func TestNext(t *testing.T) {
 
 	tests := map[string]struct {
 		page *Pagination
-		want pagegeneric.NextPossible
+		want pagegeneric.PrevNextPossible
 	}{
 		"no latest cursor values": {
 			page: &Pagination{

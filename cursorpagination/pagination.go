@@ -161,7 +161,7 @@ func (p *Pagination) SetLatestQueryValues(latestLen int, latestCursorValues map[
 // Errors:
 //   - pagegeneric.PreviousCursorValuesNotSet if the latest values from the query were not set.
 //   - pagegeneric.NoNextPage if there is no next page.
-func (p *Pagination) Next() (*Pagination, pagegeneric.NextPossible) {
+func (p *Pagination) Next() (*Pagination, pagegeneric.PrevNextPossible) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 

@@ -141,7 +141,7 @@ func TestNext(t *testing.T) {
 
 	tests := map[string]struct {
 		original func() *Pagination
-		want     pagegeneric.NextPossible
+		want     pagegeneric.PrevNextPossible
 	}{
 		"fails when total elements are not set": {
 			original: func() *Pagination { return Must(0, 2, pagegeneric.Asc("id")) },

@@ -744,7 +744,7 @@ func TestParametrizedSQLQueriesCursorPagination(t *testing.T) {
 func testPaginationSequence(t *testing.T, db *gorm.DB, request pagorminator.Pagination, want [][]*TestStruct) {
 	t.Helper()
 
-	hasNext := pagegeneric.NextPossible(true)
+	hasNext := pagegeneric.PrevNextPossible(true)
 	gotTimes := -1
 	for hasNext {
 		gotTimes++

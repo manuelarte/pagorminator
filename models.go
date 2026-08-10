@@ -14,6 +14,7 @@ var (
 	_ Nextable[*cursorpagination.Pagination] = new(cursorpagination.Pagination)
 	_ Pagination                             = new(pagepagination.Pagination)
 	_ Nextable[*pagepagination.Pagination]   = new(pagepagination.Pagination)
+	_ Prevable[*pagepagination.Pagination]   = new(pagepagination.Pagination)
 )
 
 type (
@@ -30,7 +31,16 @@ type (
 		// Examples of cases can't be retrieved:
 		//   - No next page
 		//   - The total elements are not set
-		Next() (P, pagegeneric.NextPossible)
+		Next() (P, pagegeneric.PrevNextPossible)
+	}
+
+	Prevable[P PaginationRequest] interface {
+		// Prev returns the previous page and whether the previous page could be retrieved.
+		// If the previous page could not be retrieved, the second return value is false.
+		// Examples of cases can't be retrieved:
+		//   - No previous page
+		//   - The total elements are not set
+		Prev() (P, pagegeneric.PrevNextPossible)
 	}
 
 	PaginationResponse interface {
