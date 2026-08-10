@@ -376,7 +376,7 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						},
 					},
 				},
-				"Paged 0 1/2 items, two items filtered out, sort by price asc": {
+				"Paged size 1, two items filtered out, sort by price asc": {
 					toMigrate: []*TestStruct{
 						{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 						{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -394,9 +394,12 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{
 							{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 						},
+						{
+							{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+						},
 					},
 				},
-				"Paged 0 1/2 items, two items filtered out, sort by price desc": {
+				"Paged size 1, two items filtered out, sort by price desc": {
 					toMigrate: []*TestStruct{
 						{Model: gorm.Model{ID: 1}, Code: "1", Price: 1},
 						{Model: gorm.Model{ID: 2}, Code: "2", Price: 2},
@@ -413,6 +416,9 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 					want: [][]*TestStruct{
 						{
 							{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
+						},
+						{
+							{Model: gorm.Model{ID: 3}, Code: "3", Price: 100},
 						},
 					},
 				},
@@ -431,12 +437,20 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						t.Fatalf("failed to create test data: %v", err)
 					}
 
+					wantTotalElements := 0
+					for _, testdata := range test.want {
+						wantTotalElements += len(testdata)
+					}
 					for i, pageRequest := range test.pageRequests {
 						var got []*TestStruct
 						if err := db.Clauses(pageRequest).Where(test.where).Find(&got).Error; err != nil {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
+						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
+							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
+						}
 					}
 
 					for i, pageRequest := range test.cursorRequests {
@@ -445,6 +459,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
+						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
+							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
+						}
 					}
 				})
 			}
