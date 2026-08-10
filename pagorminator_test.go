@@ -136,24 +136,11 @@ func TestNoWhere(t *testing.T) {
 
 			db.Clauses(test.pageRequest).Find(&[]*TestStruct{})
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 
 			db.Clauses(test.cursorRequest).Find(&[]*TestStruct{})
 
-			if diff := cmp.Diff(
-				test.wantCursor,
-				toExpectedPagination(test.cursorRequest),
-				cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-				cmpopts.EquateEmpty(),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.cursorRequest, test.wantCursor)
 		})
 	}
 }
@@ -261,14 +248,7 @@ func TestSortNoWhere(t *testing.T) {
 					t.Fatal(tx.Error)
 				}
 
-				if diff := cmp.Diff(
-					test.wantPage,
-					toExpectedPagination(test.pageRequest),
-					cmp.AllowUnexported(wantPagePagination{}),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
-
+				comparePaginations(t, test.pageRequest, test.wantPage)
 				compareTestStructs(t, gotResult, test.wantResult)
 			}
 			{
@@ -277,15 +257,7 @@ func TestSortNoWhere(t *testing.T) {
 					t.Fatal(tx.Error)
 				}
 
-				if diff := cmp.Diff(
-					test.wantCursor,
-					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-					cmpopts.EquateEmpty(),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
-
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
 				compareTestStructs(t, gotResult, test.wantResult)
 			}
 		})
@@ -399,35 +371,18 @@ func TestWhere(t *testing.T) {
 			}
 
 			{
-				var products []*TestStruct
-
-				if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
+				if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&[]*TestStruct{}); tx.Error != nil {
 					t.Fatal(tx.Error)
 				}
 
-				if diff := cmp.Diff(
-					test.wantPage,
-					toExpectedPagination(test.pageRequest),
-					cmp.AllowUnexported(wantPagePagination{}),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
+				comparePaginations(t, test.pageRequest, test.wantPage)
 			}
 			{
-				var products []*TestStruct
-
-				if tx := db.Clauses(test.cursorRequest).Where(test.where).Find(&products); tx.Error != nil {
+				if tx := db.Clauses(test.cursorRequest).Where(test.where).Find(&[]*TestStruct{}); tx.Error != nil {
 					t.Fatal(tx.Error)
 				}
 
-				if diff := cmp.Diff(
-					test.wantCursor,
-					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-					cmpopts.EquateEmpty(),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
 			}
 		})
 	}
@@ -518,14 +473,7 @@ func TestSortWhere(t *testing.T) {
 					t.Fatalf("error querying products: %v", tx.Error)
 				}
 
-				if diff := cmp.Diff(
-					test.wantPage,
-					toExpectedPagination(test.pageRequest),
-					cmp.AllowUnexported(wantPagePagination{}),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
-
+				comparePaginations(t, test.pageRequest, test.wantPage)
 				compareTestStructs(t, gotResult, test.wantResult)
 			}
 			{
@@ -535,29 +483,22 @@ func TestSortWhere(t *testing.T) {
 					t.Fatalf("error querying products: %v", tx.Error)
 				}
 
-				if diff := cmp.Diff(
-					test.wantCursor,
-					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-					cmpopts.EquateEmpty(),
-				); diff != "" {
-					t.Errorf("diff (-want +got):\n%s", diff)
-				}
-
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
 				compareTestStructs(t, gotResult, test.wantResult)
 			}
 		})
 	}
 }
 
-// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWithPreload(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestProduct
-		pageRequest *pagepagination.Pagination
-		wantPage    *wantPagePagination
+		toMigrate     []*TestProduct
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
@@ -570,8 +511,15 @@ func TestWithPreload(t *testing.T) {
 				totalElements:    1,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
 		},
-		"Paged 1/2 items": {
+		"Page 0, size 1, 1/2 items": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
@@ -580,6 +528,13 @@ func TestWithPreload(t *testing.T) {
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -596,6 +551,13 @@ func TestWithPreload(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
+				totalElements:    2,
+				totalElementsSet: true,
+			},
 		},
 	}
 
@@ -609,23 +571,25 @@ func TestWithPreload(t *testing.T) {
 				t.Fatalf("error creating products: %v", txCreate.Error)
 			}
 
-			var products []*TestProduct
+			{
+				if tx := db.Clauses(test.pageRequest).Preload("Price").Find(&[]*TestProduct{}); tx.Error != nil {
+					t.Fatalf("error querying products: %v", tx.Error)
+				}
 
-			if tx := db.Clauses(test.pageRequest).Preload("Price").Find(&products); tx.Error != nil {
-				t.Fatalf("error querying products: %v", tx.Error)
+				comparePaginations(t, test.pageRequest, test.wantPage)
 			}
+			{
+				if tx := db.Clauses(test.cursorRequest).Preload("Price").Find(&[]*TestProduct{}); tx.Error != nil {
+					t.Fatalf("error querying products: %v", tx.Error)
+				}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
 			}
 		})
 	}
 }
 
+// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWithPreloadAndWhere(t *testing.T) {
 	t.Parallel()
 
@@ -679,20 +643,12 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			var products []*TestProduct
-
-			tx := db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&products)
+			tx := db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&[]*TestProduct{})
 			if tx.Error != nil {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 		})
 	}
 }
@@ -750,13 +706,7 @@ func TestWithJoins(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 		})
 	}
 }
@@ -833,13 +783,7 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 		})
 	}
 }
@@ -919,13 +863,7 @@ func TestTable(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 		})
 	}
 }
@@ -1014,13 +952,7 @@ func TestTableWithWhere(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 		})
 	}
 }
@@ -1096,13 +1028,7 @@ func TestDistinct(t *testing.T) {
 				t.Fatal(tx.Error)
 			}
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+			comparePaginations(t, test.pageRequest, test.wantPage)
 		})
 	}
 }
@@ -1156,9 +1082,7 @@ func TestContextCancelledAfterPagorminator(t *testing.T) {
 		t.Fatalf("expecting context cancelled: %v", errFindingProducts)
 	}
 
-	if diff := cmp.Diff(want, toExpectedPagination(pageRequest), cmp.AllowUnexported(wantPagePagination{})); diff != "" {
-		t.Errorf("diff (-want +got):\n%s", diff)
-	}
+	comparePaginations(t, pageRequest, want)
 }
 
 func TestCursorPaginationSingleColumn(t *testing.T) {
@@ -1194,14 +1118,7 @@ func TestCursorPaginationSingleColumn(t *testing.T) {
 		totalElements:    3,
 		totalElementsSet: true,
 	}
-	if diff := cmp.Diff(
-		wantPage,
-		toExpectedPagination(pageRequest),
-		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-		cmpopts.EquateEmpty(),
-	); diff != "" {
-		t.Errorf("diff (-want +got):\n%s", diff)
-	}
+	comparePaginations(t, pageRequest, wantPage)
 }
 
 func TestCursorPaginationMultiColumnSort(t *testing.T) {
@@ -1244,14 +1161,7 @@ func TestCursorPaginationMultiColumnSort(t *testing.T) {
 		totalElements:    4,
 		totalElementsSet: true,
 	}
-	if diff := cmp.Diff(
-		wantPage,
-		toExpectedPagination(pageRequest),
-		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-		cmpopts.EquateEmpty(),
-	); diff != "" {
-		t.Errorf("diff (-want +got):\n%s", diff)
-	}
+	comparePaginations(t, pageRequest, wantPage)
 }
 
 func TestCursorPaginationUnPaged(t *testing.T) {
@@ -1287,14 +1197,7 @@ func TestCursorPaginationUnPaged(t *testing.T) {
 		totalElements:    3,
 		totalElementsSet: true,
 	}
-	if diff := cmp.Diff(
-		wantPage,
-		toExpectedPagination(pageRequest),
-		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-		cmpopts.EquateEmpty(),
-	); diff != "" {
-		t.Errorf("diff (-want +got):\n%s", diff)
-	}
+	comparePaginations(t, pageRequest, wantPage)
 }
 
 func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
@@ -1330,14 +1233,7 @@ func TestCursorPaginationFirstPageWithoutWhere(t *testing.T) {
 		totalElements:    3,
 		totalElementsSet: true,
 	}
-	if diff := cmp.Diff(
-		wantPage,
-		toExpectedPagination(pageRequest),
-		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-		cmpopts.EquateEmpty(),
-	); diff != "" {
-		t.Errorf("diff (-want +got):\n%s", diff)
-	}
+	comparePaginations(t, pageRequest, wantPage)
 }
 
 func TestCursorPaginationTotalElementsIgnoreCursorWhere(t *testing.T) {
@@ -1374,14 +1270,7 @@ func TestCursorPaginationTotalElementsIgnoreCursorWhere(t *testing.T) {
 		totalElements:    2,
 		totalElementsSet: true,
 	}
-	if diff := cmp.Diff(
-		wantPage,
-		toExpectedPagination(pageRequest),
-		cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
-		cmpopts.EquateEmpty(),
-	); diff != "" {
-		t.Errorf("diff (-want +got):\n%s", diff)
-	}
+	comparePaginations(t, pageRequest, wantPage)
 }
 
 func setupDB(t *testing.T) *gorm.DB {
@@ -1505,5 +1394,27 @@ func compareTestStructs(t *testing.T, got, want []*TestStruct) {
 		cmpopts.IgnoreFields(TestStruct{}, "Model"),
 	); diff != "" {
 		t.Errorf("diff (-want +got):\n%s", diff)
+	}
+}
+
+func comparePaginations(t *testing.T, got Pagination, want any) {
+	switch actual := got.(type) {
+	case *pagepagination.Pagination:
+		if diff := cmp.Diff(
+			want,
+			toExpectedPagination(actual),
+			cmp.AllowUnexported(wantPagePagination{}),
+		); diff != "" {
+			t.Errorf("diff (-want +got):\n%s", diff)
+		}
+	case *cursorpagination.Pagination:
+		if diff := cmp.Diff(
+			want,
+			toExpectedPagination(actual),
+			cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+			cmpopts.EquateEmpty(),
+		); diff != "" {
+			t.Errorf("diff (-want +got):\n%s", diff)
+		}
 	}
 }
