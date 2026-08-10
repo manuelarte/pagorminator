@@ -285,7 +285,7 @@ func TestSortNoWhere(t *testing.T) {
 				if diff := cmp.Diff(
 					test.wantCursor,
 					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}, cmpopts.EquateEmpty()),
 				); diff != "" {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
@@ -433,7 +433,7 @@ func TestWhere(t *testing.T) {
 				if diff := cmp.Diff(
 					test.wantCursor,
 					toExpectedPagination(test.cursorRequest),
-					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}, cmpopts.EquateEmpty()),
 				); diff != "" {
 					t.Errorf("diff (-want +got):\n%s", diff)
 				}
@@ -442,16 +442,17 @@ func TestWhere(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestSortWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestStruct
-		where       string
-		pageRequest *pagepagination.Pagination
-		wantPage    *wantPagePagination
-		wantResult  []*TestStruct
+		toMigrate     []*TestStruct
+		where         string
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
+		wantResult    []*TestStruct
 	}{
 		"Page 0/1, size 1, two items filtered out, sort by price asc": {
 			toMigrate: []*TestStruct{
@@ -466,6 +467,13 @@ func TestSortWhere(t *testing.T) {
 				page:             0,
 				size:             1,
 				sort:             []pagegeneric.Order{pagegeneric.Asc("price")},
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("price", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("price", nil)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -489,6 +497,13 @@ func TestSortWhere(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Desc("price", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Desc("price", nil)},
+				totalElements:    2,
+				totalElementsSet: true,
+			},
 			wantResult: []*TestStruct{
 				{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 			},
@@ -505,31 +520,57 @@ func TestSortWhere(t *testing.T) {
 				t.Fatalf("error creating products: %v", txCreate.Error)
 			}
 
-			var products []*TestStruct
+			{
+				var products []*TestStruct
 
-			if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
-				t.Fatalf("error querying products: %v", tx.Error)
+				if tx := db.Clauses(test.pageRequest).Where(test.where).Find(&products); tx.Error != nil {
+					t.Fatalf("error querying products: %v", tx.Error)
+				}
+
+				if diff := cmp.Diff(
+					test.wantPage,
+					toExpectedPagination(test.pageRequest),
+					cmp.AllowUnexported(wantPagePagination{}),
+				); diff != "" {
+					t.Errorf("diff (-want +got):\n%s", diff)
+				}
+
+				if diff := cmp.Diff(
+					test.wantResult,
+					products,
+					cmpopts.IgnoreFields(TestStruct{}, "Model"),
+				); diff != "" {
+					t.Errorf("diff (-want +got):\n%s", diff)
+				}
 			}
+			{
+				var products []*TestStruct
 
-			if diff := cmp.Diff(
-				test.wantPage,
-				toExpectedPagination(test.pageRequest),
-				cmp.AllowUnexported(wantPagePagination{}),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
-			}
+				if tx := db.Clauses(test.cursorRequest).Where(test.where).Find(&products); tx.Error != nil {
+					t.Fatalf("error querying products: %v", tx.Error)
+				}
 
-			if diff := cmp.Diff(
-				test.wantResult,
-				products,
-				cmpopts.IgnoreFields(TestStruct{}, "Model"),
-			); diff != "" {
-				t.Errorf("diff (-want +got):\n%s", diff)
+				if diff := cmp.Diff(
+					test.wantCursor,
+					toExpectedPagination(test.cursorRequest),
+					cmp.AllowUnexported(wantCursorPagination{}, cursorpagination.Cursor{}, cmpopts.EquateEmpty()),
+				); diff != "" {
+					t.Errorf("diff (-want +got):\n%s", diff)
+				}
+
+				if diff := cmp.Diff(
+					test.wantResult,
+					products,
+					cmpopts.IgnoreFields(TestStruct{}, "Model"),
+				); diff != "" {
+					t.Errorf("diff (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
 }
 
+// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWithPreload(t *testing.T) {
 	t.Parallel()
 

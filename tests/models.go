@@ -19,7 +19,7 @@ func compareTestStructs(t *testing.T, want, got []*TestStruct) {
 	if diff := cmp.Diff(
 		want,
 		got,
-		cmpopts.IgnoreFields(TestStruct{}, "ID", "CreatedAt", "UpdatedAt"),
+		cmpopts.IgnoreFields(TestStruct{}, "Model"),
 	); diff != "" {
 		t.Errorf("diff (-want +got):\n%s", diff)
 	}
