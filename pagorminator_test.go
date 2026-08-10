@@ -589,14 +589,15 @@ func TestWithPreload(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWithPreloadAndWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestProduct
-		pageRequest *pagepagination.Pagination
-		wantPage    *wantPagePagination
+		toMigrate     []*TestProduct
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
@@ -610,6 +611,13 @@ func TestWithPreloadAndWhere(t *testing.T) {
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    4,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    4,
 				totalElementsSet: true,
 			},
@@ -629,6 +637,13 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				totalElements:    4,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.Must(2, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             2,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
+				totalElements:    4,
+				totalElementsSet: true,
+			},
 		},
 	}
 
@@ -643,16 +658,27 @@ func TestWithPreloadAndWhere(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			tx := db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&[]*TestProduct{})
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
-			}
+			{
+				tx := db.Clauses(test.pageRequest).Preload("Price").Where("code > 1").Find(&[]*TestProduct{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			comparePaginations(t, test.pageRequest, test.wantPage)
+				comparePaginations(t, test.pageRequest, test.wantPage)
+			}
+			{
+				tx := db.Clauses(test.cursorRequest).Preload("Price").Where("code > 1").Find(&[]*TestProduct{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
+
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
+			}
 		})
 	}
 }
 
+// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWithJoins(t *testing.T) {
 	t.Parallel()
 
