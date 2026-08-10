@@ -1,13 +1,19 @@
-package pagorminator
+package pagepagination
 
 import (
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
-func ExampleNewPageRequest() {
-	page, err := NewPageRequest(1, 10)
+func ExampleNew() {
+	page, err := New(1, 10)
 	if err != nil {
 		panic(err)
 	}
@@ -16,8 +22,8 @@ func ExampleNewPageRequest() {
 	// Output: Page: 1, Size: 10
 }
 
-func ExampleMustPageRequest() {
-	page := MustPageRequest(1, 10)
+func ExampleMust() {
+	page := Must(1, 10)
 
 	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
 	// Output: Page: 1, Size: 10
@@ -31,7 +37,7 @@ func TestUnPaged(t *testing.T) {
 		size     int
 		expected bool
 	}{
-		"page 0 size 0": {
+		"page zero size zero": {
 			page:     0,
 			size:     0,
 			expected: true,
@@ -47,9 +53,9 @@ func TestUnPaged(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			page, err := NewPageRequest(test.page, test.size)
+			page, err := New(test.page, test.size)
 			if err != nil {
-				t.Errorf("Unexpected error: %s", err)
+				t.Fatalf("NewPagination(%d, %d) = %s, unexpected error", test.page, test.size, err)
 			}
 
 			if page.IsUnPaged() != test.expected {
@@ -111,7 +117,7 @@ func TestSetTotalElements(t *testing.T) {
 		},
 		"negative totalElements": {
 			totalElements: -1,
-			expectedErr:   TotalElementsNotValidError{totalElements: -1},
+			expectedErr:   pagegeneric.TotalElementsNotValidError{TotalElements: -1},
 		},
 	}
 
@@ -128,4 +134,72 @@ func TestSetTotalElements(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestNext(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		original func() *Pagination
+		want     pagegeneric.PrevNextPossible
+	}{
+		"fails when total elements are not set": {
+			original: func() *Pagination { return Must(0, 2, pagegeneric.Asc("id")) },
+			want:     pagegeneric.NoTotalElements,
+		},
+		"fails when already at the last page": {
+			original: func() *Pagination {
+				p := Must(2, 2)
+				_ = p.SetTotalElements(5)
+
+				return p
+			},
+			want: pagegeneric.NoNextPage,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			next, got := test.original().Next()
+			if test.want != got {
+				t.Errorf("Next() = _, %v, want %v", got, test.want)
+			}
+
+			if next != nil {
+				t.Errorf("Next() = nil, _, expected nil, got %#v", next)
+			}
+		})
+	}
+
+	t.Run("returns next page and do not preserve configuration", func(t *testing.T) {
+		t.Parallel()
+
+		p := Must(0, 2, pagegeneric.Asc("id"), pagegeneric.Desc("price"))
+		if err := p.SetTotalElements(5); err != nil {
+			t.Errorf("unexpected error setting total elements: %v", err)
+		}
+
+		next, hasNext := p.Next()
+		if hasNext != true {
+			t.Errorf("Next() = %v, want true", hasNext)
+		}
+
+		want := &Pagination{
+			page: 1,
+			size: 2,
+			sort: pagegeneric.Sort{
+				pagegeneric.Asc("id"),
+				pagegeneric.Desc("price"),
+			},
+		}
+		if diff := cmp.Diff(
+			next,
+			want,
+			cmp.AllowUnexported(Pagination{}),
+			cmpopts.EquateComparable(sync.RWMutex{}),
+		); diff != "" {
+			t.Errorf("Next() mismatch (-want +got):\n%s", diff)
+		}
+	})
 }

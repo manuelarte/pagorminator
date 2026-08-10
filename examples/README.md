@@ -13,3 +13,7 @@
 + [Unpaged](./examples/unpaged/main.go): Unpaged query (pagination with no pagination).
 
 + [Many Pages With Preload](./examples/many-pages-preload/main.go): Example using Preload.
+
++ [Cursor](./examples/cursor/main.go): Cursor pagination using one column.
+
++ [Cursor Multi](./examples/cursor-multi/main.go): Cursor pagination using multiple columns and orders.

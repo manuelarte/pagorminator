@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
 type Product struct {
@@ -38,9 +39,10 @@ func main() {
 	fmt.Printf("%d products created\n", len(migrateProducts))
 
 	var products []*Product
-	pageRequest := pagorminator.UnPaged()
-	db.Clauses(pageRequest).Find(&products)
+	pagination := pagepagination.UnPaged()
+	db.Clauses(pagination).Find(&products)
 
+	totalElements, _ := pagination.GetTotalElements()
 	fmt.Printf("Unpaged(TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		totalElements, pagination.GetTotalPages())
 }

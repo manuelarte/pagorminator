@@ -1,4 +1,4 @@
-package pagorminator
+package pagegeneric
 
 import (
 	"testing"

@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator"
+	"github.com/manuelarte/pagorminator/pagepagination"
 )
 
 type Product struct {
@@ -30,26 +31,28 @@ func main() {
 	_ = db.Use(pagorminator.PaGorminator{})
 	_ = db.AutoMigrate(&Product{})
 	length := 10
-	for i := 0; i < length; i++ {
+	for i := range length {
 		db.Create(&Product{Code: strconv.Itoa(i), Price: uint(i)})
 	}
 
 	fmt.Printf("%s product created\n", length)
 
 	var products []*Product
-	pageRequest, _ := pagorminator.NewPageRequest(0, 5)
+	pageRequest, _ := pagepagination.New(0, 5)
 	db.Clauses(pageRequest).Find(&products)
 
+	totalElements1, _ := pageRequest.GetTotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.GetPage(), pageRequest.GetSize(), totalElements1, pageRequest.GetTotalPages())
 	for _, product := range products {
 		fmt.Printf("\t Product: %s\n", product)
 	}
 
-	pageRequest, _ = pagorminator.NewPageRequest(1, 5)
+	pageRequest, _ = pageRequest.Next()
 	db.Clauses(pageRequest).Find(&products)
+	totalElements2, _ := pageRequest.GetTotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pageRequest.GetPage(), pageRequest.GetSize(), pageRequest.GetTotalElements(), pageRequest.GetTotalPages())
+		pageRequest.GetPage(), pageRequest.GetSize(), totalElements2, pageRequest.GetTotalPages())
 	for _, product := range products {
 		fmt.Printf("\t Product: %s\n", product)
 	}

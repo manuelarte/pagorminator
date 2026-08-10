@@ -42,6 +42,7 @@ linters:
     - intrange
     - ireturn
     - maintidx
+    - noinlineerr # I prefer inlined errors.
     - nlreturn
     - prealloc
     - promlinter  # Related to prometheus.
@@ -58,6 +59,17 @@ linters:
     # keep-sorted end
 
   settings:
+    # keep-sorted start
+    custom:
+      godddlint:
+        type: module
+        description: checks domain structs honor best practices.
+      testcomments:
+        type: module
+        description: lint that follows standards described in TestComments.
+      structinit:
+        type: module
+        description: check struct's field initialization order matches struct's field declaration.
     cyclop:
       max-complexity: 30
       package-average: 10
@@ -99,10 +111,10 @@ linters:
       lines: -1
       statements: 50
       ignore-comments: true
-    gocognit:
-      min-complexity: 20
     gochecksumtype:
       default-signifies-exhaustive: false
+    gocognit:
+      min-complexity: 20
     gocritic:
       settings:
         captLocal:
@@ -152,6 +164,7 @@ linters:
       align: false
     usetesting:
       os-temp-dir: true
+  # keep-sorted end
 
   exclusions:
     presets:
@@ -162,6 +175,7 @@ linters:
       - linters:
           - errcheck
           - funlen
+          - gocognit
           - goconst
           - gosec
         path: _test\.go
