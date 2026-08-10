@@ -386,9 +386,11 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 					where: "price > 50",
 					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 1, pagegeneric.Asc("price")),
+						pagepagination.Must(1, 1, pagegeneric.Asc("price")),
 					},
 					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(1, cursorpagination.Asc("price", nil)),
+						cursorpagination.Must(1, cursorpagination.Asc("price", 100)),
 					},
 					want: [][]*TestStruct{
 						{
@@ -409,9 +411,11 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 					where: "price > 50",
 					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 1, pagegeneric.Desc("price")),
+						pagepagination.Must(1, 1, pagegeneric.Desc("price")),
 					},
 					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(1, cursorpagination.Desc("price", nil)),
+						cursorpagination.Must(1, cursorpagination.Desc("price", 200)),
 					},
 					want: [][]*TestStruct{
 						{
@@ -426,6 +430,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 			for name, test := range tests {
 				t.Run(name, func(t *testing.T) {
 					t.Parallel()
+
+					if len(test.pageRequests) != len(test.cursorRequests) {
+						t.Fatalf("pageRequests and cursorRequests must have the same length, got %d and %d", len(test.pageRequests), len(test.cursorRequests))
+					}
 
 					db, deferFunc, errStartingContainer := dbFunc(t.Context())
 					if errStartingContainer != nil {
