@@ -988,25 +988,33 @@ func TestTable(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): migrate to tests and do cursor pagination tests too.e l.
 func TestTableWithWhere(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestStruct
-		pageRequest *pagepagination.Pagination
-		where       string
-		wantPage    *wantPagePagination
+		toMigrate     []*TestStruct
+		where         string
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "price < 100",
+			pageRequest: pagepagination.UnPaged(),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -1015,11 +1023,18 @@ func TestTableWithWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "price > 100",
+			pageRequest: pagepagination.UnPaged(),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    0,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    0,
 				totalElementsSet: true,
 			},
@@ -1028,11 +1043,18 @@ func TestTableWithWhere(t *testing.T) {
 			toMigrate: []*TestStruct{
 				{Code: "1", Price: 1}, {Code: "100", Price: 100},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "price > 50",
+			pageRequest: pagepagination.UnPaged(),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -1044,11 +1066,18 @@ func TestTableWithWhere(t *testing.T) {
 				{Code: "3", Price: 100},
 				{Code: "4", Price: 200},
 			},
-			pageRequest: pagepagination.Must(0, 1),
 			where:       "price > 50",
+			pageRequest: pagepagination.Must(0, 1),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("id", nil)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -1066,14 +1095,22 @@ func TestTableWithWhere(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			var products map[string]any
+			{
+				tx := db.Clauses(test.pageRequest).Where(test.where).Table("test_structs").Find(&map[string]any{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			tx := db.Clauses(test.pageRequest).Where(test.where).Table("test_structs").Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
+				comparePaginations(t, test.pageRequest, test.wantPage)
 			}
+			{
+				tx := db.Clauses(test.cursorRequest).Where(test.where).Table("test_structs").Find(&map[string]any{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			comparePaginations(t, test.pageRequest, test.wantPage)
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
+			}
 		})
 	}
 }
@@ -1082,9 +1119,11 @@ func TestDistinct(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestStruct
-		pageRequest *pagepagination.Pagination
-		wantPage    *wantPagePagination
+		toMigrate     []*TestStruct
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged two items, same price": {
 			toMigrate: []*TestStruct{
@@ -1095,6 +1134,13 @@ func TestDistinct(t *testing.T) {
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -1113,6 +1159,13 @@ func TestDistinct(t *testing.T) {
 				totalElements:    2,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
+				totalElements:    2,
+				totalElementsSet: true,
+			},
 		},
 		"UnPaged four items, four different prices": {
 			toMigrate: []*TestStruct{
@@ -1125,6 +1178,13 @@ func TestDistinct(t *testing.T) {
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    4,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    4,
 				totalElementsSet: true,
 			},
@@ -1142,14 +1202,22 @@ func TestDistinct(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			var products map[string]any
+			{
+				tx := db.Clauses(test.pageRequest).Distinct("price").Model(&TestStruct{}).Find(&map[string]any{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			tx := db.Clauses(test.pageRequest).Distinct("price").Model(&TestStruct{}).Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
+				comparePaginations(t, test.pageRequest, test.wantPage)
 			}
+			{
+				tx := db.Clauses(test.cursorRequest).Distinct("price").Model(&TestStruct{}).Find(&map[string]any{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			comparePaginations(t, test.pageRequest, test.wantPage)
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
+			}
 		})
 	}
 }
