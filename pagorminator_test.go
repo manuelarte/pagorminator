@@ -678,14 +678,15 @@ func TestWithPreloadAndWhere(t *testing.T) {
 	}
 }
 
-// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestWithJoins(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestProduct
-		pageRequest *pagepagination.Pagination
-		wantPage    *wantPagePagination
+		toMigrate     []*TestProduct
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
@@ -695,6 +696,13 @@ func TestWithJoins(t *testing.T) {
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -708,6 +716,13 @@ func TestWithJoins(t *testing.T) {
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
+				totalElements:    2,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("test_products.id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("test_products.id", nil)},
 				totalElements:    2,
 				totalElementsSet: true,
 			},
@@ -725,14 +740,22 @@ func TestWithJoins(t *testing.T) {
 				t.Fatal(txCreate.Error)
 			}
 
-			var products []*TestProduct
+			{
+				tx := db.Clauses(test.pageRequest).Joins("Price").Find(&[]*TestProduct{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			tx := db.Clauses(test.pageRequest).Joins("Price").Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
+				comparePaginations(t, test.pageRequest, test.wantPage)
 			}
+			{
+				tx := db.Clauses(test.cursorRequest).Joins("Price").Find(&[]*TestProduct{})
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			comparePaginations(t, test.pageRequest, test.wantPage)
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
+			}
 		})
 	}
 }
@@ -741,20 +764,29 @@ func TestWithJoinsWhereClause(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		toMigrate   []*TestProduct
-		pageRequest *pagepagination.Pagination
-		where       any
-		wantPage    *wantPagePagination
+		toMigrate     []*TestProduct
+		where         any
+		pageRequest   *pagepagination.Pagination
+		wantPage      *wantPagePagination
+		cursorRequest *cursorpagination.Pagination
+		wantCursor    *wantCursorPagination
 	}{
 		"UnPaged one item, not filtered": {
 			toMigrate: []*TestProduct{
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 			},
-			pageRequest: pagepagination.UnPaged(),
 			where:       "1=1",
+			pageRequest: pagepagination.UnPaged(),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             0,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.UnPaged(),
+			wantCursor: &wantCursorPagination{
+				size:             0,
+				cursors:          nil,
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -764,11 +796,18 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				{Code: "1", Price: TestPrice{Amount: 1, Currency: "EUR"}},
 				{Code: "2", Price: TestPrice{Amount: 2, Currency: "EUR"}},
 			},
-			pageRequest: pagepagination.Must(0, 1),
 			where:       "Price.amount > 1",
+			pageRequest: pagepagination.Must(0, 1),
 			wantPage: &wantPagePagination{
 				page:             0,
 				size:             1,
+				totalElements:    1,
+				totalElementsSet: true,
+			},
+			cursorRequest: cursorpagination.Must(1, cursorpagination.Asc("test_products.id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             1,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("test_products.id", nil)},
 				totalElements:    1,
 				totalElementsSet: true,
 			},
@@ -788,6 +827,13 @@ func TestWithJoinsWhereClause(t *testing.T) {
 				totalElements:    3,
 				totalElementsSet: true,
 			},
+			cursorRequest: cursorpagination.Must(2, cursorpagination.Asc("test_products.id", nil)),
+			wantCursor: &wantCursorPagination{
+				size:             2,
+				cursors:          []cursorpagination.Cursor{cursorpagination.Asc("test_products.id", nil)},
+				totalElements:    3,
+				totalElementsSet: true,
+			},
 		},
 	}
 
@@ -804,16 +850,27 @@ func TestWithJoinsWhereClause(t *testing.T) {
 
 			var products []*TestProduct
 
-			tx := db.Clauses(test.pageRequest).Joins("Price").Where(test.where).Find(&products)
-			if tx.Error != nil {
-				t.Fatal(tx.Error)
-			}
+			{
+				tx := db.Clauses(test.pageRequest).Joins("Price").Where(test.where).Find(&products)
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
 
-			comparePaginations(t, test.pageRequest, test.wantPage)
+				comparePaginations(t, test.pageRequest, test.wantPage)
+			}
+			{
+				tx := db.Clauses(test.cursorRequest).Joins("Price").Where(test.where).Find(&products)
+				if tx.Error != nil {
+					t.Fatal(tx.Error)
+				}
+
+				comparePaginations(t, test.cursorRequest, test.wantCursor)
+			}
 		})
 	}
 }
 
+// TODO(manuelarte): migrate to tests and do cursor pagination tests too.
 func TestTable(t *testing.T) {
 	t.Parallel()
 
