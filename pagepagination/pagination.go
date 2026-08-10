@@ -5,13 +5,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/manuelarte/pagorminator/internal"
 	"github.com/manuelarte/pagorminator/pagegeneric"
-)
-
-var (
-	_ internal.Pagination            = new(Pagination)
-	_ internal.Nextable[*Pagination] = new(Pagination)
 )
 
 // Pagination Clause to apply pagination.

@@ -17,7 +17,6 @@ import (
 	postgresdriver "gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 
 	"github.com/manuelarte/pagorminator"
 	"github.com/manuelarte/pagorminator/cursorpagination"
@@ -166,15 +165,15 @@ func TestSimplePagination(t *testing.T) {
 			t.Parallel()
 
 			tests := map[string]struct {
-				pageRequests   []clause.Expression
-				cursorRequests []clause.Expression
+				pageRequests   []*pagepagination.Pagination
+				cursorRequests []*cursorpagination.Pagination
 				want           [][]*TestStruct
 			}{
 				"UnPaged": {
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.UnPaged(),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.UnPaged(),
 					},
 					want: [][]*TestStruct{
@@ -182,11 +181,11 @@ func TestSimplePagination(t *testing.T) {
 					},
 				},
 				"Simple pagination": {
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 2, pagegeneric.Asc("code")),
 						pagepagination.Must(1, 2, pagegeneric.Asc("code")),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(2, cursorpagination.Asc("code", nil)),
 						cursorpagination.Must(2, cursorpagination.Asc("code", "B")),
 					},
@@ -202,10 +201,10 @@ func TestSimplePagination(t *testing.T) {
 					},
 				},
 				"Page 0/1, size 2, sort by id asc": {
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 2, pagegeneric.Asc("id")),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(2, cursorpagination.Asc("id", nil)),
 					},
 					want: [][]*TestStruct{
@@ -216,10 +215,10 @@ func TestSimplePagination(t *testing.T) {
 					},
 				},
 				"Page 1/1, size 2, sort by id asc": {
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(1, 2, pagegeneric.Asc("id")),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(2, cursorpagination.Asc("id", 2)),
 					},
 					want: [][]*TestStruct{
@@ -230,10 +229,10 @@ func TestSimplePagination(t *testing.T) {
 					},
 				},
 				"Page 0/1, size 2, sort by id desc": {
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 2, pagegeneric.Desc("id")),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(2, cursorpagination.Desc("id", nil)),
 					},
 					want: [][]*TestStruct{
@@ -254,7 +253,9 @@ func TestSimplePagination(t *testing.T) {
 					}
 					defer deferFunc()
 					setupDB(t, db)
-					if err := db.CreateInBatches(testData(), 2).Error; err != nil {
+					testdata := testData()
+					wantTotalElements := len(testdata)
+					if err := db.CreateInBatches(testdata, wantTotalElements).Error; err != nil {
 						t.Fatalf("failed to create test data: %v", err)
 					}
 
@@ -264,6 +265,10 @@ func TestSimplePagination(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
+						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
+							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
+						}
 					}
 
 					for i, pageRequest := range test.cursorRequests {
@@ -272,6 +277,10 @@ func TestSimplePagination(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
+						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
+							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
+						}
 					}
 				})
 			}
@@ -289,8 +298,8 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 			tests := map[string]struct {
 				toMigrate      []*TestStruct
 				where          string
-				pageRequests   []clause.Expression
-				cursorRequests []clause.Expression
+				pageRequests   []*pagepagination.Pagination
+				cursorRequests []*cursorpagination.Pagination
 				want           [][]*TestStruct
 			}{
 				"UnPaged, one item and filtered out": {
@@ -298,10 +307,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{Code: "1", Price: 1},
 					},
 					where: "price > 100",
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.UnPaged(),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.UnPaged(),
 					},
 					want: [][]*TestStruct{
@@ -313,10 +322,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{Code: "1", Price: 1},
 					},
 					where: "price <= 100",
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.UnPaged(),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.UnPaged(),
 					},
 					want: [][]*TestStruct{
@@ -330,10 +339,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{Code: "1", Price: 1}, {Code: "100", Price: 100},
 					},
 					where: "price < 50",
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.UnPaged(),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.UnPaged(),
 					},
 					want: [][]*TestStruct{
@@ -350,11 +359,11 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{Code: "4", Price: 200},
 					},
 					where: "price > 50",
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 1),
 						pagepagination.Must(1, 1),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(1, cursorpagination.Asc("id", nil)),
 						cursorpagination.Must(1, cursorpagination.Asc("id", 3)),
 					},
@@ -375,10 +384,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 					},
 					where: "price > 50",
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 1, pagegeneric.Asc("price")),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(1, cursorpagination.Asc("price", nil)),
 					},
 					want: [][]*TestStruct{
@@ -395,10 +404,10 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 						{Model: gorm.Model{ID: 4}, Code: "4", Price: 200},
 					},
 					where: "price > 50",
-					pageRequests: []clause.Expression{
+					pageRequests: []*pagepagination.Pagination{
 						pagepagination.Must(0, 1, pagegeneric.Desc("price")),
 					},
-					cursorRequests: []clause.Expression{
+					cursorRequests: []*cursorpagination.Pagination{
 						cursorpagination.Must(1, cursorpagination.Desc("price", nil)),
 					},
 					want: [][]*TestStruct{
@@ -518,7 +527,7 @@ func TestSimplePaginationUsingNext(t *testing.T) {
 	}
 }
 
-func testPaginationSequence(t *testing.T, db *gorm.DB, request clause.Expression, want [][]*TestStruct) {
+func testPaginationSequence(t *testing.T, db *gorm.DB, request pagorminator.Pagination, want [][]*TestStruct) {
 	t.Helper()
 
 	hasNext := pagegeneric.NextPossible(true)

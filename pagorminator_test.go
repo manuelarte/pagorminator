@@ -12,7 +12,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/manuelarte/pagorminator/cursorpagination"
-	"github.com/manuelarte/pagorminator/internal"
 	"github.com/manuelarte/pagorminator/pagegeneric"
 	"github.com/manuelarte/pagorminator/pagepagination"
 )
@@ -1384,7 +1383,7 @@ func setupDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func toExpectedPagination(got internal.Pagination) any {
+func toExpectedPagination(got Pagination) any {
 	if got == nil {
 		return nil
 	}

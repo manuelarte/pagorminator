@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/manuelarte/pagorminator/cursorpagination"
-	"github.com/manuelarte/pagorminator/internal"
 	"github.com/manuelarte/pagorminator/pagegeneric"
 )
 
@@ -248,13 +247,13 @@ func (p PaGorminator) cursorNext(db *gorm.DB) {
 	cursorPagination.SetLatestQueryValues(latestLen, latestValues)
 }
 
-func (p PaGorminator) getPageRequest(db *gorm.DB) (internal.PaginationResponse, bool) {
+func (p PaGorminator) getPageRequest(db *gorm.DB) (Pagination, bool) {
 	value, hasPagorminatorClause := db.Get(pagegeneric.PagorminatorClause)
 	if !hasPagorminatorClause {
 		return nil, false
 	}
 
-	paginationClause, okP := value.(internal.PaginationResponse)
+	paginationClause, okP := value.(Pagination)
 	if !okP {
 		return nil, false
 	}
