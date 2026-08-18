@@ -91,7 +91,7 @@ func (p *Pagination) TotalPages() int {
 	return 1
 }
 
-// GetTotalElements returns the total elements.
+// TotalElements returns the total elements.
 func (p *Pagination) TotalElements() (int64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
