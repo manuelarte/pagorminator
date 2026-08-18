@@ -42,7 +42,7 @@ func main() {
 	pagination := pagepagination.UnPaged()
 	db.Clauses(pagination).Find(&products)
 
-	totalElements, _ := pagination.GetTotalElements()
+	totalElements, _ := pagination.TotalElements()
 	fmt.Printf("Unpaged(TotalElements: %d, TotalPages: %d)\n",
-		totalElements, pagination.GetTotalPages())
+		totalElements, pagination.TotalPages())
 }

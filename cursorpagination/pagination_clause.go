@@ -53,7 +53,7 @@ func (p *Pagination) buildCursorWhere() (string, []any) {
 				whereSQL.WriteString(" AND ")
 			}
 
-			whereSQL.WriteString(p.cursors[j].GetColumn())
+			whereSQL.WriteString(p.cursors[j].Column())
 			whereSQL.WriteString(" = ?")
 
 			vars = append(vars, p.cursors[j].value)
@@ -63,7 +63,7 @@ func (p *Pagination) buildCursorWhere() (string, []any) {
 			whereSQL.WriteString(" AND ")
 		}
 
-		whereSQL.WriteString(p.cursors[i].GetColumn())
+		whereSQL.WriteString(p.cursors[i].Column())
 
 		switch p.cursors[i].order.(type) {
 		case pagegeneric.Asc:

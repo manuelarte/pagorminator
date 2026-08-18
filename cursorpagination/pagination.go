@@ -57,7 +57,7 @@ func New(size int, cursors ...Cursor) (*Pagination, error) {
 	for _, cursor := range cursors {
 		switch cursor.order.(type) {
 		case pagegeneric.Asc, pagegeneric.Desc:
-			column := cursor.GetColumn()
+			column := cursor.Column()
 			if cursor.value == nil {
 				hasNilValue = append(hasNilValue, column)
 			} else {
@@ -97,17 +97,17 @@ func UnPaged() *Pagination {
 	return &Pagination{}
 }
 
-// GetSize Get the page size.
-func (p *Pagination) GetSize() int {
+// Size Get the page size.
+func (p *Pagination) Size() int {
 	return p.size
 }
 
-// GetCursors Get the cursor values.
-func (p *Pagination) GetCursors() []Cursor {
+// Cursors Get the cursor values.
+func (p *Pagination) Cursors() []Cursor {
 	return slices.Clone(p.cursors)
 }
 
-func (p *Pagination) GetTotalElements() (int64, bool) {
+func (p *Pagination) TotalElements() (int64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
@@ -177,7 +177,7 @@ func (p *Pagination) Next() (*Pagination, pagegeneric.PrevNextPossible) {
 	for i, c := range p.cursors {
 		newCursors[i] = Cursor{
 			order: c.order,
-			value: p.latestCursorValues[c.GetColumn()],
+			value: p.latestCursorValues[c.Column()],
 		}
 	}
 
@@ -198,16 +198,16 @@ func newCursor(order pagegeneric.Order, value any) Cursor {
 	return Cursor{order: order, value: value}
 }
 
-func (c Cursor) GetColumn() string {
+func (c Cursor) Column() string {
 	return c.order.Column()
 }
 
-// GetValue returns the cursor value.
-func (c Cursor) GetValue() any {
+// Value returns the cursor value.
+func (c Cursor) Value() any {
 	return c.value
 }
 
-// GetOrder returns the order definition of a cursor.
-func (c Cursor) GetOrder() pagegeneric.Order {
+// Order returns the order definition of a cursor.
+func (c Cursor) Order() pagegeneric.Order {
 	return c.order
 }

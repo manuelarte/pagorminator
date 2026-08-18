@@ -19,8 +19,8 @@ var (
 
 type (
 	PaginationRequest interface {
-		// GetSize returns the pagination size, a.k.a. limit
-		GetSize() int
+		// Size returns the pagination size, a.k.a. limit
+		Size() int
 		// IsUnPaged returns true if the pagination is unpaged, meaning no pagination is applied.
 		IsUnPaged() bool
 	}
@@ -46,7 +46,7 @@ type (
 	PaginationResponse interface {
 		// GetTotalElements returns the total elements.
 		// It also returns if the total element was set.
-		GetTotalElements() (int64, bool)
+		TotalElements() (int64, bool)
 		// SetTotalElements sets the total elements.
 		//
 		// Errors:

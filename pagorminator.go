@@ -234,8 +234,8 @@ func (p PaGorminator) cursorNext(db *gorm.DB) {
 		return
 	}
 
-	latestValues := make(map[string]any, len(cursorPagination.GetCursors()))
-	for _, colName := range getCursorColumns(cursorPagination.GetCursors()) {
+	latestValues := make(map[string]any, len(cursorPagination.Cursors()))
+	for _, colName := range getCursorColumns(cursorPagination.Cursors()) {
 		if field := schema.LookUpField(colName); field != nil {
 			fieldValue, _ := field.ValueOf(db.Statement.Context, destValue)
 			latestValues[colName] = fieldValue
@@ -274,7 +274,7 @@ func (p PaGorminator) getPageRequest(db *gorm.DB) (Pagination, bool) {
 func getCursorColumns(cursors []cursorpagination.Cursor) []string {
 	columns := make([]string, len(cursors))
 	for i, cursor := range cursors {
-		columns[i] = cursor.GetColumn()
+		columns[i] = cursor.Column()
 	}
 
 	return columns

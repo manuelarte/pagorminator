@@ -1487,21 +1487,21 @@ func toExpectedPagination(got Pagination) any {
 		return nil
 	}
 
-	totalElements, totalElementsSet := got.GetTotalElements()
+	totalElements, totalElementsSet := got.TotalElements()
 
 	switch actual := got.(type) {
 	case *pagepagination.Pagination:
 		return &wantPagePagination{
-			page:             actual.GetPage(),
-			size:             actual.GetSize(),
-			sort:             actual.GetSort(),
+			page:             actual.Page(),
+			size:             actual.Size(),
+			sort:             actual.Sort(),
 			totalElements:    totalElements,
 			totalElementsSet: totalElementsSet,
 		}
 	case *cursorpagination.Pagination:
 		return &wantCursorPagination{
-			size:             actual.GetSize(),
-			cursors:          actual.GetCursors(),
+			size:             actual.Size(),
+			cursors:          actual.Cursors(),
 			totalElements:    totalElements,
 			totalElementsSet: totalElementsSet,
 		}

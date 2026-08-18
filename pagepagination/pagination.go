@@ -62,28 +62,28 @@ func UnPaged() *Pagination {
 	return &Pagination{page: 0, size: 0}
 }
 
-// GetPage Get the page number.
-func (p *Pagination) GetPage() int {
+// Page Get the page number.
+func (p *Pagination) Page() int {
 	return p.page
 }
 
-// GetSize Get the page size.
-func (p *Pagination) GetSize() int {
+// Size Get the page size.
+func (p *Pagination) Size() int {
 	return p.size
 }
 
-// GetSort Get the sort constraints.
-func (p *Pagination) GetSort() pagegeneric.Sort {
+// Sort Get the sort constraints.
+func (p *Pagination) Sort() pagegeneric.Sort {
 	return slices.Clone(p.sort)
 }
 
-// GetOffset Get the offset.
-func (p *Pagination) GetOffset() int {
+// Offset Get the offset.
+func (p *Pagination) Offset() int {
 	return p.page * p.size
 }
 
-// GetTotalPages Get the total number of pages.
-func (p *Pagination) GetTotalPages() int {
+// TotalPages Get the total number of pages.
+func (p *Pagination) TotalPages() int {
 	if p.size > 0 {
 		return calculateTotalPages(p.totalElements, p.size)
 	}
@@ -92,7 +92,7 @@ func (p *Pagination) GetTotalPages() int {
 }
 
 // GetTotalElements returns the total elements.
-func (p *Pagination) GetTotalElements() (int64, bool) {
+func (p *Pagination) TotalElements() (int64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
 
@@ -159,7 +159,7 @@ func (p *Pagination) Next() (*Pagination, pagegeneric.PrevNextPossible) {
 		return nil, pagegeneric.NoNextPage
 	}
 
-	return Must(nextPage, p.size, p.GetSort()...), true
+	return Must(nextPage, p.size, p.Sort()...), true
 }
 
 // Prev Get the previous page pagination request.
@@ -181,7 +181,7 @@ func (p *Pagination) Prev() (*Pagination, pagegeneric.PrevNextPossible) {
 		return nil, pagegeneric.NoPrevPage
 	}
 
-	return Must(prevPage, p.size, p.GetSort()...), true
+	return Must(prevPage, p.size, p.Sort()...), true
 }
 
 func calculateTotalPages(totalElements int64, size int) int {

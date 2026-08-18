@@ -36,7 +36,7 @@ func main() {
 	pagination, _ := pagepagination.New(0, 1)
 	db.Clauses(pagination).Table("products").Find(&products)
 
-	totalElements, _ := pagination.GetTotalElements()
+	totalElements, _ := pagination.TotalElements()
 	fmt.Printf("PageRequest result:(Page: %d, Size: %d, TotalElements: %d, TotalPages: %d)\n",
-		pagination.GetPage(), pagination.GetSize(), totalElements, pagination.GetTotalPages())
+		pagination.Page(), pagination.Size(), totalElements, pagination.TotalPages())
 }
