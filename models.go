@@ -10,11 +10,11 @@ import (
 )
 
 var (
-	_ Pagination                             = new(cursorpagination.Pagination)
-	_ Nextable[*cursorpagination.Pagination] = new(cursorpagination.Pagination)
-	_ Pagination                             = new(pagepagination.Pagination)
-	_ Nextable[*pagepagination.Pagination]   = new(pagepagination.Pagination)
-	_ Prevable[*pagepagination.Pagination]   = new(pagepagination.Pagination)
+	_ Pagination                           = new(cursorpagination.Pagination)
+	_ Nexter[*cursorpagination.Pagination] = new(cursorpagination.Pagination)
+	_ Pagination                           = new(pagepagination.Pagination)
+	_ Nexter[*pagepagination.Pagination]   = new(pagepagination.Pagination)
+	_ Prever[*pagepagination.Pagination]   = new(pagepagination.Pagination)
 )
 
 type (
@@ -25,7 +25,8 @@ type (
 		IsUnPaged() bool
 	}
 
-	Nextable[P PaginationRequest] interface {
+	// Nexter is the interface that indicates that you can ask for the next page.
+	Nexter[P PaginationRequest] interface {
 		// Next returns the next page and whether the next page could be retrieved.
 		// If the next page could not be retrieved, the second return value is false.
 		// Examples of cases can't be retrieved:
@@ -34,7 +35,8 @@ type (
 		Next() (P, pagegeneric.PrevNextPossible)
 	}
 
-	Prevable[P PaginationRequest] interface {
+	// Prever is the interface that indicates that you can ask for the previous page.
+	Prever[P PaginationRequest] interface {
 		// Prev returns the previous page and whether the previous page could be retrieved.
 		// If the previous page could not be retrieved, the second return value is false.
 		// Examples of cases can't be retrieved:
@@ -43,7 +45,8 @@ type (
 		Prev() (P, pagegeneric.PrevNextPossible)
 	}
 
-	PaginationResponse interface {
+	// PaginationCountResponse is the interface that contains the information after a count query.
+	PaginationCountResponse interface {
 		// GetTotalElements returns the total elements.
 		// It also returns if the total element was set.
 		TotalElements() (int64, bool)
@@ -55,9 +58,10 @@ type (
 		IsTotalElementsSet() bool
 	}
 
+	// Pagination is the interface that combines the pagination request and the pagination count response.
 	Pagination interface {
 		PaginationRequest
-		PaginationResponse
+		PaginationCountResponse
 		clause.Expression
 		gorm.StatementModifier
 	}
