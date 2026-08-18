@@ -18,14 +18,14 @@ func ExampleNew() {
 		panic(err)
 	}
 
-	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
+	fmt.Printf("Page: %d, Size: %d\n", page.Page(), page.Size())
 	// Output: Page: 1, Size: 10
 }
 
 func ExampleMust() {
 	page := Must(1, 10)
 
-	fmt.Printf("Page: %d, Size: %d\n", page.GetPage(), page.GetSize())
+	fmt.Printf("Page: %d, Size: %d\n", page.Page(), page.Size())
 	// Output: Page: 1, Size: 10
 }
 

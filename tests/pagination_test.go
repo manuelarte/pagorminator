@@ -265,7 +265,7 @@ func TestSimplePagination(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
-						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						gotTotalElements, isTotalElementsSet := pageRequest.TotalElements()
 						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
 							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
 						}
@@ -277,7 +277,7 @@ func TestSimplePagination(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
-						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						gotTotalElements, isTotalElementsSet := pageRequest.TotalElements()
 						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
 							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
 						}
@@ -455,7 +455,7 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
-						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						gotTotalElements, isTotalElementsSet := pageRequest.TotalElements()
 						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
 							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
 						}
@@ -467,7 +467,7 @@ func TestPaginationWithWhereAndSorts(t *testing.T) {
 							t.Fatalf("failed to query page 0: %v", err)
 						}
 						compareTestStructs(t, test.want[i], got)
-						gotTotalElements, isTotalElementsSet := pageRequest.GetTotalElements()
+						gotTotalElements, isTotalElementsSet := pageRequest.TotalElements()
 						if isTotalElementsSet && gotTotalElements != int64(wantTotalElements) {
 							t.Errorf("pageRequest.GetTotalElements() = %v, %v, want %v, %v", gotTotalElements, isTotalElementsSet, wantTotalElements, true)
 						}

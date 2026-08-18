@@ -13,7 +13,7 @@ func (p *Pagination) ModifyStatement(stm *gorm.Statement) {
 	tx.Set(pagegeneric.PagorminatorClause, p)
 
 	if !p.IsUnPaged() {
-		tx = tx.Limit(p.size).Offset(p.GetOffset())
+		tx = tx.Limit(p.size).Offset(p.Offset())
 	}
 
 	if p.IsSort() {

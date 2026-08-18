@@ -14,14 +14,14 @@ func ExampleNew() {
 		panic(err)
 	}
 
-	fmt.Printf("Size: %d, Cursors: %d\n", cursorPage.GetSize(), len(cursorPage.GetCursors()))
+	fmt.Printf("Size: %d, Cursors: %d\n", cursorPage.Size(), len(cursorPage.Cursors()))
 	// Output: Size: 10, Cursors: 1
 }
 
 func ExampleMust() {
 	cursorPage := Must(10, Asc("id", nil))
 
-	fmt.Printf("Size: %d, Cursors: %d\n", cursorPage.GetSize(), len(cursorPage.GetCursors()))
+	fmt.Printf("Size: %d, Cursors: %d\n", cursorPage.Size(), len(cursorPage.Cursors()))
 	// Output: Size: 10, Cursors: 1
 }
 
@@ -115,11 +115,11 @@ func TestNewPageRequest(t *testing.T) {
 				return
 			}
 
-			if got.GetSize() != test.size {
-				t.Errorf("size expected %d, got %d", test.size, got.GetSize())
+			if got.Size() != test.size {
+				t.Errorf("size expected %d, got %d", test.size, got.Size())
 			}
 
-			gotCursors := got.GetCursors()
+			gotCursors := got.Cursors()
 			if len(gotCursors) != len(test.cursors) {
 				t.Errorf("cursor count expected %d, got %d", len(test.cursors), len(gotCursors))
 			}
@@ -164,12 +164,12 @@ func TestGetCursorsClone(t *testing.T) {
 	t.Parallel()
 
 	pageRequest := Must(10, Asc("id", 1))
-	got := pageRequest.GetCursors()
+	got := pageRequest.Cursors()
 	got[0] = Asc("changed", 2)
 
-	again := pageRequest.GetCursors()
-	if again[0].GetColumn() != "id" {
-		t.Errorf("expected cloned cursors, got %q", again[0].GetColumn())
+	again := pageRequest.Cursors()
+	if again[0].Column() != "id" {
+		t.Errorf("expected cloned cursors, got %q", again[0].Column())
 	}
 }
 
