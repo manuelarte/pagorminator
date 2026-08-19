@@ -127,6 +127,7 @@ func (p *Pagination) IsSort() bool {
 	return len(p.sort) > 0
 }
 
+// IsTotalElementsSet Check whether the total elements are set.
 func (p *Pagination) IsTotalElementsSet() bool {
 	p.mu.RLock()
 	defer p.mu.RUnlock()

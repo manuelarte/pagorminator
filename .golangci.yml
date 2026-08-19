@@ -42,8 +42,8 @@ linters:
     - intrange
     - ireturn
     - maintidx
-    - noinlineerr # I prefer inlined errors.
     - nlreturn
+    - noinlineerr # I prefer inlined errors.
     - prealloc
     - promlinter  # Related to prometheus.
     - protogetter  # Related to protocol buffer.
@@ -51,7 +51,6 @@ linters:
     - sqlclosecheck  # Related to SQL.
     - tagliatelle
     - testpackage
-    - thelper
     - varnamelen
     - wrapcheck
     - wsl  # Deprecated, use wsl_v5 instead.
@@ -121,6 +120,11 @@ linters:
           paramsOnly: false
         underef:
           skipRecvDeref: false
+    godoclint:
+      default: all
+      options:
+        max-len:
+          length: 120
     godox:
       keywords:
         - FIXME
@@ -177,6 +181,7 @@ linters:
           - funlen
           - gocognit
           - goconst
+          - godoclint
           - gosec
         path: _test\.go
 

@@ -18,6 +18,7 @@ var (
 )
 
 type (
+	// PaginationRequest is the interface that contains the information about the pagination.
 	PaginationRequest interface {
 		// Size returns the pagination size, a.k.a. limit
 		Size() int
