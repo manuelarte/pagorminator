@@ -22,6 +22,7 @@ type PaGorminator struct {
 	Debug bool
 }
 
+// Name returns the name of the plugin.
 func (p PaGorminator) Name() string {
 	return "pagorminator"
 }

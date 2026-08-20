@@ -1463,6 +1463,8 @@ func TestCursorPaginationTotalElementsIgnoreCursorWhere(t *testing.T) {
 }
 
 func setupDB(t *testing.T) *gorm.DB {
+	t.Helper()
+
 	db, err := gorm.Open(sqlite.Open(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name())), &gorm.Config{})
 	if err != nil {
 		t.Fatal("failed to connect database")
@@ -1587,6 +1589,8 @@ func compareTestStructs(t *testing.T, got, want []*TestStruct) {
 }
 
 func comparePaginations(t *testing.T, got Pagination, want any) {
+	t.Helper()
+
 	switch actual := got.(type) {
 	case *pagepagination.Pagination:
 		if diff := cmp.Diff(

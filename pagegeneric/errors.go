@@ -13,6 +13,7 @@ type (
 	}
 )
 
+// Error returns the error message.
 func (e TotalElementsNotValidError) Error() string {
 	return fmt.Sprintf("total elements is not valid: %d", e.TotalElements)
 }

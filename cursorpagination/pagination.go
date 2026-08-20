@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	// Cursor represents a cursor.
 	//go:structinit
 	Cursor struct {
 		order pagegeneric.Order
@@ -107,6 +108,7 @@ func (p *Pagination) Cursors() []Cursor {
 	return slices.Clone(p.cursors)
 }
 
+// TotalElements returns the total elements.
 func (p *Pagination) TotalElements() (int64, bool) {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -138,6 +140,7 @@ func (p *Pagination) IsUnPaged() bool {
 	return p.size == 0 && len(p.cursors) == 0
 }
 
+// IsTotalElementsSet Check whether the total elements are set.
 func (p *Pagination) IsTotalElementsSet() bool {
 	p.mu.RLock()
 	defer p.mu.RUnlock()
@@ -198,6 +201,7 @@ func newCursor(order pagegeneric.Order, value any) Cursor {
 	return Cursor{order: order, value: value}
 }
 
+// Column returns the cursor column.
 func (c Cursor) Column() string {
 	return c.order.Column()
 }

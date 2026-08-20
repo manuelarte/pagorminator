@@ -18,6 +18,7 @@ type (
 		order()
 	}
 
+	// Sort represents a collection of Order.
 	Sort []Order
 
 	// Asc is ascending order.
@@ -27,20 +28,24 @@ type (
 	Desc string
 )
 
+// Column returns the column name of the order.
 func (a Asc) Column() string {
 	return string(a)
 }
 
+// GormString returns the string representation of the order for gorm.
 func (a Asc) GormString() string {
 	return fmt.Sprintf("%s ASC", a)
 }
 
 func (a Asc) order() {}
 
+// Column returns the column name of the order.
 func (d Desc) Column() string {
 	return string(d)
 }
 
+// GormString returns the string representation of the order for gorm.
 func (d Desc) GormString() string {
 	return fmt.Sprintf("%s DESC", d)
 }
@@ -57,6 +62,7 @@ func Unsorted() Sort {
 	return Sort{}
 }
 
+// String returns the string representation of the sort.
 func (s Sort) String() string {
 	orderStrings := make([]string, len(s))
 	for i, order := range s {

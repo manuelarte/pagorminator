@@ -15,7 +15,8 @@ formatters:
         - pattern: "interface{}"
           replacement: "any"
     gofumpt:
-      extra-rules: true
+      extra:
+        group-params: true
     gci:
       sections:
         - standard
@@ -32,6 +33,7 @@ linters:
     - err113
     - errchkjson
     - exhaustruct
+    - exhaustruct_v5
     - forcetypeassert
     - ginkgolinter  # Related to Ginkgo.
     - goheader
@@ -42,8 +44,8 @@ linters:
     - intrange
     - ireturn
     - maintidx
-    - noinlineerr # I prefer inlined errors.
     - nlreturn
+    - noinlineerr # I prefer inlined errors.
     - prealloc
     - promlinter  # Related to prometheus.
     - protogetter  # Related to protocol buffer.
@@ -51,9 +53,7 @@ linters:
     - sqlclosecheck  # Related to SQL.
     - tagliatelle
     - testpackage
-    - thelper
     - varnamelen
-    - wrapcheck
     - wsl  # Deprecated, use wsl_v5 instead.
     - zerologlint
     # keep-sorted end
@@ -121,6 +121,11 @@ linters:
           paramsOnly: false
         underef:
           skipRecvDeref: false
+    godoclint:
+      default: all
+      options:
+        max-len:
+          length: 120
     godox:
       keywords:
         - FIXME
@@ -177,6 +182,7 @@ linters:
           - funlen
           - gocognit
           - goconst
+          - godoclint
           - gosec
         path: _test\.go
 
