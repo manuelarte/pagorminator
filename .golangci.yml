@@ -33,6 +33,7 @@ linters:
     - err113
     - errchkjson
     - exhaustruct
+    - exhaustruct_v5
     - forcetypeassert
     - ginkgolinter  # Related to Ginkgo.
     - goheader
