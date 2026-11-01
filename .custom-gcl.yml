@@ -1,5 +1,5 @@
 ---
-version: v2.13.1
+version: v2.15.0
 plugins:
   - module: "github.com/manuelarte/testcomments"
     import: "github.com/manuelarte/testcomments/plugin"
